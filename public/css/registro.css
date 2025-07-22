@@ -1,0 +1,193 @@
+/* ----------- Base ----------- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ----------- Modo Oscuro ----------- */
+.dark-mode {
+    background-color: #121212;
+    color: #f0f0f0;
+}
+
+.dark-mode input,
+.dark-mode select,
+.dark-mode .choices__inner {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    border-color: #555;
+}
+
+.dark-mode .registro-container {
+    background-color: #1f1f1f;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
+}
+
+/* ----------- Contenedor ----------- */
+.registro-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 30px 25px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* ----------- Formularios ----------- */
+form .form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    background-color: white;
+    appearance: none;
+}
+
+/* Para Safari */
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 12px;
+}
+
+/* ----------- Errores ----------- */
+.input-error {
+    border-color: red !important;
+}
+
+/* ----------- Botón ----------- */
+button.btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button.btn:hover {
+    background-color: #0056b3;
+}
+
+/* ----------- Modo oscuro para botones ----------- */
+.dark-mode button.btn {
+    background-color: #2980b9;
+}
+
+/* ----------- Switch de modo oscuro ----------- */
+.switch-mode {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    justify-content: flex-end;
+}
+
+/* Estilo visual del switch (puedes ajustarlo más si quieres un diseño más elaborado) */
+.switch-mode input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+/* ----------- Texto inferior ----------- */
+.text-links {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+/* ----------- Choices.js personalizado ----------- */
+.choices__inner {
+    border-radius: 6px !important;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #ccc !important;
+    background-color: white !important;
+    font-size: 15px;
+}
+
+.dark-mode .choices__inner {
+    background-color: #2a2a2a !important;
+    border-color: #555 !important;
+    color: #f0f0f0 !important;
+}
+
+.choices[data-type*="select-one"] .choices__inner::after {
+    display: none !important;
+}
+/* ----------- Ajustes Finales Globales ----------- */
+
+/* Uniformar altura de inputs, selects y calendario */
+input,
+select,
+.flatpickr-input,
+.choices__inner {
+    box-sizing: border-box;
+    height: 44px;
+}
+
+/* Flatpickr visibilidad */
+.flatpickr-calendar {
+    z-index: 9999 !important;
+}
+
+/* Asegurar consistencia en dispositivos */
+input[type="date"],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"] {
+    width: 100%;
+    height: 44px;
+}
+
+/* Compatibilidad visual para modo oscuro */
+.dark-mode .flatpickr-calendar {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
+
+/* Estilo del input de fecha en modo oscuro */
+.dark-mode .flatpickr-input {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    border-color: #555;
+}
