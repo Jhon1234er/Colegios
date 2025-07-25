@@ -5,6 +5,7 @@
     ?>
 
     <?php include __DIR__ . '/../Componentes/encabezado.php'; ?>
+<link rel="stylesheet" href="/css/crear.css">
 
     <div class="container mt-4">
         <h2>Registro de Profesor</h2>

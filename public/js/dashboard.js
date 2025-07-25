@@ -13,9 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    let html = '<h3>Profesores y Materias</h3><ul>';
+                    let html = '<h3>Profesores</h3>';
                     data.forEach(p => {
-                        html += `<li><strong>${p.nombre}</strong> - ${p.materia}</li>`;
+                        html += `
+                            <div class="profesor-card">
+                                <div class="profesor-name">${p.nombre}  Materia: ${p.materia}</div>
+                            </div>`;
                     });
                     html += '</ul>';
                     div1.innerHTML = html;
@@ -27,19 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(data => {
                     const div2 = document.querySelector('.div2');
+                     document.querySelector('.esta')?.remove();
                     if (!data.length) {
                         div2.innerHTML = '<p>No hay estudiantes registrados para este colegio.</p>';
                         return;
                     }
 
-                    let html = '<h3>Estudiantes</h3><ul>';
+                    let html = '<h3>Estudiantes</h3>';
                     data.forEach(e => {
                         html += `
-                            <li>
-                                <strong>${e.nombre_completo}</strong> - Grado: ${e.grado}, Jornada: ${e.jornada}<br>
-                                Acudiente: ${e.nombre_completo_acudiente}, Celular: ${e.telefono_acudiente}, Parentesco: ${e.parentesco}
-                            </li>
-                            <hr>`;
+                            <div class="student-card">
+                                <div class="student-name">${e.nombre_completo}</div>
+                                <div class="student-details">
+                                    Grado: ${e.grado}, Jornada: ${e.jornada}<br>
+                                    <strong>Acudiente:</strong> ${e.nombre_completo_acudiente}<br>
+                                    <strong>Celular:</strong> ${e.telefono_acudiente}<br>
+                                    <strong>Parentesco:</strong> ${e.parentesco}
+                                </div>
+                            </div>`;
                     });
                     html += '</ul>';
                     div2.innerHTML = html;

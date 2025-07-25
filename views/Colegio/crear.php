@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../models/Materia.php';
 $materiaModel = new Materia();
 $materias = $materiaModel->obtenerTodas(); // Asegúrate que existe este método en Materia.php
 ?>
+<link rel="stylesheet" href="/css/crear.css">
 
 <div class="container mt-4">
     <h2>Registrar Colegio</h2>
@@ -69,7 +70,6 @@ $materias = $materiaModel->obtenerTodas(); // Asegúrate que existe este método
         </div>
 
         <button type="submit" class="btn btn-primary">Registrar Colegio</button>
-        <a href="/?page=colegios" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 

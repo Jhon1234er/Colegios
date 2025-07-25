@@ -42,7 +42,7 @@ $colegios = $colegioModel->obtenerTodos();
 <head>
     <meta charset="UTF-8">
     <title>Panel de Administrador</title>
-    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
     <?php include 'Componentes/encabezado.php'; ?>
@@ -50,16 +50,17 @@ $colegios = $colegioModel->obtenerTodos();
     <div class="parent">
         <div class="div1" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus profesores y materias.</p> </div>
 
-        <div class="div2" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus profesores y materias.</p> </div>
+        <div class="div2" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus estudiantes</p> </div>
         
         <div class="div3" style="overflow-y: auto; padding: 1rem;">
             <h3>Estadísticas</h3>
+            <p class="esta"style="color: #666;">Selecciona un colegio en la tabla para ver las asistencias de sus estudiantes</p> 
             <canvas id="graficoColegios" width="400" height="100"></canvas>
         </div>
 
         
         <div class="div4">
-            <h3>Colegios Existentes</h3>
+            <h3 class="Tabla">Colegios Existentes</h3>
             <table class="tabla-colegios">
                 <thead>
                     <tr>
@@ -78,7 +79,7 @@ $colegios = $colegioModel->obtenerTodos();
                             <td><?= htmlspecialchars($colegio['municipio']) ?></td>
                             <td><?= htmlspecialchars($colegio['departamento']) ?></td>
                             <td>
-                                <button class="btn-ver-colegio" data-id="<?= $colegio['id'] ?>">Ver</button>
+                                <button class="btn-ver-colegio" data-id="<?= $colegio['id'] ?>">Ver Informacion</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -115,8 +116,9 @@ $colegios = $colegioModel->obtenerTodos();
         </div>
 
         <div class="div9">
-            <p> <strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres']) ?> <?= htmlspecialchars($usuario['apellidos']) ?> <p>a Sistem scholl</p></p>
-            <p><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
+            <p> <strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres']) ?> <?= htmlspecialchars($usuario['apellidos']) ?> a Sistem scholl</p>
+            <p class="texto-rol"><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
+
         </div>
     </div>
 
