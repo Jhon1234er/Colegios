@@ -1,0 +1,124 @@
+body {
+    background-color: #fdf6ee;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 30px;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.parent {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 12px;
+    height: 90vh;
+}
+
+/* Contenedor principal */
+.div9 {
+    grid-column: 1 / span 5;
+    grid-row: 1 / span 1;
+    background-color: #fff8f1;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Contenedores funcionales */
+.div1, .div2, .div3, .div4, .div5, .div6, .div7, .div8 {
+    background-color: #fff8f1;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    overflow: auto;
+}
+
+/* Posiciones según el grid */
+.div1 {
+    grid-column: 1 / span 1;
+    grid-row: 2 / span 2;
+}
+.div2 {
+    grid-column: 2 / span 1;
+    grid-row: 2 / span 2;
+}
+.div3 {
+    grid-column: 1 / span 2;
+    grid-row: 4 / span 2;
+}
+.div4 {
+    grid-column: 3 / span 1;
+    grid-row: 2 / span 4;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 100%;
+}
+.div5 {
+    grid-column: 4 / span 1;
+    grid-row: 2 / span 2;
+}
+.div6 {
+    grid-column: 5 / span 1;
+    grid-row: 2 / span 2;
+}
+.div7 {
+    grid-column: 4 / span 1;
+    grid-row: 4 / span 2;
+}
+.div8 {
+    grid-column: 5 / span 1;
+    grid-row: 4 / span 2;
+}
+
+/* Tabla de colegios */
+.tabla-colegios {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.tabla-colegios thead {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.tabla-colegios th,
+.tabla-colegios td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.tabla-colegios tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tabla-colegios tbody tr:hover {
+    background-color: #e6f7ff;
+    cursor: pointer;
+}
+
+/* Opcional: títulos internos */
+.div1 h3, .div2 h3, .div3 h3, .div4 h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+.btn-ver-colegio {
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-ver-colegio:hover {
+    background-color: #0056b3;
+}

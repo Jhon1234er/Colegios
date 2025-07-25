@@ -21,7 +21,7 @@
 
     <h2>Iniciar Sesión</h2>
 
-    <form method="POST" action="../public/index.php">
+    <form method="POST" action="/index.php">
         <div class="form-group">
             <label for="correo">Correo electrónico</label>
             <input type="email" name="correo" required>

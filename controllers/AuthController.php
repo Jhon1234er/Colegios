@@ -56,4 +56,14 @@ class AuthController {
             return "Error de registro: " . $e->getMessage();
         }
     }
+    
+    public function index() {
+        $usuarioModel = new Usuario();
+        $totalUsuarios = $usuarioModel->contarUsuarios();
+
+        require 'views/dashboard.php'; 
+    }
+    
 }
+
+

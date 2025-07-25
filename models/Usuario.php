@@ -43,4 +43,9 @@ class Usuario {
 
         return $pdo->lastInsertId();
     }
+        public function contarUsuarios() {
+        $pdo = Database::conectar();
+        $stmt = $pdo->query("SELECT COUNT(*) AS total FROM usuarios");
+    return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
 }

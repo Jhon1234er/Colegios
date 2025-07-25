@@ -8,30 +8,20 @@
 <body>
 
 <nav>
-    <div class="contenedor">
-        <a>Sistem Scholl</a>
-        <button class="" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class=""></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="">
-                <li class=""><a class="" href="index.php?page=dashboard"><i class=""></i>Inicio</a></li>
-                <li class=""><a class="" href="index.php?page=registro"><i class=""></i>Registrar Estudiante</a></li>
-                <li class=""><a class="" href="index.php?page=listado"><i class=""></i>Listado Estudiantes</a></li>
-                <li class=""><a class="" href="index.php?page=registrar_colegio"><i class=""></i>Registrar Colegio</a></li>
-                <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
-                <li class=""><a class="" href="index.php?page=usuarios"><i class=""></i>Usuarios</a></li>
-                <?php endif; ?>
-            </ul>
-            <span class="">
-                Bienvenido, <b><?= $_SESSION['usuario'] ?? 'Invitado' ?></b>
-                <?php if (!empty($_SESSION['rol'])): ?>
-                    <span class="">Rol: <?= htmlspecialchars($_SESSION['rol']) ?></span>
-                <?php endif; ?>
-            </span>
-            <a href="" class="">Cerrar sesión</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
+        <div>
+            <strong>Sistem Scholl</strong>
+        </div>
+        <div>
+            <a href="/?page=profesores&action=crear" class="btn btn-success mb-3">Crear Profesor</a>
+            <a href="/?page=profesores" class="btn btn-primary mb-3">Ver Profesores</a>
+            <a href="?page=estudiantes&action=crear">Crear Estudiante</a> |
+            <a href="/?page=colegios&action=crear">Ingresar Colegio</a> |
+            <a href="?page=crear_materia">Registrar Materia</a> |
+            <a href="?page=materias">Ver Materias</a> | 
+            <a href="/logout.php">Cerrar sesión</a>
         </div>
     </div>
 </nav>
 
-<div>
+<div class="contenido">
