@@ -11,7 +11,7 @@ class MateriaController {
     // 📋 Mostrar todas las materias
     public function index() {
         $materias = $this->materiaModel->obtenerTodas();
-        include __DIR__ . '/../views/Materia/lista.php';
+        include __DIR__ . '/../views/Materia/crear.php';
     }
 
     // 📝 Mostrar formulario para crear
@@ -63,5 +63,49 @@ class MateriaController {
             $totalMaterias = $materiaModel->contarMaterias();
 
             require 'views/dashboard.php'; 
+        }
+        public function editar() {
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                $materia = $this->materiaModel->obtenerPorId($id);
+                $materias = $this->materiaModel->obtenerTodas();
+                include __DIR__ . '/../views/Materia/crear.php';
+            }
+        }
+
+        public function actualizar() {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $id = $_POST['id'] ?? null;
+                $nombre = trim($_POST['nombre'] ?? '');
+                // No permitir actualizar el código
+                if ($id && !empty($nombre)) {
+                    $this->materiaModel->actualizarNombre($id, $nombre);
+                    header("Location: /?page=materias");
+                    exit;
+                } else {
+                    $error = "El nombre es obligatorio.";
+                    $materia = $this->materiaModel->obtenerPorId($id);
+                    $materias = $this->materiaModel->obtenerTodas();
+                    include __DIR__ . '/../views/Materia/crear.php';
+                }
+            }
+        }
+
+        public function desactivar() {
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                $this->materiaModel->cambiarEstado($id, 0);
+                header("Location: /?page=materias");
+                exit;
+            }
+        }
+
+        public function activar() {
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                $this->materiaModel->cambiarEstado($id, 1);
+                header("Location: /?page=materias");
+                exit;
+            }
         }
 }

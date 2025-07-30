@@ -1,73 +1,103 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("formularioEstudiante");
+  const colegioSelect = document.getElementById('colegio_id');
+  const gradoSelect = document.getElementById('grado');
+  const jornadaSelect = document.getElementById('jornada');
+  const tipoDocumentoSelect = document.querySelector('select[name="tipo_documento"]');
+  const generoSelect = document.querySelector('select[name="genero"]');
+  const filtroSelect = document.querySelector('select[name="filtro"]');
+  const tipoDocumentoAcudienteSelect = document.querySelector('select[name="tipo_documento_acudiente"]');
 
-    // Limitar fechas válidas
-    const fechaNacimientoInput = document.getElementById("fecha_nacimiento");
-    const fechaIngresoInput = document.getElementById("fecha_ingreso");
+  const choicesInstances = {};
 
-    const hoy = new Date();
-    const hace18Anios = new Date(
-        hoy.getFullYear() - 18,
-        hoy.getMonth(),
-        hoy.getDate()
-    );
+  function initChoices(element, id) {
+    if (element) {
+      choicesInstances[id] = new Choices(element, {
+        searchEnabled: true,
+        shouldSort: false,
+        placeholder: true,
+        itemSelectText: ''
+      });
+    }
+  }
 
-    fechaNacimientoInput.max = hace18Anios.toISOString().split("T")[0];
-    fechaIngresoInput.max = hoy.toISOString().split("T")[0];
+  initChoices(colegioSelect, 'colegio');
+  initChoices(gradoSelect, 'grado');
+  initChoices(jornadaSelect, 'jornada');
+  initChoices(tipoDocumentoSelect, 'tipo_documento');
+  initChoices(generoSelect, 'genero');
+  initChoices(tipoDocumentoAcudienteSelect, 'tipo_documento_acudiente');
+  initChoices(filtroSelect, 'filtro');
+  colegioSelect.addEventListener('change', function () {
+    // Limpiar grados y jornadas
+    gradoSelect.innerHTML = '<option value="">Seleccione grado</option>';
+    jornadaSelect.innerHTML = '<option value="">Seleccione jornada</option>';
 
-    // Inicializar Choices.js en selects
-    const selects = document.querySelectorAll("select");
-    selects.forEach(select => {
-        new Choices(select, {
-            searchEnabled: true,
-            shouldSort: false,
-            placeholder: true,
-            itemSelectText: '',
-        });
+    // Destruir Choices anteriores
+    if (choicesInstances.grado) choicesInstances.grado.destroy();
+    if (choicesInstances.jornada) choicesInstances.jornada.destroy();
+
+    const selected = colegioSelect.options[colegioSelect.selectedIndex];
+    const grados = (selected.getAttribute('data-grados') || '').split(',').map(g => g.trim()).filter(g => g);
+    const jornadas = (selected.getAttribute('data-jornada') || '').split(',').map(j => j.trim()).filter(j => j);
+
+    const gradosFiltrados = grados.filter(g => ['7', '8', '9', '10'].includes(g));
+    gradosFiltrados.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = g;
+      gradoSelect.appendChild(opt);
     });
 
-    // Validación del formulario
-    form.addEventListener("submit", function (e) {
-        const camposObligatorios = [
-            "nombre", "apellido", "correo_electronico", "contrasena",
-            "fecha_nacimiento", "colegio_id", "grado", "grupo", "jornada", "fecha_ingreso",
-            "nombre_completo_acudiente", "tipo_documento_acudiente",
-            "numero_documento_acudiente", "telefono_acudiente", "parentesco", "ocupacion"
-        ];
-
-        let valido = true;
-        camposObligatorios.forEach(id => {
-            const campo = document.getElementById(id);
-            if (campo && campo.value.trim() === "") {
-                campo.classList.add("is-invalid");
-                valido = false;
-            } else if (campo) {
-                campo.classList.remove("is-invalid");
-            }
-        });
-
-        // Validar edad mínima
-        const fechaNac = new Date(fechaNacimientoInput.value);
-        if (fechaNac > hace18Anios) {
-            fechaNacimientoInput.classList.add("is-invalid");
-            valido = false;
-            alert("El estudiante debe tener al menos 18 años.");
-        } else {
-            fechaNacimientoInput.classList.remove("is-invalid");
-        }
-
-        // Fecha de ingreso no en el futuro
-        const fechaIng = new Date(fechaIngresoInput.value);
-        if (fechaIng > hoy) {
-            fechaIngresoInput.classList.add("is-invalid");
-            valido = false;
-            alert("La fecha de ingreso no puede ser futura.");
-        } else {
-            fechaIngresoInput.classList.remove("is-invalid");
-        }
-
-        if (!valido) {
-            e.preventDefault();
-        }
+    const jornadasFiltradas = jornadas.filter(j => ['MAÑANA', 'TARDE'].includes(j.toUpperCase()));
+    jornadasFiltradas.forEach(j => {
+      const opt = document.createElement('option');
+      opt.value = j;
+      opt.textContent = j.charAt(0).toUpperCase() + j.slice(1).toLowerCase();
+      jornadaSelect.appendChild(opt);
     });
+
+    // Volver a activar Choices en grado y jornada
+    initChoices(gradoSelect, 'grado');
+    initChoices(jornadaSelect, 'jornada');
+  });
+
+  flatpickr("#fecha_nacimiento", {
+    dateFormat: "Y-m-d",
+    maxDate: "today",
+    locale: "es"
+  });
+
+  // Stepper (manejo de pasos)
+  const steps = document.querySelectorAll(".form-step");
+  const stepIndicators = document.querySelectorAll(".stepper .step");
+  let currentStep = 0;
+
+  function showStep(index) {
+    steps.forEach((step, i) => {
+      step.classList.toggle("active", i === index);
+      if (stepIndicators[i]) {
+        stepIndicators[i].classList.toggle("active", i <= index);
+      }
+    });
+  }
+
+  document.querySelectorAll(".next-btn").forEach(btn =>
+    btn.addEventListener("click", () => {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    })
+  );
+
+  document.querySelectorAll(".prev-btn").forEach(btn =>
+    btn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    })
+  );
+
+  showStep(currentStep);
 });

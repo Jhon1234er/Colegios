@@ -18,11 +18,11 @@ class Usuario {
         $stmt = $pdo->prepare("
             INSERT INTO usuarios (
                 nombres, apellidos, tipo_documento, numero_documento,
-                correo_electronico, telefono, direccion,
+                correo_electronico, telefono, 
                 fecha_nacimiento, genero, password_hash, rol_id
             ) VALUES (
                 :nombres, :apellidos, :tipo_documento, :numero_documento,
-                :correo_electronico, :telefono, :direccion,
+                :correo_electronico, :telefono,
                 :fecha_nacimiento, :genero, :password_hash, :rol_id
             )
         ");
@@ -34,7 +34,6 @@ class Usuario {
             ':numero_documento'  => $data['numero_documento'],
             ':correo_electronico'=> $data['correo_electronico'],
             ':telefono'          => $data['telefono'],
-            ':direccion'         => $data['direccion'],
             ':fecha_nacimiento'  => $data['fecha_nacimiento'],
             ':genero'            => $data['genero'],
             ':password_hash'     => $data['password_hash'],

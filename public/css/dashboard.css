@@ -9,10 +9,7 @@
 body {
   background-color: var(--color5);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
   padding: 30px;
-  height: 100vh;
-  box-sizing: border-box;
 }
 
 /* 🟩 Grid principal */
@@ -36,7 +33,7 @@ body {
   text-align: center;
   flex-direction: column;
   justify-content: center;
-  box-shadow: 2px 4px 12px rgba(0,0,0,0.15);
+ 
   font-size: 2rem;
   font-weight: bold;
   color: #304d2f;
@@ -90,7 +87,9 @@ body {
   transition: transform 0.2s ease;
   text-align: left;
 }
-
+.profesor-materia{
+  color: black;
+}
 .profesor-card:hover {
   transform: scale(1.01);
   background-color: var(--color4);
@@ -115,19 +114,16 @@ body {
   transition: transform 0.2s ease;
   text-align: left;
 }
-
 .student-card:hover {
   transform: scale(1.01);
   background-color: var(--color4);
 }
-
 .student-name {
   font-weight: bold;
   color: var(--color1);
   text-align: center;
   margin-bottom: 8px;
 }
-
 .student-details {
   margin-top: 4px;
   color: #333;
@@ -136,8 +132,8 @@ body {
 }
 .student-card,
 .profesor-card {
-  margin: 0 auto;              /* Centra horizontalmente la tarjeta */
-  max-width: 400px;            /* (Opcional) para que no se extienda mucho */
+  margin: 0 auto;
+  max-width: 400px;
 }
 
 /* 🏫 DIV 3 */
@@ -173,9 +169,9 @@ body {
 
 .Tabla {
   text-align: center;
-  font-weight: bold;
+  font-weight: bold;  
   font-size: 1.2rem;
-  color: #304d2f;
+  color: #193f49;
   margin-bottom: 15px;
 }
 
@@ -183,7 +179,7 @@ body {
   width: 6px;
 }
 .div4::-webkit-scrollbar-thumb {
-  background-color: #a0bc92;
+  background-color: #59949f;
   border-radius: 5px;
 }
 .div4::-webkit-scrollbar-track {
@@ -196,9 +192,9 @@ body {
   font-size: 0.9rem;
 }
 .div4 thead {
-  background-color: var(--color2);
+  background-color:#1f6a7c;
   color: white;
-}
+} 
 .div4 th, .div4 td {
   border: 1px solid #bbb;
   padding: 10px;
@@ -206,7 +202,7 @@ body {
 }
 
 .btn-ver-colegio {
-  background-color: var(--color1);
+  background-color:#67acbd;
   color: white;
   border: none;
   padding: 6px 10px;
@@ -250,4 +246,227 @@ body {
     font-size: 1.2rem;
     margin-top: 10px;
     text-align: center;
+}
+
+/* =========================
+   Resultados Dashboard
+   ========================= */
+.resultados-dashboard {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 32px 24px;
+  margin: 32px auto;
+  max-width: 900px;
+}
+
+.resultados-dashboard-flex {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  margin: 40px auto 0 auto;
+  max-width: 1400px;
+  width: 95vw;
+  min-height: 500px;
+}
+
+.div10, .div11 {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(76,120,64,0.10);
+  padding: 32px 24px;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.div11 {
+  background: #f5ffe3;
+}
+
+.resultados-lista {
+  flex: 1 1 55%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(76,120,64,0.07);
+  padding: 24px 18px;
+}
+.tabla-resultados {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.tabla-resultados th, .tabla-resultados td {
+  border: 1px solid #e0e0e0;
+  padding: 10px 14px;
+}
+
+.tabla-resultados th {
+  background: #406d78;
+  color: #fff;
+}
+.fila-resultado {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fila-resultado:hover {
+  background: #e6f4ea;
+}
+.resultados-detalle {
+  flex: 1 1 45%;
+  background: #f5ffe3;
+  border-radius: 10px;
+  padding: 32px 24px;
+  box-shadow: 0 2px 10px rgba(76,120,64,0.07);
+  min-height: 300px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.detalle-placeholder {
+  color: #888;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-top: 40px;
+  justify-content: center;
+}
+.detalle-hoja-vida {
+  width: 100%;
+}
+.detalle-hoja-vida h3 {
+  color: #4c7840;
+  margin-bottom: 18px;
+  font-size: 1.3rem;
+}
+.detalle-hoja-vida ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.detalle-hoja-vida li {
+  margin-bottom: 10px;
+  font-size: 1.08rem;
+}
+.detalle-hoja-vida strong {
+  color: #304d2f;
+}
+.btn-volver {
+  background: #4c7840;
+  color: #fff;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background 0.2s;
+  font-size: 1.0rem;
+  font-family: 'segoe ui', sans-serif;
+}
+.btn-volver:hover {
+  background: #395f65;
+}
+
+/* Dashboard Animaciones */
+.dashboard-panel {
+  position: absolute;
+  top: 64px; /* altura de tu header fijo */
+  left: 0;
+  width: 100vw;
+  min-height: calc(100vh - 64px);
+  z-index: 2;
+  background: transparent;
+}
+
+#dashboard-normal.anim-out {
+  transform: scale(0.96) translateY(40px);
+  filter: blur(2px) brightness(0.7);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#dashboard-resultados {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100vw;
+  min-height: calc(100vh - 64px);
+  z-index: 20; /* más alto que el normal y el overlay */
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s, pointer-events 0s 0.5s;
+}
+#dashboard-resultados.anim-in {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.5s;
+}
+  
+#dashboard-overlay {
+  position: fixed;
+  z-index: 15;
+  top: 64px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 64px);
+  background: rgba(44, 62, 80, 0.45);
+  transition: opacity 0.5s;
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+#dashboard-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.resultados-dashboard-flex {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  margin: 10% auto 0 auto; 
+  max-width: 2000px;      
+  width: 100%;
+  align-items: flex-start; 
+}
+
+.div10, .div11 {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(76,120,64,0.10);
+  padding: 32px 24px;
+  min-height: 370px;
+  display: flex;
+  flex-direction: column;
+  justify-content:center;
+}
+
+.div11 {
+  background: #f5ffe3;
+}
+
+/* Centra el botón debajo del grid de resultados */
+#volver-dashboard.btn-volver {
+  display: block;
+  margin: 24px auto 0 auto; /* Centrado horizontal y espacio arriba */
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 900px) {
+  .resultados-dashboard-flex {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 98vw;
+    margin: 24px auto 0 auto;
+  }
+  .div10, .div11 {
+    min-width: 0;
+    width: 100%;
+    padding: 18px 8px;
+  }
 }

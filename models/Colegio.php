@@ -35,8 +35,8 @@ class Colegio {
             $this->pdo->beginTransaction();
 
             $stmt = $this->pdo->prepare("INSERT INTO colegios 
-                (nombre, codigo_dane, nit, tipo_institucion, direccion, telefono, correo, municipio, departamento)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                (nombre, codigo_dane, nit, tipo_institucion, direccion, telefono, correo, municipio, departamento, jornada, grados, calendario)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             $stmt->execute([
                 $datos['nombre'],
@@ -47,7 +47,10 @@ class Colegio {
                 $datos['telefono'],
                 $datos['correo'],
                 $datos['municipio'],
-                $datos['departamento']
+                $datos['departamento'],
+                $datos['jornada'],
+                $datos['grados'],
+                $datos['calendario']
             ]);
 
             $colegio_id = $this->pdo->lastInsertId();
@@ -83,5 +86,11 @@ class Colegio {
         $stmt = $this->pdo->prepare("SELECT * FROM colegios WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function buscarPorNombre($q) {
+        $stmt = $this->pdo->prepare("SELECT * FROM colegios WHERE nombre LIKE ?");
+        $stmt->execute(['%' . $q . '%']);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

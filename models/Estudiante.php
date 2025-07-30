@@ -13,7 +13,7 @@ class Estudiante {
             $this->pdo->beginTransaction();
 
             // Insertar en usuarios
-            $stmtUsuario = $this->pdo->prepare("INSERT INTO usuarios (nombres, apellidos, tipo_documento, numero_documento, correo_electronico, telefono, direccion,fecha_nacimiento, genero, password_hash,  rol_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtUsuario = $this->pdo->prepare("INSERT INTO usuarios (nombres, apellidos, tipo_documento, numero_documento, correo_electronico, telefono,fecha_nacimiento, genero, password_hash,  rol_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmtUsuario->execute([
                 $datos['nombre'],
                 $datos['apellido'],
@@ -21,7 +21,6 @@ class Estudiante {
                 $datos['numero_documento'],
                 $datos['correo_electronico'],
                 $datos['telefono'],
-                $datos['direccion'],
                 $datos['fecha_nacimiento'],
                 $datos['genero'],
                 password_hash($datos['contrasena'], PASSWORD_DEFAULT),
@@ -102,6 +101,20 @@ class Estudiante {
             WHERE e.colegio_id = ?
         ");
         $stmt->execute([$colegioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function buscarPorNombre($q) {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                u.nombres, u.apellidos, u.tipo_documento, u.numero_documento,
+                u.correo_electronico, u.telefono, e.grado, e.grupo, e.jornada,
+                c.nombre AS colegio, e.nombre_completo_acudiente
+            FROM estudiantes e
+            INNER JOIN usuarios u ON e.usuario_id = u.id
+            INNER JOIN colegios c ON e.colegio_id = c.id
+            WHERE u.nombres LIKE ? OR u.apellidos LIKE ?
+        ");
+        $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

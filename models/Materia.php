@@ -43,4 +43,14 @@ class Materia {
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM materias");
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
+
+    public function actualizarNombre($id, $nombre) {
+        $stmt = $this->pdo->prepare("UPDATE materias SET nombre = ? WHERE id = ?");
+        return $stmt->execute([$nombre, $id]);
+    }
+
+    public function cambiarEstado($id, $activo) {
+        $stmt = $this->pdo->prepare("UPDATE materias SET activo = ? WHERE id = ?");
+        return $stmt->execute([$activo, $id]);
+    }
 }

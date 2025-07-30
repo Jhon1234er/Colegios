@@ -39,8 +39,8 @@ class Profesor {
 
             // Insertar usuario
             $stmtUsuario = $this->pdo->prepare("INSERT INTO usuarios 
-                (nombres, apellidos, tipo_documento, numero_documento, correo_electronico, telefono, direccion, fecha_nacimiento, genero, password_hash, rol_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                (nombres, apellidos, tipo_documento, numero_documento, correo_electronico, telefono, fecha_nacimiento, genero, password_hash, rol_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)");
 
             $passwordHash = password_hash($datos['password'], PASSWORD_DEFAULT);
 
@@ -51,7 +51,6 @@ class Profesor {
                 $datos['numero_documento'],
                 $datos['correo_electronico'],
                 $datos['telefono'],
-                $datos['direccion'],
                 $datos['fecha_nacimiento'],
                 $datos['genero'],
                 $passwordHash,
@@ -62,14 +61,17 @@ class Profesor {
 
             // Insertar profesor
             $stmtProfesor = $this->pdo->prepare("INSERT INTO profesores
-                (usuario_id, colegio_id, titulo_academico, especialidad, fecha_ingreso) 
-                VALUES (?, ?, ?, ?, NOW())");
+                (usuario_id, colegio_id, titulo_academico, especialidad, fecha_ingreso,rh,correo_institucional,tip_contrato) 
+                VALUES (?, ?, ?, ?, NOW(),?, ?, ?)");
 
             $stmtProfesor->execute([
                 $usuario_id,
                 $datos['colegio_id'],
                 $datos['titulo_academico'],
-                $datos['especialidad']
+                $datos['especialidad'],
+                $datos['rh'],
+                $datos['correo_institucional'],
+                $datos['tip_contrato']
             ]);
 
             $profesor_id = $this->pdo->lastInsertId();
@@ -104,6 +106,25 @@ class Profesor {
             WHERE p.colegio_id = ?
         ");
         $stmt->execute([$colegioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function buscarPorNombre($q) {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                u.nombres, u.apellidos, u.tipo_documento, u.numero_documento,
+                u.correo_electronico, u.telefono, c.nombre AS colegio,
+                p.titulo_academico, p.especialidad, p.fecha_ingreso,
+                p.tip_contrato,
+                m.nombre AS materia
+            FROM profesores p
+            JOIN usuarios u ON p.usuario_id = u.id
+            JOIN colegios c ON p.colegio_id = c.id
+            LEFT JOIN materia_profesor mp ON p.id = mp.profesor_id
+            LEFT JOIN materias m ON mp.materia_id = m.id
+            WHERE u.nombres LIKE ? OR u.apellidos LIKE ?
+            ORDER BY p.fecha_ingreso DESC
+        ");
+        $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

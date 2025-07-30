@@ -16,25 +16,122 @@ require_once __DIR__ . '/../models/Usuario.php';
 $usuarioModel = new Usuario();
 $totalUsuarios = $usuarioModel->contarUsuarios();
 
-//PARA LLAMAR EL TOTAL DE USUARIOS
+//PARA LLAMAR EL TOTAL DE ESTUDIANTES
 require_once __DIR__ . '/../models/Estudiante.php';
 $estudianteModel = new Estudiante();
-$totalEstudiante = $estudianteModel ->contarEstudiantes();
+$totalEstudiante = $estudianteModel->contarEstudiantes();
 
 //PARA LLAMAR EL TOTAL DE PROFESORES
 require_once __DIR__ . '/../models/Profesor.php';
 $profesorModel = new Profesor();
-$totalProfesores = $profesorModel -> contarProfesores();
+$totalProfesores = $profesorModel->contarProfesores();
 
 //PARA LLAMAR EL TOTAL DE MATERIAS
 require_once __DIR__ . '/../models/Materia.php';
 $materiaModel = new Materia();
-$totalMaterias = $materiaModel -> contarMaterias();
+$totalMaterias = $materiaModel->contarMaterias();
 
 //PARA LLAMAR LA LISTA DE COLEGIOS
 require_once __DIR__ . '/../models/Colegio.php';
 $colegioModel = new Colegio();
 $colegios = $colegioModel->obtenerTodos(); 
+
+$filtro = $_GET['filtro'] ?? null;
+$q = $_GET['q'] ?? null;
+$resultados = [];
+
+if ($filtro && $q) {
+    // Realiza la búsqueda según el filtro y llena $resultados
+    if ($filtro === 'colegio') {
+        $resultados = $colegioModel->buscarPorNombre($q);
+    } elseif ($filtro === 'profesor') {
+        $resultados = $profesorModel->buscarPorNombre($q);
+    } elseif ($filtro === 'estudiante') {
+        $resultados = $estudianteModel->buscarPorNombre($q);
+    }
+}
+$mostrarResultados = ($filtro && $q);
+
+// Si es AJAX, solo devuelve el bloque de resultados y termina
+if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    ob_start();
+    ?>
+    <div class="resultados-dashboard-flex">
+      <div class="div10">
+        <div class="resultados-lista">
+          <h2>Resultados Similares</h2>
+          <?php if (empty($resultados)): ?>
+            <p style="color:#888;">No se encontraron resultados.</p>
+          <?php else: ?>
+            <table class="tabla-resultados">
+              <thead>
+                <tr>
+                  <?php if ($filtro === 'colegio'): ?>
+                    <th>Nombre</th>
+                    <th>Tipo Institución</th>
+                  <?php elseif ($filtro === 'profesor'): ?>
+                    <th>Nombre Completo</th>
+                    <th>Materia</th>
+                    <th>Colegio</th>
+                    <th>Tipo de Contrato</th>
+                  <?php elseif ($filtro === 'estudiante'): ?>
+                    <th>Nombre Completo</th>
+                    <th>Grado</th>
+                    <th>Grupo</th>
+                    <th>Jornada</th>
+                    <th>Informacion</th>
+                  <?php endif; ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($resultados as $i => $fila): ?>
+                  <tr class="fila-resultado" data-index="<?= $i ?>">
+                    <?php if ($filtro === 'colegio'): ?>
+                      <td><?= formatearNombreColegio(htmlspecialchars($fila['nombre'] ?? '')) ?></td>
+                      <td><?= htmlspecialchars($fila['tipo_institucion'] ?? '') ?></td>
+                    <?php elseif ($filtro === 'profesor'): ?>
+                      <td><?= htmlspecialchars(($fila['nombres'] ?? '') . ' ' . ($fila['apellidos'] ?? '')) ?></td>
+                      <td><?= htmlspecialchars($fila['materia'] ?? '') ?></td>
+                      <td><?= formatearNombreColegio(htmlspecialchars($fila['colegio'] ?? '')) ?></td>
+                      <td><?= htmlspecialchars($fila['tip_contrato'] ?? '') ?></td>
+                    <?php elseif ($filtro === 'estudiante'): ?>
+                      <td><?= htmlspecialchars(($fila['nombres'] ?? '') . ' ' . ($fila['apellidos'] ?? '')) ?></td>
+                      <td><?= htmlspecialchars($fila['grado'] ?? ''). 'º' ?></td>
+                      <td><?= !empty($fila['grupo']) ? htmlspecialchars($fila['grupo']) : 'No aplica' ?></td>
+                      <td><?= htmlspecialchars($fila['jornada'] ?? '') ?></td>
+                      <td>
+                        <!-- <button class="btn-ver-estudiante" data-id="<?= $fila['id'] ?>">Ver Informacion</button> -->
+                      </td>
+                    <?php endif; ?>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          <?php endif; ?>
+        </div>
+      </div>
+      <div class="div11">
+        <div class="resultados-detalle" id="detalle-resultado">
+          <div class="detalle-placeholder">
+            <p>Seleciona una fila para saber mas informacion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="volver-dashboard" class="btn-volver">Finalizar busqueda</button>
+    <?php
+    echo ob_get_clean();
+    exit;
+}
+
+function formatearNombreColegio($nombre) {
+    // Aplica formato título y convierte siglas tipo X.x. o X.x a mayúsculas
+    $nombre = ucwords(strtolower($nombre));
+    $nombre = preg_replace_callback('/\b([a-z])\.([a-z])\.?/i', function($m) {
+        return strtoupper($m[1]) . '.' . strtoupper($m[2]);
+    }, $nombre);
+    return $nombre;
+}
 ?>
 
 <!DOCTYPE html>
@@ -46,6 +143,8 @@ $colegios = $colegioModel->obtenerTodos();
 </head>
 <body>
     <?php include 'Componentes/encabezado.php'; ?>
+
+    <div id="dashboard-normal" class="dashboard-panel" style="<?= $mostrarResultados ? 'display:none;' : '' ?>">
 
     <div class="parent">
         <div class="div1" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus profesores y materias.</p> </div>
@@ -66,18 +165,18 @@ $colegios = $colegioModel->obtenerTodos();
                     <tr>
                         <th>Nombre</th>
                         <th>Tipo</th>
-                        <th>Municipio</th>
                         <th>Departamento</th>
-                        <th>Acción</th>
+                        <th>Municipio</th>
+                        <th>Informacion</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($colegios as $colegio): ?>
                         <tr>
-                            <td><?= htmlspecialchars($colegio['nombre']) ?></td>
+                            <td><?= formatearNombreColegio(htmlspecialchars($colegio['nombre'])) ?></td>
                             <td><?= htmlspecialchars($colegio['tipo_institucion']) ?></td>
-                            <td><?= htmlspecialchars($colegio['municipio']) ?></td>
-                            <td><?= htmlspecialchars($colegio['departamento']) ?></td>
+                            <td><?= ucwords(strtolower(htmlspecialchars($colegio['departamento']))) ?></td>
+                            <td><?= ucwords(strtolower(htmlspecialchars($colegio['municipio']))) ?></td>
                             <td>
                                 <button class="btn-ver-colegio" data-id="<?= $colegio['id'] ?>">Ver Informacion</button>
                             </td>
@@ -88,46 +187,49 @@ $colegios = $colegioModel->obtenerTodos();
         </div>
         
         <div class="div5">
-            <h3>Total de Materias</h3>
+            <h3>Total de Programas Registrados</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalMaterias ?>
             </p>
         </div>
         
         <div class="div6">
-            <h3>Total de Profesores</h3>
+            <h3>Total de Facilitadores Registrados en la Plataforma</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalProfesores ?>
             </p>
         </div>
         
         <div class="div7">
-            <h3>Total de Usuarios</h3>
+            <h3>Total de Usuarios Registrados</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalUsuarios ?>
             </p>
         </div>
 
         <div class="div8">
-            <h3>Total de Estudiantes</h3>
+            <h3>Total de Aprendices Matriculados al Programa Tecno Academia</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalEstudiante ?>
             </p>
         </div>
 
         <div class="div9">
-            <p> <strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres']) ?> <?= htmlspecialchars($usuario['apellidos']) ?> a Sistem scholl</p>
+            <p> <strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres']) ?> <?= htmlspecialchars($usuario['apellidos']) ?> a Sistem scholl Tecno Academia</p>
             <p class="texto-rol"><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
-
         </div>
     </div>
+    </div>
 
-    <?php include 'Componentes/footer.php'; ?>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- El dashboard de resultados solo se llena por AJAX -->
+    <div id="dashboard-resultados" class="dashboard-panel" style="display:none;"></div>
+    <div id="dashboard-overlay"></div>
 
-
-<!-- Tu JS personalizado -->
-<script src="/../js/dashboard.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Tu JS personalizado -->
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/encabezado.js"></script>
+    <?php include 'Componentes/footer.php'; ?> 
 </body>
 </html>

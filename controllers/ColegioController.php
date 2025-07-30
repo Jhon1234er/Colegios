@@ -32,6 +32,9 @@ class ColegioController {
             $municipio = trim($_POST['municipio'] ?? '');
             $departamento = trim($_POST['departamento'] ?? '');
             $materias = $_POST['materias'] ?? [];
+            $jornada = $_POST['jornada'] ?? [];
+            $grados = $_POST['grados'] ?? [];
+            $calendario = $_POST['calendario'] ?? [];
 
             if (
                 !empty($nombre) && !empty($codigo_dane) && !empty($nit) &&
@@ -47,7 +50,10 @@ class ColegioController {
                     'telefono' => $telefono,
                     'correo' => $correo,
                     'municipio' => $municipio,
-                    'departamento' => $departamento
+                    'departamento' => $departamento,
+                    'jornada' => $jornada,
+                    'grados' => $grados,
+                    'calendario' => $calendario
                 ], $materias);
 
                 header("Location: /?page=colegios");

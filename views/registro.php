@@ -59,10 +59,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
             <input type="text" name="telefono" id="telefono">
         </div>
 
-        <div class="form-group">
-            <label for="direccion">Dirección</label>
-            <input type="text" name="direccion" id="direccion">
-        </div>
 
         <div class="form-group">
             <label for="fecha_nacimiento">Fecha de nacimiento*</label>

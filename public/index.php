@@ -23,8 +23,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 
 // Materias
 if (isset($_GET['page']) && $_GET['page'] === 'materias') {
-    include '../views/Materia/lista.php';
-    exit;
+    require_once '../controllers/MateriaController.php';
+    $controller = new MateriaController();
+
+    $action = $_GET['action'] ?? 'index';
+
+    if ($action === 'editar' && isset($_GET['id'])) {
+        $controller->editar();
+        exit;
+    } elseif ($action === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->actualizar();
+        exit;
+    } elseif ($action === 'desactivar' && isset($_GET['id'])) {
+        $controller->desactivar();
+        exit;
+    } elseif ($action === 'activar' && isset($_GET['id'])) {
+        $controller->activar();
+        exit;
+    } else {
+        $controller->index();
+        exit;
+    }
 }
 
 if (isset($_GET['page']) && $_GET['page'] === 'crear_materia') {

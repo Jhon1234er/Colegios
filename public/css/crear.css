@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+
+/* ESTILO BASE DEL FORMULARIO */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,14 +11,15 @@
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f5ffe3;
-  margin-top: 5%;
-
+  margin: 0;
+  padding: 0;
+  margin-top: 10%;
 }
 
-.container {    
+.container {
   max-width: 900px;
   margin: 60px auto;
-  background-color: white;
+  background-color: #fff;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -29,10 +32,106 @@ h2 {
   color: #304d2f;
 }
 
-form {
+/* FORMULARIO PASOS (STEPPER) */
+ol.flex.items-center {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding-left: 0;
+  list-style: none;
+}
+
+ol.flex.items-center li {
+  flex: 1;
+  position: relative;
+  text-align: center;
+}
+
+ol.flex.items-center li .step-circle {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+  background: #92b7bc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #32595f;
+  box-shadow: 0 2px 8px rgba(76,120,64,0.10);
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+ol.flex.items-center li.active .step-circle {
+  background: #407678;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+ol.flex.items-center li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 19px;
+  left: 50%;
+  width: 100%;
+  height: 4px;
+  background: #badddd;
+  z-index: 0;
+  transform: translateX(0);
+}
+
+ol.flex.items-center li:last-child::after {
+  content: none;
+}
+
+ol.flex.items-center li .step-label {
+  display: block;
+  margin-top: 8px;
+  font-size: 15px;
+  color: #536387;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+ol.flex.items-center li.active .step-label {
+  color: #407875;
+  font-weight: 700;
+}
+
+/* ESTILO CAMPOS */
+label,
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #536387;
+  margin-bottom: 5px;
+}
+
+input,
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #dde3ec;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 0;
+}
+
+input:focus,
+select:focus,
+.form-select:focus {
+  border-color: #2b6488;
+  outline: none;
+  box-shadow: 0 0 6px rgba(76, 120, 64, 0.15);
 }
 
 .row {
@@ -48,52 +147,89 @@ form {
   gap: 15px;
 }
 
-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #536387;
-  margin-bottom: 5px;
+/* BOTONES DE NAVEGACIÓN */
+.form-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  gap: 10px;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dde3ec;
-  border-radius: 6px;
-  background-color: #fff;
-  font-size: 16px;
-  color: #333;
-}
-
-input:focus,
-select:focus {
-  border-color: #6a64f1;
-  outline: none;
-  box-shadow: 0 0 6px rgba(106, 100, 241, 0.2);
-}
-
-button.btn {
+.next-btn,
+.prev-btn,
+.submit-btn {
   background-color: #4c7840;
-  color: white;
+  color: #fff;
+  border: none;
   padding: 14px 24px;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: 600;
-  border: none;
-  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
-  align-self: flex-end;
+  align-self: center;
+  
 }
 
-button.btn:hover {
-  background-color: #3a5e2f;
+.next-btn:hover,
+.prev-btn:hover,
+.submit-btn:hover {
+  background-color: #336646;
 }
 
-#materias {
-  height: 120px;
-  padding: 10px;
+/* FORMULARIO PASO A PASO */
+.form-step {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.form-step.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .container {
+    padding: 24px 8px;
+  }
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .col-md-6 {
+    min-width: 100%;
+    margin-bottom: 24px;
+  }
+  .form-navigation {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .next-btn,
+  .prev-btn,
+  .submit-btn {
+    width: 100%;
+  }
+  ol.flex.items-center li .step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+}
+
+.btn btn-primary{
+  background-color: #4c7840;
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: center;
 }

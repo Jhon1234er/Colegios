@@ -21,7 +21,6 @@ class EstudianteController {
                 'numero_documento' => $_POST['numero_documento'],
                 'correo_electronico' => $_POST['correo_electronico'],
                 'telefono' => $_POST['telefono'],
-                'direccion' => $_POST['direccion'],
                 'genero' => $_POST['genero'],
                 'contrasena' => $_POST['password'],
                 'fecha_nacimiento' => $_POST['fecha_nacimiento'],

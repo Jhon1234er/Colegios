@@ -9,15 +9,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     const div1 = document.querySelector('.div1');
                     if (!data.length) {
-                        div1.innerHTML = '<p>No hay profesores registrados para este colegio.</p>';
+                        div1.innerHTML = '<p>No hay facilitadores registrados para este colegio.</p>';
                         return;
                     }
 
-                    let html = '<h3>Profesores</h3>';
+                    let html = '<h3>Facilitadores</h3>';
                     data.forEach(p => {
                         html += `
                             <div class="profesor-card">
-                                <div class="profesor-name">${p.nombre}  Materia: ${p.materia}</div>
+                                <div class="profesor-name">${p.nombre} <p class="profesor-materia"> Materia: ${p.materia}</p></div>
                             </div>`;
                     });
                     html += '</ul>';
@@ -32,11 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const div2 = document.querySelector('.div2');
                      document.querySelector('.esta')?.remove();
                     if (!data.length) {
-                        div2.innerHTML = '<p>No hay estudiantes registrados para este colegio.</p>';
+                        div2.innerHTML = '<p>No hay aprendices registrados para este colegio.</p>';
                         return;
                     }
 
-                    let html = '<h3>Estudiantes</h3>';
+                    let html = '<h3>Aprendices</h3>';
                     data.forEach(e => {
                         html += `
                             <div class="student-card">
@@ -111,4 +111,58 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'volver-dashboard') {
+        document.getElementById('dashboard-resultados').style.display = 'none';
+        document.getElementById('dashboard-normal').style.display = 'block';
+      }
+    });
+
+    document.querySelectorAll('.fila-resultado').forEach(function(row) {
+      row.addEventListener('click', function() {
+        const ths = this.closest('table').querySelectorAll('th');
+        const tds = this.querySelectorAll('td');
+        let detalleHTML = '<div class="detalle-hoja-vida"><h3>Detalle</h3><ul>';
+        tds.forEach((td, i) => {
+          detalleHTML += `<li><strong>${ths[i].textContent}:</strong> ${td.textContent}</li>`;
+        });
+        detalleHTML += '</ul></div>';
+        document.getElementById('detalle-resultado').innerHTML = detalleHTML;
+      });
+    });
+
+    const dashboardNormal = document.getElementById('dashboard-normal');
+    const dashboardResultados = document.getElementById('dashboard-resultados');
+    const overlay = document.getElementById('dashboard-overlay');
+    const volverBtn = document.getElementById('volver-dashboard');
+
+    function showResultados() {
+      dashboardNormal.classList.add('anim-out');
+      dashboardResultados.classList.add('anim-in');
+      overlay.classList.add('active');
+      dashboardResultados.style.display = '';
+    }
+    function hideResultados() {
+      dashboardNormal.classList.remove('anim-out');
+      dashboardResultados.classList.remove('anim-in');
+      overlay.classList.remove('active');
+      setTimeout(() => {
+        dashboardResultados.style.display = 'none';
+        dashboardNormal.style.display = '';
+      }, 500); // espera la animación
+    }
+
+    // Mostrar resultados si corresponde al cargar
+    if (dashboardResultados && dashboardResultados.style.display !== 'none') {
+      showResultados();
+    }
+
+    // Botón volver al inicio
+    if (volverBtn) {
+      volverBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideResultados();
+      });
+    }
 });

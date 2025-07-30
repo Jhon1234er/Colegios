@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../models/Profesor.php';
 $model = new Profesor();
 $profesores = $model->obtenerTodos();
 ?>
+    <link rel="stylesheet" href="/css/dashboard.css">
 
 <div class="container mt-4">
     <h2 class="mb-4">Lista de Profesores</h2>
