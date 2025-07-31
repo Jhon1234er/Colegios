@@ -40,6 +40,9 @@ if (isset($_GET['page']) && $_GET['page'] === 'materias') {
     } elseif ($action === 'activar' && isset($_GET['id'])) {
         $controller->activar();
         exit;
+    } elseif ($action === 'guardar_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->guardarFicha();
+        exit;
     } else {
         $controller->index();
         exit;

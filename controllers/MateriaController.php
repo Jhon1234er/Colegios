@@ -108,4 +108,21 @@ class MateriaController {
                 exit;
             }
         }
+        public function guardarFicha() {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                require_once __DIR__ . '/../models/Ficha.php';
+                $fichaModel = new Ficha();
+
+                $nombre = trim($_POST['nombre'] ?? '');
+                $colegio_id = $_POST['colegio_id'] ?? null;
+
+                if (!empty($nombre) && !empty($colegio_id)) {
+                    $fichaModel->guardar($nombre, $colegio_id);
+                    header("Location: /?page=materias");
+                    exit;
+                } else {
+                    echo "❌ Faltan campos obligatorios.";
+                }
+            }
+        }
 }

@@ -89,5 +89,41 @@ $materias = $materiaModel->obtenerTodas();
         </div>
     <?php endif; ?>
 </div>
+<?php
+require_once __DIR__ . '/../../models/Colegio.php';
+$colegioModel = new Colegio();
+$colegios = $colegioModel->obtenerTodos();
+?>
+
+<!-- FORMULARIO DE MATERIA (ya existente, lo dejas tal cual aquí arriba) -->
+
+<hr style="margin: 50px 0; border: 1px solid #ccc;">
+
+<!-- FORMULARIO DE FICHA -->
+<div class="container">
+    <h2>Registrar Nueva Ficha</h2>
+        <form method="POST" action="/?page=materias&action=guardar_ficha">
+        <div class="row">
+            <div class="col-md-6">
+                <label for="nombre_ficha" class="form-label">Nombre de la Ficha</label>
+                <input type="text" name="nombre" id="nombre_ficha" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label for="colegio_id_ficha" class="form-label">Colegio</label>
+                <select name="colegio_id" id="colegio_id_ficha" class="form-select" required>
+                    <option value="">Seleccione un colegio</option>
+                    <?php foreach ($colegios as $colegio): ?>
+                        <option value="<?= $colegio['id'] ?>"><?= $colegio['nombre'] ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-navigation" style="justify-content: flex-end; margin-top: 20px;">
+            <button type="submit" class="submit-btn">Registrar Ficha</button>
+        </div>
+    </form>
+</div>
 
 <?php include __DIR__ . '/../Componentes/footer.php'; ?>
