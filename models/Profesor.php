@@ -136,15 +136,15 @@ class Profesor {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function obtenerFichasPorProfesor($profesor_id) {
-    $pdo = Database::conectar();
-    $sql = "SELECT f.id, f.nombre 
-            FROM fichas f
-            INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
-            WHERE pf.profesor_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$profesor_id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        $pdo = Database::conectar();
+        $sql = "SELECT f.id, f.nombre 
+                FROM fichas f
+                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+                WHERE pf.profesor_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$profesor_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
 }
