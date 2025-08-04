@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     let html = '<h3>Aprendices</h3>';
                     data.forEach(e => {
+                            console.log(e); 
                         html += `
                                 <div class="student-card">
                                     <div class="student-name">${e.nombre_completo}</div>
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         <strong>Acudiente:</strong> ${e.nombre_completo_acudiente}<br>
                                         <strong>Celular:</strong> ${e.telefono_acudiente}<br>
                                         <strong>Parentesco:</strong> ${e.parentesco}<br>
-                                        <strong>Fichas:</strong> ${Array.isArray(e.fichas) ? e.fichas.join(', ') : (e.fichas || 'Sin ficha')}
+                                        <strong>Ficha:</strong> ${e.numero_ficha}
                                     </div>
                                 </div>`;
                     });

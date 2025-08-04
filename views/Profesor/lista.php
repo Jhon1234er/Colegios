@@ -6,10 +6,11 @@ $model = new Profesor();
 $profesores = $model->obtenerTodos();
 ?>
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/Profesor/lista_profesor.css">
 
 <div class="container mt-4">
-    <h2 class="mb-4">Lista de Profesores</h2>
-    <a href="/?page=profesores&action=crear" class="btn btn-success mb-3">Crear Profesor</a>
+    <h2 class="mb-4">Lista de Facilitadores</h2>
+    <a href="/?page=profesores&action=crear" class="btn btn-success mb-3">Crear Facilitador</a>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">

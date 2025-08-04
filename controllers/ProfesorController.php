@@ -39,27 +39,19 @@
             require 'views/dashboard.php'; 
         }
 
-        public function fichasPorProfesor($profesorId) {
+        public function fichasPorProfesor($profesor_id) {
             $pdo = \Database::conectar();
+
             $stmt = $pdo->prepare("
-                SELECT f.id, f.nombre 
+                SELECT f.id, f.nombre
                 FROM fichas f
                 INNER JOIN profesor_ficha pf ON pf.ficha_id = f.id
                 WHERE pf.profesor_id = ?
             ");
-            $stmt->execute([$profesorId]);
-            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-        }
+            $stmt->execute([$profesor_id]);
+            $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        public function estudiantesPorFicha($fichaId) {
-            $pdo = \Database::conectar();
-            $stmt = $pdo->prepare("
-                SELECT e.id, u.nombres, u.apellidos, e.grado, e.jornada, e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
-                FROM estudiantes e
-                INNER JOIN usuarios u ON e.usuario_id = u.id
-                WHERE e.ficha_id = ?
-            ");
-            $stmt->execute([$fichaId]);
-            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+            header('Content-Type: application/json');
+            echo json_encode($fichas);
         }
     }

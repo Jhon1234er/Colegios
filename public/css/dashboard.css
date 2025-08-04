@@ -7,7 +7,7 @@
 }
 
 body {
-  background-color: var(--color5);
+  background-color:white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 30px;
 }
@@ -19,6 +19,7 @@ body {
   grid-template-rows: repeat(6, 1fr);
   gap: 8px;
   height: 90vh;
+  background-color: whitesmoke;
 }
 
 /* 🟨 Encabezado */

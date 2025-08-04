@@ -1,6 +1,5 @@
 <?php include __DIR__ . '/../Componentes/encabezado.php'; ?>
 <link rel="stylesheet" href="/css/crear.css">
-<link rel="stylesheet" href="/css/lista.css">
 <link rel="stylesheet" href="/css/Materia/crear.css">
 
 <div class="container">
@@ -93,9 +92,11 @@ $materias = $materiaModel->obtenerTodas();
 require_once __DIR__ . '/../../models/Colegio.php';
 $colegioModel = new Colegio();
 $colegios = $colegioModel->obtenerTodos();
+require_once __DIR__ . '/../../models/Ficha.php';
+$fichaModel = new Ficha();
+$fichas = $fichaModel->obtenerTodas();
 ?>
 
-<!-- FORMULARIO DE MATERIA (ya existente, lo dejas tal cual aquí arriba) -->
 
 <hr style="margin: 50px 0; border: 1px solid #ccc;">
 
@@ -125,5 +126,38 @@ $colegios = $colegioModel->obtenerTodos();
         </div>
     </form>
 </div>
-
+    <div class="container mt-5">
+        <h2 class="mb-4">Listado de Fichas</h2>
+        <div class="table-responsive">
+            <table class="tabla-lista">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Colegio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($fichas as $ficha): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($ficha['nombre']) ?></td>
+                            <td><?= htmlspecialchars($ficha['colegio']) ?></td>
+                            <td>
+                                <?php if ($ficha['activa'] ?? true): ?>
+                                    <span class="badge bg-success">Activa</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger">Inactiva</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="/?page=fichas&action=editar&id=<?= urlencode($ficha['id']) ?>" class="btn-accion btn-warning">Editar</a>
+                                <a href="/?page=fichas&action=eliminar&id=<?= urlencode($ficha['id']) ?>" class="btn-accion btn-danger" onclick="return confirm('¿Eliminar esta ficha?')">Eliminar</a>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 <?php include __DIR__ . '/../Componentes/footer.php'; ?>

@@ -62,30 +62,39 @@ class EstudianteController {
 
         require 'views/dashboard.php'; 
     }
+    public function obtenerPorColegio($colegioId) {
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("
+            SELECT 
+                CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo,
+                e.grado,
+                e.jornada,
+                e.nombre_completo_acudiente,
+                e.telefono_acudiente,
+                e.parentesco,
+                f.nombre AS numero_ficha
+            FROM estudiantes e
+            JOIN usuarios u ON e.usuario_id = u.id
+            LEFT JOIN fichas f ON e.ficha_id = f.id
+            WHERE e.colegio_id = ?
+        ");
+        $stmt->execute([$colegioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    public function obtenerEstudiantesConFichas() {
-        $estudianteModel = new Estudiante();
-        $estudiantes = $estudianteModel->obtenerTodos();
-        $pdo = \Database::conectar();
+    public function obtenerPorFicha($ficha_id) {
+        $pdo = Database::conectar();
+        $sql = "SELECT u.nombres, u.apellidos, e.grado, e.jornada,
+                    e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
+                FROM estudiantes e
+                INNER JOIN usuarios u ON u.id = e.usuario_id
+                WHERE e.ficha_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$ficha_id]);
+        $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($estudiantes as &$estudiante) {
-            $stmt = $pdo->prepare("SELECT nombre FROM fichas WHERE id = ?");
-            $stmt->execute([$estudiante['ficha_id']]);
-            $ficha = $stmt->fetchColumn();
-            $estudiante['fichas'] = $ficha ? [$ficha] : [];
-        }
+        header('Content-Type: application/json');
         echo json_encode($estudiantes);
     }
-    public function obtenerPorFicha($ficha_id) {
-    $pdo = Database::conectar();
-    $sql = "SELECT u.nombres, u.apellidos, e.grado, e.jornada,
-                   e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
-            FROM estudiantes e
-            INNER JOIN usuarios u ON u.id = e.usuario_id
-            WHERE e.ficha_id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$ficha_id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 
 }

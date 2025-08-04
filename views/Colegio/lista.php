@@ -1,8 +1,8 @@
 <?php include __DIR__ . '/../Componentes/encabezado.php'; ?>
-
+    <link rel="stylesheet" href="/css/Colegio/lista_colegio.css">
 <div class="container mt-4">
     <h2>Colegios Registrados</h2>
-    <a href="/?page=crear_colegio" class="btn btn-primary mb-3">Registrar Nuevo Colegio</a>
+    <a href="/?page=crear_colegio" class="btn btn-primary mb-3">Registrar Colegio</a>
 
     <?php if (!empty($colegios)): ?>
         <div class="table-responsive">
@@ -51,7 +51,7 @@
                                 <a href="/?page=eliminar_colegio&id=<?= $colegio['id'] ?>" 
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('¿Eliminar este colegio?')">
-                                    Eliminar
+                                    Suspender
                                 </a>
                             </td>
                         </tr>

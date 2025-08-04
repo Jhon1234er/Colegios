@@ -61,20 +61,44 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset
     echo json_encode($estudiantes);
     exit;
 }
-
-if ($_GET['page'] === 'profesorficha') {
+if (isset($_GET['page']) && $_GET['page'] === 'profesorficha') {
     require_once '../controllers/ProfesorController.php';
-    $controller = new ProfesorController();
-    $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
+
+    // ✅ Solo iniciar sesión si aún no se ha iniciado
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    // ✅ Verificar que el profesor_id exista en sesión
+    if (isset($_SESSION['usuario']['profesor_id'])) {
+        $controller = new ProfesorController();
+        $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
+    } else {
+        // 🔴 No hay profesor_id en sesión → devolver error JSON
+        header('Content-Type: application/json');
+        http_response_code(401); // Unauthorized
+        echo json_encode(['error' => 'Sesión inválida o profesor no identificado.']);
+    }
+
     exit;
 }
 
-if ($_GET['page'] === 'estudiantesporficha') {
-    require_once '../controllers/ProfesorController.php';
-    $controller = new ProfesorController();
-    $controller->estudiantesPorFicha($_GET['ficha_id']);
+if (isset($_GET['page']) && $_GET['page'] === 'estudiantesporficha') {
+    require_once '../controllers/EstudianteController.php';
+    $controller = new EstudianteController();
+    $ficha_id = $_GET['ficha_id'] ?? null;
+
+    if ($ficha_id) {
+        $controller->obtenerPorFicha($ficha_id);
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Falta ficha_id']);
+    }
+
     exit;
 }
+
+
 // --- VISTAS PRINCIPALES ---
 
 // Materias

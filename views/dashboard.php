@@ -7,10 +7,8 @@ if (!isset($_SESSION['usuario'])) {
     header('Location: /');
     exit;
 }
-
-$usuario = $_SESSION['usuario'];
+$usuario = $_SESSION['usuario'] ?? null;
 $isAdmin = isset($usuario['rol_id']) && $usuario['rol_id'] == 1;
-
 //PARA LLAMAR EL TOTAL DE USUARIOS
 require_once __DIR__ . '/../models/Usuario.php';
 $usuarioModel = new Usuario();

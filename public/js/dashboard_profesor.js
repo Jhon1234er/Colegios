@@ -2,8 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const fichasContainer = document.getElementById('fichasContainer');
   const estudiantesContainer = document.getElementById('estudiantesContainer');
 
+  if (!fichasContainer || !estudiantesContainer) {
+    console.warn('Contenedores no encontrados en el DOM.');
+    return;
+  }
+
   // Cargar fichas del profesor
-  fetch('?page=profesor_ficha')
+  fetch(new URL('?page=profesor_ficha', window.location.origin))
     .then(response => {
       if (!response.ok) throw new Error("Error en la respuesta");
       return response.json();
@@ -30,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.matches('.btn-ficha')) {
       const fichaId = e.target.dataset.fichaId;
 
-      fetch(`?page=estudiantes_por_ficha&ficha_id=${encodeURIComponent(fichaId)}`)
+      fetch(new URL(`?page=estudiantes_por_ficha&ficha_id=${encodeURIComponent(fichaId)}`, window.location.origin))
         .then(response => {
           if (!response.ok) throw new Error("Error en la respuesta de estudiantes");
           return response.json();

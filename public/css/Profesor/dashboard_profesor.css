@@ -1,0 +1,78 @@
+/* Estilos para Dashboard del Profesor */
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f7f9fb;
+    color: #333;
+    margin: 20px;
+    margin-top: 7%;
+}
+
+/* Encabezado de bienvenida */
+h2, h3, h4 {
+    color: #2c3e50;
+}
+
+/* Lista de fichas */
+#lista-fichas li {
+    margin-bottom: 10px;
+    background-color: #fff;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#lista-fichas button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#lista-fichas button:hover {
+    background-color: #0056b3;
+}
+
+/* Contenedor de estudiantes */
+#estudiantes-ficha {
+    margin-top: 30px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Tabla */
+#estudiantes-ficha table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+#estudiantes-ficha th,
+#estudiantes-ficha td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+#estudiantes-ficha th {
+    background-color: #f0f4f8;
+    color: #333;
+}
+
+/* Estilos adicionales para tarjetas si usas */
+.student-card {
+    margin-bottom: 15px;
+    padding: 12px;
+    background-color: #e9f5ff;
+    border-left: 4px solid #007bff;
+    border-radius: 5px;
+}

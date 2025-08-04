@@ -9,18 +9,34 @@ class AuthController {
         $usuario = $usuarioModel->buscarPorCorreo($correo);
 
         if ($usuario && password_verify($password, $usuario['password_hash'])) {
-            // Guarda usuario en sesión
+            // Conexión a base de datos
+            $pdo = Database::conectar();
+
+            // Guarda datos básicos del usuario
             $_SESSION['usuario'] = [
                 'id' => $usuario['id'],
                 'rol_id' => $usuario['rol_id'],
                 'nombres' => $usuario['nombres'],
-                'apellidos' => $usuario['apellidos'],
-                // ...otros campos que necesites
+                'apellidos' => $usuario['apellidos']
             ];
+
+            // Si es profesor, buscar su ID en la tabla profesores
+            if ($usuario['rol_id'] == 2) {
+                $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
+                $stmt->execute([$usuario['id']]);
+                $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($profesor) {
+                    $_SESSION['usuario']['profesor_id'] = $profesor['id'];
+                }
+            }
+
             return true;
         }
+
         return false;
     }
+
 
     public static function registrar($data) {
         if (empty($data['tipo_documento']) || empty($data['genero']) || empty($data['fecha_nacimiento'])) {
