@@ -4,19 +4,21 @@ require_once __DIR__ . '/../config/db.php';
 
 class AuthController {
     public static function login($correo, $password) {
+        require_once __DIR__ . '/../models/Usuario.php';
         $usuarioModel = new Usuario();
-        $usuario = $usuarioModel->obtenerPorCorreo($correo);
+        $usuario = $usuarioModel->buscarPorCorreo($correo);
 
         if ($usuario && password_verify($password, $usuario['password_hash'])) {
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
-
-            $_SESSION['usuario'] = $usuario;
-            header('Location: /COLEGIOS/views/dashboard.php');
-            exit;
+            // Guarda usuario en sesión
+            $_SESSION['usuario'] = [
+                'id' => $usuario['id'],
+                'rol_id' => $usuario['rol_id'],
+                'nombres' => $usuario['nombres'],
+                'apellidos' => $usuario['apellidos'],
+                // ...otros campos que necesites
+            ];
+            return true;
         }
-
         return false;
     }
 

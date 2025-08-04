@@ -1,61 +1,73 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Inicializa Choices en todos los selects
-    document.querySelectorAll('select').forEach(select => {
-        select.choices = new Choices(select, {
-            searchEnabled: true,
-            shouldSort: false,
-            placeholder: true,
-            itemSelectText: '',
-        });
+  const colegioSelect = document.getElementById('colegio_id');
+  const materiasSelect = document.getElementById('materias');
+  const fichaSelect = document.getElementById('ficha_id');
+
+  // Flatpickr para fecha de nacimiento
+  if (typeof flatpickr !== "undefined") {
+    flatpickr("#fecha_nacimiento", {
+      dateFormat: "Y-m-d",
+      maxDate: "today",
+      locale: "es"
     });
+  }
 
-    const fechaInput = document.querySelector("#fecha_nacimiento");
-    if (fechaInput) {
-        flatpickr(fechaInput, {
-            dateFormat: "d-m-Y",
-            maxDate: new Date().fp_incr(-6570), // máx. 18 años atrás
-            locale: "es"
-        });
-    }
+  // Inicializa Choices y guarda la instancia
+  const materiasChoices = new Choices(materiasSelect, { removeItemButton: false, shouldSort: false });
+  const fichasChoices = new Choices(fichaSelect, { removeItemButton: true, shouldSort: false });
 
-    // Materias dinámicas según colegio
-    const colegioSelect = document.querySelector("select[name='colegio_id']");
-    const materiasSelect = document.getElementById("materias");
+  if (colegioSelect) {
+    colegioSelect.addEventListener('change', async function () {
+      const colegioId = this.value;
+      console.log("Colegio seleccionado:", colegioId);
 
-    colegioSelect.addEventListener("change", function () {
-        const colegioId = this.value;
-        materiasSelect.innerHTML = ""; // Limpia antes de cargar
+      // Limpiar selects usando Choices
+      materiasChoices.clearStore();
+      materiasChoices.setChoices([{ value: '', label: 'Cargando materias...', selected: true, disabled: true }], 'value', 'label', true);
+      fichasChoices.clearStore();
+      fichasChoices.setChoices([{ value: '', label: 'Cargando fichas...', selected: true, disabled: true }], 'value', 'label', true);
 
-        if (materiasSelect.choices) materiasSelect.choices.destroy();
+      if (!colegioId) {
+        materiasChoices.setChoices([{ value: '', label: 'Seleccione un colegio primero', selected: true, disabled: true }], 'value', 'label', true);
+        fichasChoices.setChoices([{ value: '', label: 'Seleccione un colegio primero', selected: true, disabled: true }], 'value', 'label', true);
+        return;
+      }
 
-        if (colegioId) {
-            fetch(`/index.php?page=materias_por_colegio&colegio_id=${colegioId}`)
-                .then(response => response.json())
-                .then(materias => {
-                    materias.forEach(materia => {
-                        const option = document.createElement("option");
-                        option.value = materia.id;
-                        option.textContent = materia.nombre;
-                        materiasSelect.appendChild(option);
-                    });
-                    materiasSelect.choices = new Choices(materiasSelect, {
-                        searchEnabled: true,
-                        shouldSort: false,
-                        placeholder: true,
-                        itemSelectText: '',
-                    });
-                })
-                .catch(error => {
-                    console.error("Error cargando materias:", error);
-                });
+      // Cargar materias
+      try {
+        const res = await fetch(`/ajax/get_materias_por_colegio.php?colegio_id=${colegioId}`);
+        const data = await res.json();
+        console.log("Materias recibidas:", data);
+        if (data.length > 0) {
+          materiasChoices.setChoices(
+            data.map(m => ({ value: m.id, label: m.nombre })),
+            'value', 'label', true
+          );
+        } else {
+          materiasChoices.setChoices([{ value: '', label: 'Este colegio no tiene materias registradas', selected: true, disabled: true }], 'value', 'label', true);
         }
-    });
+      } catch (error) {
+        materiasChoices.setChoices([{ value: '', label: 'Error al cargar materias', selected: true, disabled: true }], 'value', 'label', true);
+        console.error("Error cargando materias:", error);
+      }
 
-    // Opcional: Limitar fecha de nacimiento si tienes ese campo
-    const fechaNacimientoInput = document.querySelector("input[name='fecha_nacimiento']");
-    if (fechaNacimientoInput) {
-        const hoy = new Date();
-        const hace18Anios = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
-        fechaNacimientoInput.max = hace18Anios.toISOString().split('T')[0];
-    }
+      // Cargar fichas
+      try {
+        const res = await fetch(`/ajax/get_fichas_por_colegio.php?colegio_id=${colegioId}`);
+        const data = await res.json();
+        if (data.length > 0) {
+          fichasChoices.setChoices(
+            data.map(f => ({ value: f.id, label: f.nombre })),
+            'value', 'label', false
+          );
+          // No seleccionar ninguna automáticamente
+        } else {
+          fichasChoices.setChoices([{ value: '', label: 'Este colegio no tiene fichas registradas', selected: true, disabled: true }], 'value', 'label', true);
+        }
+      } catch (error) {
+        fichasChoices.setChoices([{ value: '', label: 'Error al cargar fichas', selected: true, disabled: true }], 'value', 'label', true);
+        console.error("Error cargando fichas:", error);
+      }
+    });
+  }
 });

@@ -83,6 +83,14 @@ class Profesor {
                     $stmtMateria->execute([$profesor_id, $materia_id]);
                 }
             }
+            // Guardar fichas del profesor
+            if (!empty($datos['fichas']) && is_array($datos['fichas'])) {
+                $stmtFicha = $this->pdo->prepare("INSERT INTO profesor_ficha (profesor_id, ficha_id) VALUES (?, ?)");
+                foreach ($datos['fichas'] as $ficha_id) {
+                    $stmtFicha->execute([$profesor_id, $ficha_id]);
+                }
+            }
+
 
             $this->pdo->commit();
         } catch (Exception $e) {
@@ -127,5 +135,16 @@ class Profesor {
         $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function obtenerFichasPorProfesor($profesor_id) {
+    $pdo = Database::conectar();
+    $sql = "SELECT f.id, f.nombre 
+            FROM fichas f
+            INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+            WHERE pf.profesor_id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$profesor_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 }

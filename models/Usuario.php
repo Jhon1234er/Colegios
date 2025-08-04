@@ -47,4 +47,10 @@ class Usuario {
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM usuarios");
     return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
+        public function buscarPorCorreo($correo) {
+    $pdo = Database::conectar();
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE correo_electronico = ?");
+    $stmt->execute([$correo]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 }

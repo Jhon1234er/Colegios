@@ -4,49 +4,98 @@ session_start();
 
 $error = null;
 
-// Login
+// --- LOGIN ---
 if (isset($_POST['login'])) {
     $resultado = AuthController::login($_POST['correo'], $_POST['password']);
     if (!$resultado) {
         $error = "Correo o contraseña incorrectos";
     } else {
-        header('Location: /');
+        $rol = $_SESSION['usuario']['rol_id'];
+        if ($rol == 1) {
+            header('Location: /?page=dashboard');
+        } elseif ($rol == 2) {
+            header('Location: /?page=dashboard_profesor');
+        } elseif ($rol == 3) {
+            header('Location: /?page=dashboard_estudiante');
+        } else {
+            header('Location: /');
+        }
         exit;
     }
 }
 
-// Registro
+// --- REGISTRO ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
     AuthController::registrar($_POST);
     exit;
 }
 
+// --- API/ENDPOINTS (antes de mostrar vistas) ---
+
+// Materias por colegio
+if (isset($_GET['page']) && $_GET['page'] === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
+    require_once '../models/ColegioMateria.php';
+    $colegioMateriaModel = new ColegioMateria();
+    $materias = $colegioMateriaModel->obtenerMateriasPorColegio($_GET['colegio_id']);
+    header('Content-Type: application/json');
+    echo json_encode($materias);
+    exit;
+}
+
+// Profesores por colegio
+if (isset($_GET['page']) && $_GET['page'] === 'profesores_por_colegio' && isset($_GET['colegio_id'])) {
+    require_once '../models/Profesor.php';
+    $profesorModel = new Profesor();
+    $profesores = $profesorModel->obtenerPorColegio($_GET['colegio_id']);
+    header('Content-Type: application/json');
+    echo json_encode($profesores);
+    exit;
+}
+
+// Estudiantes por colegio
+if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
+    require_once '../models/Estudiante.php';
+    $estudianteModel = new Estudiante();
+    $estudiantes = $estudianteModel->obtenerPorColegio($_GET['colegio_id']);
+    header('Content-Type: application/json');
+    echo json_encode($estudiantes);
+    exit;
+}
+
+if ($_GET['page'] === 'profesorficha') {
+    require_once '../controllers/ProfesorController.php';
+    $controller = new ProfesorController();
+    $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
+    exit;
+}
+
+if ($_GET['page'] === 'estudiantesporficha') {
+    require_once '../controllers/ProfesorController.php';
+    $controller = new ProfesorController();
+    $controller->estudiantesPorFicha($_GET['ficha_id']);
+    exit;
+}
+// --- VISTAS PRINCIPALES ---
+
 // Materias
 if (isset($_GET['page']) && $_GET['page'] === 'materias') {
     require_once '../controllers/MateriaController.php';
     $controller = new MateriaController();
-
     $action = $_GET['action'] ?? 'index';
-
     if ($action === 'editar' && isset($_GET['id'])) {
         $controller->editar();
-        exit;
     } elseif ($action === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->actualizar();
-        exit;
     } elseif ($action === 'desactivar' && isset($_GET['id'])) {
         $controller->desactivar();
-        exit;
     } elseif ($action === 'activar' && isset($_GET['id'])) {
         $controller->activar();
-        exit;
     } elseif ($action === 'guardar_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->guardarFicha();
-        exit;
     } else {
         $controller->index();
-        exit;
     }
+    exit;
 }
 
 if (isset($_GET['page']) && $_GET['page'] === 'crear_materia') {
@@ -57,107 +106,84 @@ if (isset($_GET['page']) && $_GET['page'] === 'crear_materia') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/materias/guardar') {
     require_once '../controllers/MateriaController.php';
     $controller = new MateriaController();
-    $controller->guardar(); // ✅
+    $controller->guardar();
     exit;
 }
 
-//Colegios
+// Colegios
 if (isset($_GET['page']) && $_GET['page'] === 'colegios') {
     require_once '../controllers/ColegioController.php';
     $controller = new ColegioController();
-
-    $action = $_GET['action'] ?? 'index'; // si no hay action, va a index()
-
+    $action = $_GET['action'] ?? 'index';
     if ($action === 'crear') {
         $controller->crear();
-        exit;
     } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->guardar();
-        exit;
     } elseif ($action === 'eliminar' && isset($_GET['id'])) {
         $controller->eliminar();
-        exit;
     } else {
         $controller->index();
-        exit;
     }
+    exit;
 }
 
-//Profesores
+// Profesores
 if (isset($_GET['page']) && $_GET['page'] === 'profesores') {
     require_once '../controllers/ProfesorController.php';
     $controller = new ProfesorController();
-
     $action = $_GET['action'] ?? 'index';
-
     if ($action === 'crear') {
         $controller->crear();
-        exit;
     } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->guardar();
-        exit;
     } else {
         $controller->index();
-        exit;
     }
-}
-// API para obtener materias por colegio
-if (isset($_GET['page']) && $_GET['page'] === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
-    require_once '../models/ColegioMateria.php'; // ✅ SOLUCIONADO
-    $colegioMateriaModel = new ColegioMateria();
-    $materias = $colegioMateriaModel->obtenerMateriasPorColegio($_GET['colegio_id']);
-    header('Content-Type: application/json');
-    echo json_encode($materias);
     exit;
 }
+
+// Estudiantes
 if (isset($_GET['page']) && $_GET['page'] === 'estudiantes') {
     require_once '../controllers/EstudianteController.php';
     $controller = new EstudianteController();
-
     $action = $_GET['action'] ?? 'index';
-
     if ($action === 'crear') {
         $controller->crear();
-        exit;
     } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->guardar();
-        exit;
     } else {
         $controller->index();
-        exit;
     }
-}
-
-// API para obtener profesores por colegio
-if (isset($_GET['page']) && $_GET['page'] === 'profesores_por_colegio' && isset($_GET['colegio_id'])) {
-    require_once '../models/Profesor.php';
-    $profesorModel = new Profesor();
-    $profesores = $profesorModel->obtenerPorColegio($_GET['colegio_id']);
-    header('Content-Type: application/json');
-    echo json_encode($profesores);
     exit;
 }
 
-    if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
-        require_once '../models/Estudiante.php';
-        $estudianteModel = new Estudiante();
-        $estudiantes = $estudianteModel->obtenerPorColegio($_GET['colegio_id']);
-        header('Content-Type: application/json');
-        echo json_encode($estudiantes);
-        exit;
-    }
+// --- DASHBOARDS Y VISTAS DE USUARIO ---
 
-// ✅ Si ya está autenticado, mostrar dashboard
-if (isset($_SESSION['usuario'])) {
+// Dashboard general (admin)
+if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 1) {
     include '../views/dashboard.php';
     exit;
 }
 
-// 🧾 Mostrar registro si se pidió
+// Dashboard profesor
+if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 2) {
+    include '../views/Profesor/dashboard.php';
+    exit;
+}
+
+// Dashboard estudiante
+if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 3) {
+    include '../views/Estudiante/dashboard.php';
+    exit;
+}
+
+// Registro
 if (isset($_GET['registro']) && $_GET['registro'] === 'true') {
     include '../views/registro.php';
     exit;
 }
 
-// 🔒 Si no hay sesión, mostrar login
+// Login (por defecto)
 include '../views/login.php';
+exit;
+

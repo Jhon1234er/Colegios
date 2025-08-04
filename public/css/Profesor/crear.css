@@ -131,3 +131,18 @@ button.btn-primary:hover {
   background: #007bff;
   color: #fff;
 }
+
+/* Ajusta el ancho, bordes y fuente para Choices */
+.choices__inner {
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  min-height: 38px;
+  font-size: 1rem;
+  background: #fff;
+}
+.choices__list--single {
+  padding: 6px 16px 6px 6px;
+}
+.choices__list--dropdown {
+  font-size: 1rem;
+}

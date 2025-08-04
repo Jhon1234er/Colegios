@@ -9,7 +9,7 @@ $colegios = $colegioModel->obtenerTodos();
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Registro de Aprediz</title>
+  <title>Registro de Aprendiz</title>
   <link rel="stylesheet" href="/css/crear.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
@@ -142,9 +142,10 @@ $colegios = $colegioModel->obtenerTodos();
               <option value="">Seleccione un colegio</option>
               <?php foreach ($colegios as $colegio): ?>
                 <option value="<?= $colegio['id'] ?>"
-                  data-grados="<?= htmlspecialchars($colegio['grados']) ?>"
-                  data-jornada="<?= htmlspecialchars($colegio['jornada']) ?>"
-                ><?= $colegio['nombre'] ?></option>
+                        data-grados="<?= htmlspecialchars($colegio['grados']) ?>"
+                        data-jornada="<?= htmlspecialchars($colegio['jornada']) ?>">
+                  <?= $colegio['nombre'] ?>
+                </option>
               <?php endforeach; ?>
             </select>
           </div>
@@ -164,6 +165,12 @@ $colegios = $colegioModel->obtenerTodos();
               <option value="">Seleccione jornada</option>
             </select>
           </div>
+          <div class="col-md-6">
+            <label>Ficha</label>
+            <select name="ficha_id" id="ficha_id" required>
+              <option value="">Seleccione un colegio primero</option>
+            </select>
+          </div>
         </div>
         <div class="form-navigation">
           <button type="button" class="prev-btn">Anterior</button>
@@ -175,8 +182,10 @@ $colegios = $colegioModel->obtenerTodos();
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script> <!-- Español -->
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script src="/js/crearE.js"></script>
+  <script src="/js/fichas_por_colegio.js"></script>
 </body>
 </html>
 

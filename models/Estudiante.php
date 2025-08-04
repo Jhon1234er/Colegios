@@ -31,7 +31,7 @@ class Estudiante {
 
             // Insertar en estudiantes
             $stmtEstudiante = $this->pdo->prepare("INSERT INTO estudiantes (
-                usuario_id, colegio_id, grado, grupo, jornada, fecha_ingreso,
+                usuario_id, colegio_id, ficha_id, grado, grupo, jornada, fecha_ingreso,
                 nombre_completo_acudiente, tipo_documento_acudiente, numero_documento_acudiente,
                 telefono_acudiente, parentesco, ocupacion
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -39,6 +39,7 @@ class Estudiante {
             $stmtEstudiante->execute([
                 $usuario_id,
                 $datos['colegio_id'],
+                $datos['ficha_id'],
                 $datos['grado'],
                 $datos['grupo'],
                 $datos['jornada'],
@@ -80,7 +81,8 @@ class Estudiante {
                 e.numero_documento_acudiente,
                 e.telefono_acudiente,
                 e.parentesco,
-                e.ocupacion
+                e.ocupacion,
+                e.ficha_id 
             FROM estudiantes e
             INNER JOIN usuarios u ON e.usuario_id = u.id
             INNER JOIN colegios c ON e.colegio_id = c.id

@@ -25,6 +25,7 @@ class EstudianteController {
                 'contrasena' => $_POST['password'],
                 'fecha_nacimiento' => $_POST['fecha_nacimiento'],
                 'colegio_id' => $_POST['colegio_id'],
+                'ficha_id' => $_POST['ficha_id'],
                 'grado' => $_POST['grado'],
                 'grupo' => $_POST['grupo'],
                 'jornada' => $_POST['jornada'],
@@ -61,4 +62,30 @@ class EstudianteController {
 
         require 'views/dashboard.php'; 
     }
+
+    public function obtenerEstudiantesConFichas() {
+        $estudianteModel = new Estudiante();
+        $estudiantes = $estudianteModel->obtenerTodos();
+        $pdo = \Database::conectar();
+
+        foreach ($estudiantes as &$estudiante) {
+            $stmt = $pdo->prepare("SELECT nombre FROM fichas WHERE id = ?");
+            $stmt->execute([$estudiante['ficha_id']]);
+            $ficha = $stmt->fetchColumn();
+            $estudiante['fichas'] = $ficha ? [$ficha] : [];
+        }
+        echo json_encode($estudiantes);
+    }
+    public function obtenerPorFicha($ficha_id) {
+    $pdo = Database::conectar();
+    $sql = "SELECT u.nombres, u.apellidos, e.grado, e.jornada,
+                   e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
+            FROM estudiantes e
+            INNER JOIN usuarios u ON u.id = e.usuario_id
+            WHERE e.ficha_id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$ficha_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }

@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const choicesInstances = {};
 
   function initChoices(element, id) {
-    if (element) {
+    if (element && !element.classList.contains("choices__input")) {
+      if (choicesInstances[id]) choicesInstances[id].destroy();
       choicesInstances[id] = new Choices(element, {
         searchEnabled: true,
         shouldSort: false,
@@ -27,12 +28,11 @@ document.addEventListener("DOMContentLoaded", function () {
   initChoices(generoSelect, 'genero');
   initChoices(tipoDocumentoAcudienteSelect, 'tipo_documento_acudiente');
   initChoices(filtroSelect, 'filtro');
+
   colegioSelect.addEventListener('change', function () {
-    // Limpiar grados y jornadas
     gradoSelect.innerHTML = '<option value="">Seleccione grado</option>';
     jornadaSelect.innerHTML = '<option value="">Seleccione jornada</option>';
 
-    // Destruir Choices anteriores
     if (choicesInstances.grado) choicesInstances.grado.destroy();
     if (choicesInstances.jornada) choicesInstances.jornada.destroy();
 
@@ -56,18 +56,20 @@ document.addEventListener("DOMContentLoaded", function () {
       jornadaSelect.appendChild(opt);
     });
 
-    // Volver a activar Choices en grado y jornada
     initChoices(gradoSelect, 'grado');
     initChoices(jornadaSelect, 'jornada');
   });
 
-  flatpickr("#fecha_nacimiento", {
-    dateFormat: "Y-m-d",
-    maxDate: "today",
-    locale: "es"
-  });
+  // Flatpickr
+  if (typeof flatpickr !== "undefined") {
+    flatpickr("#fecha_nacimiento", {
+      dateFormat: "Y-m-d",
+      maxDate: "today",
+      locale: "es"
+    });
+  }
 
-  // Stepper (manejo de pasos)
+  // Stepper
   const steps = document.querySelectorAll(".form-step");
   const stepIndicators = document.querySelectorAll(".stepper .step");
   let currentStep = 0;
@@ -101,3 +103,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
   showStep(currentStep);
 });
+

@@ -56,7 +56,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src="/js/encabezado.js"></script>
-<script src="/js/crearE"></script>
-
+c
 </body>
 </html>
