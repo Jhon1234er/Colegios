@@ -62,7 +62,7 @@ body {
   font-size: 1.2rem;
   box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
   color: #203520;
-  overflow-y: auto;
+  overflow-y:scroll;
 }
 
 .div1 { grid-column-start: 1; grid-row-start: 2; }
@@ -86,7 +86,7 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   font-size: 0.9rem;
   transition: transform 0.2s ease;
-  text-align: left;
+  width: 70%;
 }
 .profesor-materia{
   color: black;

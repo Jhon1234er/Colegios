@@ -84,12 +84,19 @@ class EstudianteController {
 
     public function obtenerPorFicha($ficha_id) {
         $pdo = Database::conectar();
-        $sql = "SELECT u.nombres, u.apellidos, e.grado, e.jornada,
-                    e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
+        $sql = "SELECT 
+                    e.id AS id, -- esto es clave
+                    u.nombres, 
+                    u.apellidos, 
+                    e.grado, 
+                    e.jornada,
+                    e.nombre_completo_acudiente, 
+                    e.telefono_acudiente, 
+                    e.parentesco
                 FROM estudiantes e
                 INNER JOIN usuarios u ON u.id = e.usuario_id
                 WHERE e.ficha_id = ?";
-        $stmt = $pdo->prepare($sql);
+                $stmt = $pdo->prepare($sql);
         $stmt->execute([$ficha_id]);
         $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

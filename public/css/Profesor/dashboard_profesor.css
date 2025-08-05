@@ -1,78 +1,140 @@
-/* Estilos para Dashboard del Profesor */
-
+/* General */
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f7f9fb;
-    color: #333;
-    margin: 20px;
-    margin-top: 7%;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f2f5;
+  color: #2c3e50;
+  margin-top: 7%;
+  padding: 40px 20px;
 }
 
-/* Encabezado de bienvenida */
+/* Encabezados */
 h2, h3, h4 {
-    color: #2c3e50;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Botón Crear Tarea */
+.boton-tarea {
+  display: inline-block;
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  margin-bottom: 25px;
+  margin-left: 20px;
+}
+
+.boton-tarea:hover {
+  background-color: #218838;
 }
 
 /* Lista de fichas */
+#lista-fichas {
+  list-style: none;
+  padding: 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
 #lista-fichas li {
-    margin-bottom: 10px;
-    background-color: #fff;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
-#lista-fichas button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+/* Botones de acción */
+#lista-fichas button,
+#lista-fichas a {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  margin-left: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
 }
 
-#lista-fichas button:hover {
-    background-color: #0056b3;
+#lista-fichas button:hover,
+#lista-fichas a:hover {
+  background-color: #0056b3;
 }
 
 /* Contenedor de estudiantes */
 #estudiantes-ficha {
-    margin-top: 30px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin: 40px auto 0;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  max-width: 900px;
+  transition: all 0.3s ease;
 }
 
-/* Tabla */
+/* Tabla de asistencia */
 #estudiantes-ficha table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
 }
 
 #estudiantes-ficha th,
 #estudiantes-ficha td {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    text-align: left;
+  padding: 12px 14px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
 }
 
 #estudiantes-ficha th {
-    background-color: #f0f4f8;
-    color: #333;
+  background-color: #f5f9fc;
+  color: #333;
+  font-weight: bold;
 }
 
-/* Estilos adicionales para tarjetas si usas */
-.student-card {
-    margin-bottom: 15px;
-    padding: 12px;
-    background-color: #e9f5ff;
-    border-left: 4px solid #007bff;
-    border-radius: 5px;
+/* Estilo para inputs */
+#estudiantes-ficha select,
+#estudiantes-ficha input[type="text"] {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Botón enviar asistencia */
+#estudiantes-ficha button[type="button"] {
+  background-color: #17a2b8;
+  color: white;
+  padding: 10px 16px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#estudiantes-ficha button[type="button"]:hover {
+  background-color: #138496;
+}
+
+/* Tarjeta para estudiante (si se usa fuera de tabla) */
+.estudiante {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f0faff;
+  border-left: 5px solid #007bff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }

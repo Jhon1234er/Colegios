@@ -34,7 +34,7 @@ class Estudiante {
                 usuario_id, colegio_id, ficha_id, grado, grupo, jornada, fecha_ingreso,
                 nombre_completo_acudiente, tipo_documento_acudiente, numero_documento_acudiente,
                 telefono_acudiente, parentesco, ocupacion
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )");
 
             $stmtEstudiante->execute([
                 $usuario_id,
@@ -61,8 +61,8 @@ class Estudiante {
         }
     }
 
-    public function obtenerTodos() {
-        $stmt = $this->pdo->query("
+    public function obtenerTodos($ficha_id) {
+        $stmt = $this->pdo->prepare("
             SELECT 
                 e.id,
                 u.nombres,
@@ -86,9 +86,12 @@ class Estudiante {
             FROM estudiantes e
             INNER JOIN usuarios u ON e.usuario_id = u.id
             INNER JOIN colegios c ON e.colegio_id = c.id
+            WHERE e.ficha_id = ?
         ");
+        $stmt->execute([$ficha_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public function contarEstudiantes() {
         $pdo = Database::conectar();
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM estudiantes");

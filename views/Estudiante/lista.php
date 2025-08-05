@@ -2,7 +2,7 @@
     <link rel="stylesheet" href="/css/lista.css">
 
 <div class="container mt-5">
-    <h2 class="mb-4">Lista de Estudiantes</h2>
+    <h2 class="mb-4">Aprendices Matriculados</h2>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle text-center">

@@ -145,13 +145,13 @@ function formatearNombreColegio($nombre) {
     <div id="dashboard-normal" class="dashboard-panel" style="<?= $mostrarResultados ? 'display:none;' : '' ?>">
 
     <div class="parent">
-        <div class="div1" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus profesores y materias.</p> </div>
+        <div class="div1" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus Facilitadores.</p> </div>
 
-        <div class="div2" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus estudiantes</p> </div>
+        <div class="div2" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus Aprendices</p> </div>
         
         <div class="div3" style="overflow-y: auto; padding: 1rem;">
             <h3>Estadísticas</h3>
-            <p class="esta"style="color: #666;">Selecciona un colegio en la tabla para ver las asistencias de sus estudiantes</p> 
+            <p class="esta"style="color: #666;">Selecciona un colegio en la tabla para ver las asistencias de sus Aprendices  </p> 
             <canvas id="graficoColegios" width="400" height="100"></canvas>
         </div>
 

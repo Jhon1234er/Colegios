@@ -9,7 +9,7 @@ $profesores = $model->obtenerTodos();
     <link rel="stylesheet" href="/css/Profesor/lista_profesor.css">
 
 <div class="container mt-4">
-    <h2 class="mb-4">Lista de Facilitadores</h2>
+    <h2 class="mb-4">Facilitadores Activos</h2>
     <a href="/?page=profesores&action=crear" class="btn btn-success mb-3">Crear Facilitador</a>
 
     <table class="table table-bordered table-striped">

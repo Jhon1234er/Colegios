@@ -122,17 +122,44 @@ if (isset($_GET['page']) && $_GET['page'] === 'materias') {
     exit;
 }
 
+// Crear Materia
 if (isset($_GET['page']) && $_GET['page'] === 'crear_materia') {
     include '../views/Materia/crear.php';
     exit;
 }
+// Crear Tarea
+if (isset($_GET['page']) && $_GET['page'] === 'crear_tarea') {
+    include '../views/Profesor/crear_tarea.php';
+    exit;
+}
 
+// Ver Notas
+if (isset($_GET['page']) && $_GET['page'] === 'ver_notas') {
+    include '../views/Profesor/ver_notas.php';
+    exit;
+}
+
+// Guardar tarea
+if (isset($_GET['page']) && $_GET['page'] === 'guardar_tarea' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../controllers/TareaController.php';
+    TareaController::guardarTarea();
+    exit;
+}
+
+// Guardar notas
+if (isset($_GET['page']) && $_GET['page'] === 'guardar_notas' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../controllers/TareaController.php';
+    TareaController::guardarNotas();
+    exit;
+}
+// Guardar asistencia
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/materias/guardar') {
     require_once '../controllers/MateriaController.php';
     $controller = new MateriaController();
     $controller->guardar();
     exit;
 }
+
 
 // Colegios
 if (isset($_GET['page']) && $_GET['page'] === 'colegios') {
@@ -180,6 +207,9 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantes') {
     }
     exit;
 }
+
+
+
 
 // --- DASHBOARDS Y VISTAS DE USUARIO ---
 

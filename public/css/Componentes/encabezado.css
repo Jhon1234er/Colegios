@@ -182,7 +182,7 @@ body {
   width: 0%;
   opacity: 0;
   color: black;
-  font-size: 1.2em;
+  font-size: 0.7rem;
   font-weight: 600;
   transition-duration: 0.3s;
 }
@@ -224,4 +224,27 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
+}
+/* Estilo limpio solo para el header */
+.buscador-header {
+  font-family: 'Inter', sans-serif;
+  height: 38px;
+  margin-left: 20px;
+}
+
+.select-buscador-header,
+.input-buscador-header {
+  background-color: transparent;
+  border: none;
+  font-size: 14px;
+}
+
+.input-buscador-header:focus,
+.select-buscador-header:focus {
+  outline: none;
+}
+
+.buscador-header button {
+  border: none;
+  border-left: 1px solid #ccc;
 }

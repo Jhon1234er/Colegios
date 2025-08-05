@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Cargar fichas del profesor
-  fetch(new URL('?page=profesor_ficha', window.location.origin))
+  // ✅ CORREGIDO: página sin guion bajo
+  fetch(new URL('?page=profesorficha', window.location.origin))
     .then(response => {
       if (!response.ok) throw new Error("Error en la respuesta");
       return response.json();
@@ -30,12 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error al cargar fichas:', err);
     });
 
-  // Cargar estudiantes al hacer clic en una ficha
+  // ✅ CORREGIDO: página sin guion bajo
   fichasContainer.addEventListener('click', (e) => {
     if (e.target.matches('.btn-ficha')) {
       const fichaId = e.target.dataset.fichaId;
 
-      fetch(new URL(`?page=estudiantes_por_ficha&ficha_id=${encodeURIComponent(fichaId)}`, window.location.origin))
+      fetch(new URL(`?page=estudiantesporficha&ficha_id=${encodeURIComponent(fichaId)}`, window.location.origin))
         .then(response => {
           if (!response.ok) throw new Error("Error en la respuesta de estudiantes");
           return response.json();
