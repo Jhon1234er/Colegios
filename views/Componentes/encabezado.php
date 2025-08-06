@@ -15,21 +15,23 @@ $roles = [
 ];
 
 $tipo_usuario = $roles[$rol_id] ?? null;
-$notificaciones = [];
+// Las variables de notificaciones ya no son necesarias aquí, se manejan en sidebar_menu.php
+// $notificaciones = [];
+// $totalNoLeidas = 0;
 
-if ($usuario_id && $tipo_usuario) {
-    try {
-        $pdo = Database::conectar();
-        $stmt = $pdo->prepare("SELECT * FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? ORDER BY fecha DESC LIMIT 5");
-        $stmt->execute([$usuario_id, $tipo_usuario]);
-        $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? AND estado = 'no_leida'");
-        $stmtTotal->execute([$usuario_id, $tipo_usuario]);
-        $totalNoLeidas = $stmtTotal->fetchColumn();
-    } catch (PDOException $e) {
-        error_log("Error al obtener notificaciones: " . $e->getMessage());
-    }
-}
+// if ($usuario_id && $tipo_usuario) {
+//     try {
+//         $pdo = Database::conectar();
+//         $stmt = $pdo->prepare("SELECT * FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? ORDER BY fecha DESC LIMIT 5");
+//         $stmt->execute([$usuario_id, $tipo_usuario]);
+//         $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//         $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? AND estado = 'no_leida'");
+//         $stmtTotal->execute([$usuario_id, $tipo_usuario]);
+//         $totalNoLeidas = $stmtTotal->fetchColumn();
+//     } catch (PDOException $e) {
+//         error_log("Error al obtener notificaciones: " . $e->getMessage());
+//     }
+// }
 ?>
 
 <!DOCTYPE html>
@@ -39,6 +41,7 @@ if ($usuario_id && $tipo_usuario) {
   <title>Sistem Scholl</title>
   <link rel="stylesheet" href="/css/Componentes/encabezado.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <!-- Asegúrate de que Tailwind CSS esté enlazado globalmente o en tu archivo principal -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
@@ -101,44 +104,9 @@ if ($usuario_id && $tipo_usuario) {
           </div>
         </div>
 
-        <div class="relative group w-14 hover:w-64 transition-all duration-300">
-          <div onclick="toggleDropdown()" class="flex items-center gap-2 p-2 cursor-pointer bg-white border rounded-lg relative">
-            <div class="rounded-lg border-2 border-purple-300 bg-purple-100 p-1 relative">
-              <img src="/icons/campana.png" alt="Notificaciones" class="w-6 h-6 object-contain">
-              <?php if ($totalNoLeidas > 0): ?>
-                <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                  <?= $totalNoLeidas ?>
-                </span>
-              <?php endif; ?>
-            </div>
-            <span class="hidden group-hover:inline font-semibold text-purple-800">Notificaciones</span>
-            </div>
+        <!-- Aquí se incluye el nuevo menú lateral -->
+        <?php include __DIR__ . '/sidebar_menu.php'; ?>
 
-            <div id="dropdown-notificaciones" class="hidden absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-lg border z-50 max-h-80 overflow-y-auto">
-              <div id="sin-notificaciones" class="<?= empty($notificaciones) ? '' : 'hidden' ?> p-4 text-gray-500 text-sm text-center">
-                No tienes notificaciones.
-              </div>
-
-              <?php if (!empty($notificaciones)): ?>
-                <ul id="lista-notificaciones" class="divide-y divide-gray-200">
-                  <?php foreach ($notificaciones as $n): ?>
-                    <li class="p-4 hover:bg-gray-50 <?= $n['estado'] === 'no_leida' ? 'bg-purple-50' : 'opacity-60' ?>">
-                      <p class="text-sm text-gray-700 font-medium"><?= htmlspecialchars($n['mensaje']) ?></p>
-                      <p class="text-xs text-gray-400"><?= $n['fecha'] ?></p>
-                      <?php if ($n['estado'] === 'no_leida'): ?>
-                        <button 
-                          type="button" 
-                          class="marcar-leida-btn text-xs text-green-600 hover:underline" 
-                          data-id="<?= $n['id'] ?>">
-                          Marcar como leída
-                        </button>
-                      <?php endif; ?>
-                    </li>
-                  <?php endforeach; ?>
-                </ul>
-              <?php endif; ?>
-            </div>
-        </div>
       <?php endif; ?>
     </div>
   </div>
@@ -146,86 +114,6 @@ if ($usuario_id && $tipo_usuario) {
 
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src="/js/encabezado.js"></script>
-<script>
-document.querySelector('.notificaciones-icono')?.addEventListener('click', () => {
-  fetch('/marcar_notificaciones.php', { method: 'POST' });
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const badge = document.querySelector('.notificaciones-badge');
-  const lista = document.getElementById('lista-notificaciones');
-  const mensajeVacio = document.getElementById('sin-notificaciones');
 
-  document.querySelectorAll('.marcar-leida-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.dataset.id;
-
-      const formData = new FormData();
-      formData.append('notificacion_id', id);
-
-      try {
-        const res = await fetch('/marcar_notificaciones.php', {
-          method: 'POST',
-          body: formData
-        });
-
-        const text = await res.text();
-
-        try {
-          const data = JSON.parse(text);
-
-          if (data.success) {
-            // Oculta la notificación
-            const item = btn.closest('li');
-            item.classList.add('opacity-60');
-            btn.remove();
-
-            // Actualiza el contador del badge
-            if (badge) {
-              let count = parseInt(badge.textContent);
-              if (!isNaN(count)) {
-                count--;
-                if (count <= 0) {
-                  badge.remove();
-                } else {
-                  badge.textContent = count;
-                }
-              }
-            }
-
-            // Verifica si quedan notificaciones activas
-            if (lista && lista.querySelectorAll('li:not(.opacity-60)').length === 0) {
-              mensajeVacio.classList.remove('hidden');
-            }
-          } else {
-            console.error("Error en respuesta:", data);
-          }
-        } catch (parseError) {
-          console.error("Respuesta no es JSON válido:", text);
-        }
-      } catch (err) {
-        console.error("Error al marcar notificación:", err);
-      }
-    });
-  });
-});
-
-// Dropdown toggle
-function toggleDropdown() {
-  const dropdown = document.getElementById("dropdown-notificaciones");
-  dropdown.classList.toggle("hidden");
-}
-
-// Ocultar si se hace clic fuera del menú
-document.addEventListener('click', function(event) {
-  const campana = document.querySelector('.group');
-  const dropdown = document.getElementById("dropdown-notificaciones");
-
-  if (!campana.contains(event.target)) {
-    dropdown.classList.add("hidden");
-  }
-});
-</script>
 </body>
 </html>

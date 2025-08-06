@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       formData.append('notificacion_id', id);
 
       try {
-          const res = await fetch('/prueba_api_notificaciones.php', {
+          const res = await fetch('/?page=marcar_notificacion', {
           method: 'POST',
           body: formData
         });
@@ -66,10 +66,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (data.success) {
           const item = btn.closest('li');
-          item.classList.add('opacity-50');
-          btn.remove();
+          // AÑADE ESTA COMPROBACIÓN:
+          if (item) { // Solo si 'item' no es null
+            item.classList.add('opacity-60'); // Usamos opacity-60 como en tu HTML
+            btn.remove(); // Elimina el botón "Marcar como leída"
+          } else {
+            console.warn("No se encontró el elemento <li> padre para el botón de notificación. El botón será eliminado de todas formas.");
+            // Si no se encuentra el <li>, al menos intenta eliminar el botón para que no se pueda hacer clic de nuevo
+            btn.remove();
+          }
 
-          if (lista && lista.querySelectorAll('li:not(.opacity-50)').length === 0) {
+
+          if (lista && lista.querySelectorAll('li:not(.opacity-60)').length === 0) {
             mensajeVacio.classList.remove('hidden');
           }
 
@@ -92,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
-});
+}); // <-- Cierre del DOMContentLoaded
 
 // Dropdown de notificaciones
 function toggleDropdown() {

@@ -1,6 +1,6 @@
 <?php
 require_once '../controllers/AuthController.php';
-session_start();
+session_start(); // <-- ¡Asegúrate de que session_start() esté aquí, al principio!
 
 $error = null;
 
@@ -65,6 +65,8 @@ if (isset($_GET['page']) && $_GET['page'] === 'profesorficha') {
     require_once '../controllers/ProfesorController.php';
 
     // ✅ Solo iniciar sesión si aún no se ha iniciado
+    // NOTA: session_start() ya está al principio del archivo, así que esta comprobación es redundante aquí.
+    // Puedes eliminar el if (session_status() !== PHP_SESSION_ACTIVE) si session_start() está siempre al inicio.
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
@@ -97,6 +99,15 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantesporficha') {
 
     exit;
 }
+
+// --- AÑADE ESTE BLOQUE PARA EL NotificacionController ---
+if (isset($_GET['page']) && $_GET['page'] === 'marcar_notificacion') {
+    require_once '../controllers/NotificacionController.php'; // Incluye el nuevo controlador
+    $controller = new NotificacionController(); // Instancia el controlador
+    $controller->marcarLeida(); // Llama al método que maneja la lógica JSON
+    exit; // ¡CRUCIAL! Detiene la ejecución para que no se renderice HTML adicional
+}
+// --- FIN DEL BLOQUE A AÑADIR ---
 
 
 // --- VISTAS PRINCIPALES ---
@@ -239,4 +250,3 @@ if (isset($_GET['registro']) && $_GET['registro'] === 'true') {
 // Login (por defecto)
 include '../views/login.php';
 exit;
-
