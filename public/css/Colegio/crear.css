@@ -1,161 +1,97 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
+.formulario-registro-colegio {
   font-family: 'Inter', sans-serif;
   background-color: #f5ffe3;
-  margin-top: 10%;
+  margin-top: 7%;
+  padding: 40px 0;
 }
 
-.container {
-  max-width: 900px;
-  margin: 60px auto;
-  background-color: #fff;
+.formulario-registro-colegio .container {
+  max-width: 950px;
+  margin: 0 auto;
+  background-color: #ffffff;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
+.formulario-registro-colegio h2 {
   text-align: center;
   margin-bottom: 30px;
   font-size: 28px;
   color: #304d2f;
 }
 
-form {
+.formulario-registro-colegio form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 }
 
-.row {
+.formulario-registro-colegio .row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
 }
 
-.col-md-6 {
-  flex: 3 8  48%;
+.formulario-registro-colegio .col-md-6 {
+  flex: 1 1 48%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
-label,
-.form-label {
+.formulario-registro-colegio label {
   font-size: 14px;
+  font-weight: 500;
   color: #536387;
   margin-bottom: 5px;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-select,
-.form-select,
-.choices__inner {
+.formulario-registro-colegio input {
   width: 100%;
-  padding: 10px 6px;
+  padding: 12px 16px;
   border: 1px solid #dde3ec;
   border-radius: 6px;
   background-color: #fff;
   font-size: 16px;
   color: #333;
-  margin-bottom: 0;
 }
 
-input:focus,
-select:focus,
-.form-select:focus,
-.choices__inner:focus {
-  border-color: #6a64f1;
+.formulario-registro-colegio input:focus {
+  border-color: #4c7840;
   outline: none;
-  box-shadow: 0 0 6px rgba(106, 100, 241, 0.2);
+  box-shadow: 0 0 6px rgba(76, 120, 64, 0.2);
 }
 
-/* Choices.js select style */
-.choices__inner {
-  min-height: 55px;
-  background-color: #f8f9fa !important;
-  border-radius: 6px !important;
-  border: 1px solid #dde3ec !important;
-  font-size: 16px !important;
-  color: #333 !important;
-  box-shadow: none !important;
-}
-
-.choices__list--dropdown,
-.choices__list[aria-expanded] {
-  background: #fff;
-  border: 1px solid #6a64f1;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-}
-
-.choices__item--selectable {
-  padding: 0.4px 12px;
-  font-size: 16px;
-  color: #304d2f;
-}
-
-.choices__item--selectable.is-highlighted {
-  background: #6a64f1;
-  color: #050303;
-}
-
-button.btn,
-button.btn-primary {
-  margin-top: 17px;
+.formulario-registro-colegio button[type="submit"] {
+  margin-top: 30px;
   background-color: #4c7840;
   color: white;
-  padding: 13px 20px;
-  font-size: 15px;
-  font-weight: 600;
+  padding: 12px 24px;
+  font-size: 16px;
   border: none;
-  border-radius: 9px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-weight: 600;
   align-self: center;
+  transition: background-color 0.3s ease;
 }
 
-button.btn:hover,
-button.btn-primary:hover {
+.formulario-registro-colegio button[type="submit"]:hover {
   background-color: #3a5e2f;
 }
 
-.mb-3 {
-  margin-bottom: 1.2rem !important;
-}
-
-#materias {
-  min-height: 48px;
-  padding: 10px;
-  margin-top: 0;
-}
-
-/* Responsive para móviles */
 @media (max-width: 900px) {
-  .container {
-    padding: 24px 8px;
-  }
-  .row {
+  .formulario-registro-colegio .row {
     flex-direction: column;
-    gap: 0;
   }
-  .col-md-6 {
-    min-width: 100%;
-    margin-bottom: 24px;
-  }
-  button.btn,
-  button.btn-primary {
+
+  .formulario-registro-colegio .col-md-6 {
     width: 100%;
-    margin-top: 32px;
+    margin-bottom: 20px;
+  }
+
+  .formulario-registro-colegio button[type="submit"] {
+    width: 100%;
   }
 }

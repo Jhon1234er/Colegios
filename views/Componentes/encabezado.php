@@ -84,14 +84,14 @@ if ($usuario_id && $tipo_usuario) {
       <div class="menu">
         <?php if ($rol_id === 1): ?>
           <!-- Administrador -->
-        <form class="buscador-header flex items-center bg-white border border-gray-300 rounded-full overflow-hidden shadow-sm">
-          <select class="select-buscador-header bg-transparent px-2 py-1 text-sm text-gray-700 focus:outline-none">
+        <form class="buscador-header ">
+          <select class="select-buscador-header ">
             <option value="colegio">Colegios</option>
             <option value="profesor">Facilitadores</option>
             <option value="estudiante">Aprendices</option>
           </select>
-          <input type="text" class="input-buscador-header px-2 py-1 text-sm focus:outline-none" placeholder="Buscar..." />
-          <button type="submit" class="px-3 py-1 text-sm bg-green-600 text-white hover:bg-green-700 transition-all">Buscar</button>
+          <input type="text" class="input-buscador-header" placeholder="Buscar..." />
+          <button type="submit" class="button-buscador-header">Buscar</button>
         </form>
 
           <div class="dropdown">

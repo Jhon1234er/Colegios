@@ -25,8 +25,9 @@ $estudianteModel = new Estudiante();
 $estudiantes = $estudianteModel->obtenerTodos($ficha_id);
 
 // Obtener tareas
-$tareasStmt = $pdo->prepare("SELECT * FROM tareas WHERE ficha_id = ?");
-$tareasStmt->execute([$ficha_id]);
+$profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
+$tareasStmt = $pdo->prepare("SELECT * FROM tareas WHERE ficha_id = ? AND profesor_id = ?");
+$tareasStmt->execute([$ficha_id, $profesor_id]);
 $tareas = $tareasStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 

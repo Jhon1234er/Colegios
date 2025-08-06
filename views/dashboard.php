@@ -199,7 +199,7 @@ function formatearNombreColegio($nombre) {
         </div>
         
         <div class="div7">
-            <h3>Total de Usuarios Registrados</h3>
+            <h3>Total de Fichas Activas</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalUsuarios ?>
             </p>

@@ -21,7 +21,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100vw;
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
   padding: 0 16px;
@@ -211,40 +211,61 @@ body {
 /* =========================
    Encabezado con Buscador
    ========================= */
-.header-content {
+.buscador-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  height: 64px;
-  background: var(--color1, #4c7840);
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  gap: 10px;
+  max-width: 460px;
+  width: 100%;
 }
 
-.buscador-global-container-header {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-/* Estilo limpio solo para el header */
-.buscador-header {
-  font-family: 'Inter', sans-serif;
-  height: 38px;
-  margin-left: 20px;
-}
-
-.select-buscador-header,
-.input-buscador-header {
-  background-color: transparent;
-  border: none;
+.select-buscador-header {
+  padding: 6px 10px;
+  border: 1px solid var(--color3);
+  border-radius: 6px;
+  background-color: var(--color5);
+  color: #333;
   font-size: 14px;
-}
-
-.input-buscador-header:focus,
-.select-buscador-header:focus {
   outline: none;
+  transition: border-color 0.3s;
 }
 
-.buscador-header button {
+.select-buscador-header:hover,
+.select-buscador-header:focus {
+  border-color: var(--color1);
+}
+
+.input-buscador-header {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--color3);
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background-color: var(--color5);
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.input-buscador-header:focus {
+  border-color: var(--color1);
+}
+
+.button-buscador-header {
+  background-color: var(--color1);
+  color: white;
+  padding: 6px 16px;
   border: none;
-  border-left: 1px solid #ccc;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.button-buscador-header:hover {
+  background-color: #395d30;
 }

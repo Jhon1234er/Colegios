@@ -9,7 +9,8 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 
-<div class="container mt-4">
+<div class="formulario-registro">
+  <div class="container">
   <h2>Registro de Facilitador</h2>
   <form action="/?page=profesores&action=guardar" method="POST" id="registroProfesorForm">
     <div class="row">
@@ -105,8 +106,8 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 
     <button type="submit" class="btn btn-success mt-3">Registrar Profesor</button>
   </form>
+  </div>
 </div>
-
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>

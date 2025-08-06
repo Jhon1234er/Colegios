@@ -50,11 +50,26 @@ class EstudianteController {
     }
 
     public function index() {
-        $estudianteModel = new Estudiante();
-        $estudiantes = $estudianteModel->obtenerTodos();
-        require_once __DIR__ . '/../views/Estudiante/lista.php';
-
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
     }
+
+        $estudianteModel = new Estudiante();
+        $rol_id = $_SESSION['usuario']['rol_id'] ?? null;
+
+        if ($rol_id == 1) { // Administrador
+            $estudiantes = $estudianteModel->obtenerTodos(); // sin ficha
+        } else {
+            $ficha_id = $_GET['ficha_id'] ?? null;
+            if (!$ficha_id) {
+                die('❌ Ficha no especificada.');
+            }
+            $estudiantes = $estudianteModel->obtenerTodos($ficha_id);
+        }
+
+        require_once __DIR__ . '/../views/Estudiante/lista.php';
+    }
+
     
     public function contar() {
         $estudianteModel = new Estudiante();

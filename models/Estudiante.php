@@ -61,36 +61,69 @@ class Estudiante {
         }
     }
 
-    public function obtenerTodos($ficha_id) {
-        $stmt = $this->pdo->prepare("
-            SELECT 
-                e.id,
-                u.nombres,
-                u.apellidos,
-                u.tipo_documento,
-                u.numero_documento,
-                u.correo_electronico,
-                u.telefono,
-                e.grado,
-                e.grupo,
-                e.jornada,
-                e.fecha_ingreso,
-                c.nombre AS colegio,
-                e.nombre_completo_acudiente,
-                e.tipo_documento_acudiente,
-                e.numero_documento_acudiente,
-                e.telefono_acudiente,
-                e.parentesco,
-                e.ocupacion,
-                e.ficha_id 
-            FROM estudiantes e
-            INNER JOIN usuarios u ON e.usuario_id = u.id
-            INNER JOIN colegios c ON e.colegio_id = c.id
-            WHERE e.ficha_id = ?
-        ");
-        $stmt->execute([$ficha_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function obtenerTodos($ficha_id = null) {
+        if ($ficha_id === null) {
+            // Mostrar todos los estudiantes (solo para admin)
+            $stmt = $this->pdo->query("
+                SELECT 
+                    e.id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    u.correo_electronico,
+                    u.telefono,
+                    e.grado,
+                    e.grupo,
+                    e.jornada,
+                    e.fecha_ingreso,
+                    c.nombre AS colegio,
+                    e.nombre_completo_acudiente,
+                    e.tipo_documento_acudiente,
+                    e.numero_documento_acudiente,
+                    e.telefono_acudiente,
+                    e.parentesco,
+                    e.ocupacion,
+                    e.ficha_id 
+                FROM estudiantes e
+                INNER JOIN usuarios u ON e.usuario_id = u.id
+                INNER JOIN colegios c ON e.colegio_id = c.id
+            ");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            // Mostrar solo por ficha
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    e.id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    u.correo_electronico,
+                    u.telefono,
+                    e.grado,
+                    e.grupo,
+                    e.jornada,
+                    e.fecha_ingreso,
+                    c.nombre AS colegio,
+                    e.nombre_completo_acudiente,
+                    e.tipo_documento_acudiente,
+                    e.numero_documento_acudiente,
+                    e.telefono_acudiente,
+                    e.parentesco,
+                    e.ocupacion,
+                    e.ficha_id 
+                FROM estudiantes e
+                INNER JOIN usuarios u ON e.usuario_id = u.id
+                INNER JOIN colegios c ON e.colegio_id = c.id
+                WHERE e.ficha_id = ?
+            ");
+            $stmt->execute([$ficha_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
     }
+
+
 
     public function contarEstudiantes() {
         $pdo = Database::conectar();

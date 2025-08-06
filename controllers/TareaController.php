@@ -11,6 +11,7 @@ class TareaController
         $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
         $ficha_id = $_POST['ficha_id'] ?? null;
         $fecha = date('Y-m-d');
+        $hora = date('H:i:s');
         $asistencias = $_POST['asistencias'] ?? [];
 
         if (!$profesor_id || !$ficha_id) {
@@ -63,31 +64,43 @@ class TareaController
             ]);
         }
 
-        // Guardar asistencias
-        foreach ($asistencias as $a) {
-            if (!isset($a['estudiante_id']) || !is_numeric($a['estudiante_id'])) continue;
+    // Validación: ya existe asistencia para esta ficha hoy
+    $stmtCheck = $pdo->prepare("
+        SELECT COUNT(*) FROM asistencias 
+        WHERE ficha_id = ? AND fecha = ?
+    ");
+    $stmtCheck->execute([$ficha_id, $fecha]);
+    $yaExiste = $stmtCheck->fetchColumn();
 
-            $stmt = $pdo->prepare("
-                INSERT INTO asistencias (estudiante_id, profesor_id, ficha_id, fecha, estado, observacion)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE estado = VALUES(estado), observacion = VALUES(observacion)
-            ");
-
-            $stmt->execute([
-                (int)$a['estudiante_id'],
-                (int)$profesor_id,
-                (int)$ficha_id,
-                $fecha,
-                $a['estado'],
-                $a['observacion'] ?? null
-            ]);
-        }
-
-        // Redirigir al dashboard
-        header("Location: /?page=dashboard_profesor&success=asistencia");
+    if ($yaExiste > 0) {
+        header("Location: /?page=dashboard_profesor&error=asistencia_ya_registrada");
         exit;
     }
 
+    // Guardar asistencias
+    foreach ($asistencias as $a) {
+        if (!isset($a['estudiante_id']) || !is_numeric($a['estudiante_id'])) continue;
+
+        $stmt = $pdo->prepare("
+            INSERT INTO asistencias (estudiante_id, profesor_id, ficha_id, fecha, hora, estado, observacion)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE estado = VALUES(estado), observacion = VALUES(observacion), hora = VALUES(hora)
+        ");
+
+        $stmt->execute([
+            (int)$a['estudiante_id'],
+            (int)$profesor_id,
+            (int)$ficha_id,
+            $fecha,
+            $hora,
+            $a['estado'],
+            $a['observacion'] ?? null
+        ]);
+    }
+
+    header("Location: /?page=dashboard_profesor&success=asistencia");
+    exit;
+    }
     public static function guardarTarea()
     {
         require_once '../config/db.php';
@@ -105,22 +118,24 @@ class TareaController
         }
 
         $pdo = Database::conectar();
-        $stmt = $pdo->prepare("INSERT INTO tareas (titulo, descripcion, materia_id, profesor_id, ficha_id, fecha_entrega) 
+        $profesor_id = $_SESSION['usuario']['profesor_id'];
+        $stmt = $pdo->prepare("INSERT INTO tareas (titulo, descripcion, materia_id, ficha_id, fecha_entrega, profesor_id) 
                             VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$titulo, $descripcion, $materia_id, $profesor_id, $ficha_id, $fecha_entrega]);
+        $stmt->execute([$titulo, $descripcion, $materia_id, $ficha_id, $fecha_entrega, $profesor_id]);
 
         header("Location: /?page=dashboard_profesor&success=tarea_guardada");
         exit;
     }
-
     public static function guardarNotas()
     {
         require_once '../config/db.php';
         if (session_status() === PHP_SESSION_NONE) session_start();
 
         $notas = $_POST['notas'] ?? [];
+        $ficha_id = $_POST['ficha_id'] ?? null;
+        $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
 
-        if (empty($notas)) {
+        if (empty($notas) || !$ficha_id || !$profesor_id) {
             die('❌ Faltan datos obligatorios para guardar notas.');
         }
 
@@ -128,17 +143,31 @@ class TareaController
 
         foreach ($notas as $estudiante_id => $tareas) {
             foreach ($tareas as $tarea_id => $nota) {
-                if ($nota === '') continue; // Evitar guardar campos vacíos
+                if ($nota === '') continue;
 
-                $stmt = $pdo->prepare("INSERT INTO entregas (estudiante_id, tarea_id, nota) 
-                                    VALUES (?, ?, ?)
-                                    ON DUPLICATE KEY UPDATE nota = VALUES(nota)");
-                $stmt->execute([$estudiante_id, $tarea_id, $nota]);
+                // Verificar que la tarea le pertenece a este profesor
+                $stmt = $pdo->prepare("SELECT id FROM tareas WHERE id = ? AND profesor_id = ?");
+                $stmt->execute([$tarea_id, $profesor_id]);
+                $tarea = $stmt->fetch();
+
+                if (!$tarea) {
+                    // Ignorar si la tarea no le pertenece al profesor
+                    continue;
+                }
+
+                // Insertar o actualizar la nota
+                $stmtInsert = $pdo->prepare("
+                    INSERT INTO entregas (estudiante_id, tarea_id, nota)
+                    VALUES (?, ?, ?)
+                    ON DUPLICATE KEY UPDATE nota = VALUES(nota)
+                ");
+                $stmtInsert->execute([$estudiante_id, $tarea_id, $nota]);
             }
         }
 
-        header("Location: /?page=ver_notas&ficha_id=" . ($_POST['ficha_id'] ?? ''));
+        header("Location: /?page=ver_notas&ficha_id=" . urlencode($ficha_id));
         exit;
     }
+
 
 }

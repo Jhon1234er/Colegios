@@ -12,11 +12,19 @@
         Ya registraste asistencia hoy para esta ficha.
     </div>
 <?php endif; ?>
+<style>
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
 
 <h2>Bienvenido, Facilitador <?= htmlspecialchars($_SESSION['usuario']['nombres']) ?></h2>
 
 <h3>Mis Fichas</h3>
-<a href="/?page=crear_tarea" class="boton-tarea">Nueva tarea</a>
+<a href="/?page=crear_tarea" class="boton-tarea">Nueva tarea </a>
 
 <ul id="lista-fichas"></ul>
 
@@ -96,7 +104,7 @@ ul.addEventListener('click', function(e) {
 
                 let html = `
                     <h2>Registrando asistencia para la ficha: ${fichaNombre}</h2>
-                    <form method="POST" action="/guardar_asistencia.php">
+                        <form method="POST" action="/?page=guardar_asistencia">
                         <input type="hidden" name="ficha_id" value="${fichaId}">
                         <table border="1" cellpadding="5">
                             <thead>

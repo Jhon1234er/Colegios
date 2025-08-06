@@ -153,10 +153,9 @@ if (isset($_GET['page']) && $_GET['page'] === 'guardar_notas' && $_SERVER['REQUE
     exit;
 }
 // Guardar asistencia
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/materias/guardar') {
-    require_once '../controllers/MateriaController.php';
-    $controller = new MateriaController();
-    $controller->guardar();
+if (isset($_GET['page']) && $_GET['page'] === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../controllers/TareaController.php';
+    TareaController::guardarAsistencias();
     exit;
 }
 
