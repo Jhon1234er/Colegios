@@ -1,12 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.formulario-registro {
+
+
+body {
   font-family: 'Inter', sans-serif;
   background-color: #f5ffe3;
-  margin-top: 10%;
+  margin-top: 7%;
 }
 
-.formulario-registro .container {
+.container {
   max-width: 900px;
   margin: 60px auto;
   background-color: #fff;
@@ -15,197 +17,128 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.formulario-registro h2 {
+h2 {
   text-align: center;
   margin-bottom: 30px;
   font-size: 28px;
   color: #304d2f;
 }
 
-/* FORMULARIO PASOS (STEPPER) */
-.formulario-registro ol.flex.items-center {
+form {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  padding-left: 0;
-  list-style: none;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.formulario-registro ol.flex.items-center li {
-  flex: 1;
-  position: relative;
-  text-align: center;
-}
-
-.formulario-registro ol.flex.items-center li .step-circle {
-  width: 38px;
-  height: 38px;
-  margin: 0 auto;
-  background: #92b7bc;
-  border-radius: 50%;
+.row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 18px;
-  color: #32595f;
-  box-shadow: 0 2px 8px rgba(76,120,64,0.10);
-  transition: background 0.3s, color 0.3s, transform 0.2s;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-.formulario-registro ol.flex.items-center li.active .step-circle {
-  background: #407678;
-  color: #fff;
-  transform: scale(1.1);
+.col-md-6 {
+  flex: 1 2 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
 }
 
-.formulario-registro ol.flex.items-center li:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 19px;
-  left: 50%;
-  width: 100%;
-  height: 4px;
-  background: #badddd;
-  z-index: 0;
-  transform: translateX(0);
-}
-
-.formulario-registro ol.flex.items-center li:last-child::after {
-  content: none;
-}
-
-.formulario-registro ol.flex.items-center li .step-label {
-  display: block;
-  margin-top: 8px;
-  font-size: 15px;
-  color: #536387;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.formulario-registro ol.flex.items-center li.active .step-label {
-  color: #407875;
-  font-weight: 700;
-}
-
-/* CAMPOS */
-.formulario-registro label,
-.formulario-registro .form-label {
+label,
+.form-label {
   font-size: 14px;
   font-weight: 500;
   color: #536387;
   margin-bottom: 5px;
 }
 
-.formulario-registro input,
-.formulario-registro input[type="text"],
-.formulario-registro input[type="email"],
-.formulario-registro input[type="password"],
-.formulario-registro input[type="date"],
-.formulario-registro select,
-.formulario-registro .form-control,
-.formulario-registro .form-select {
-  width: 100%;
+input,
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+.form-select {
   padding: 12px 16px;
   border: 1px solid #dde3ec;
   border-radius: 6px;
   background-color: #fff;
   font-size: 16px;
   color: #333;
-  margin-bottom: 0;
 }
 
-.formulario-registro input:focus,
-.formulario-registro select:focus,
-.formulario-registro .form-select:focus {
-  border-color: #2b6488;
+input:focus,
+select:focus,
+.form-select:focus {
+  border-color: #6a64f1;
   outline: none;
-  box-shadow: 0 0 6px rgba(76, 120, 64, 0.15);
+  box-shadow: 0 0 6px rgba(106, 100, 241, 0.2);
 }
 
-.formulario-registro .row {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.formulario-registro .col-md-6 {
-  flex: 1 1 48%;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* BOTONES */
-.formulario-registro .form-navigation {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 30px;
-  gap: 10px;
-}
-
-.formulario-registro .next-btn,
-.formulario-registro .prev-btn,
-.formulario-registro .submit-btn {
+button.btn,
+button.btn-primary {
   background-color: #4c7840;
-  color: #fff;
-  border: none;
+  color: white;
   padding: 14px 24px;
-  border-radius: 6px;
   font-size: 16px;
   font-weight: 600;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
   align-self: center;
 }
 
-.formulario-registro .next-btn:hover,
-.formulario-registro .prev-btn:hover,
-.formulario-registro .submit-btn:hover {
-  background-color: #336646;
+button.btn:hover,
+button.btn-primary:hover {
+  background-color: #3a5e2f;
 }
 
-/* PASOS */
-.formulario-registro .form-step {
-  display: none;
-  animation: fadeIn 0.3s ease-in-out;
+.mb-3 {
+  margin-bottom: 1.2rem !important;
 }
 
-.formulario-registro .form-step.active {
-  display: block;
+#materias {
+  height: 120px;
+  padding: 10px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Mejorar visibilidad de las listas de sugerencias */
+.autocomplete-list {
+  position: absolute;
+  z-index: 2000;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #007bff;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .formulario-registro .container {
-    padding: 24px 8px;
-  }
-  .formulario-registro .row {
-    flex-direction: column;
-    gap: 0;
-  }
-  .formulario-registro .col-md-6 {
-    min-width: 100%;
-    margin-bottom: 24px;
-  }
-  .formulario-registro .form-navigation {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .formulario-registro .next-btn,
-  .formulario-registro .prev-btn,
-  .formulario-registro .submit-btn {
-    width: 100%;
-  }
-  .formulario-registro ol.flex.items-center li .step-circle {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
-  }
+.autocomplete-list .list-group-item {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+}
+
+.autocomplete-list .list-group-item:hover,
+.autocomplete-list .list-group-item.active {
+  background: #007bff;
+  color: #fff;
+}
+
+/* Ajusta el ancho, bordes y fuente para Choices */
+.choices__inner {
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  min-height: 38px;
+  font-size: 1rem;
+  background: #fff;
+}
+.choices__list--single {
+  padding: 6px 16px 6px 6px;
+}
+.choices__list--dropdown {
+  font-size: 1rem;
 }
