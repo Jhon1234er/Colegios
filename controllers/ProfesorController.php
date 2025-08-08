@@ -39,6 +39,7 @@
             require 'views/dashboard.php'; 
         }
 
+
         public function fichasPorProfesor($profesor_id) {
             $pdo = \Database::conectar();
 

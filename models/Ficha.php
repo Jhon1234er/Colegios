@@ -22,5 +22,8 @@ class Ficha {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    public function contarFichas() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM fichas");
+        return (int) $stmt->fetchColumn();
+    }
 }

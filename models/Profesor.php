@@ -103,6 +103,7 @@ class Profesor {
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM profesores");
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
+
     public function obtenerPorColegio($colegioId) {
         $pdo = Database::conectar();
         $stmt = $pdo->prepare("

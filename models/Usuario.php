@@ -42,15 +42,21 @@ class Usuario {
 
         return $pdo->lastInsertId();
     }
-        public function contarUsuarios() {
+    public function contarUsuarios() {
         $pdo = Database::conectar();
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM usuarios");
     return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
-        public function buscarPorCorreo($correo) {
-    $pdo = Database::conectar();
-    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE correo_electronico = ?");
-    $stmt->execute([$correo]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
+    public function buscarPorCorreo($correo) {
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE correo_electronico = ?");
+        $stmt->execute([$correo]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function obtenerPorId($id) {
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

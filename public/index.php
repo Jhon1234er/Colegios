@@ -52,6 +52,8 @@ if (isset($_GET['page']) && $_GET['page'] === 'profesores_por_colegio' && isset(
     exit;
 }
 
+// Fichas 
+
 // Estudiantes por colegio
 if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
     require_once '../models/Estudiante.php';
@@ -64,9 +66,6 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset
 if (isset($_GET['page']) && $_GET['page'] === 'profesorficha') {
     require_once '../controllers/ProfesorController.php';
 
-    // ✅ Solo iniciar sesión si aún no se ha iniciado
-    // NOTA: session_start() ya está al principio del archivo, así que esta comprobación es redundante aquí.
-    // Puedes eliminar el if (session_status() !== PHP_SESSION_ACTIVE) si session_start() está siempre al inicio.
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
@@ -76,7 +75,6 @@ if (isset($_GET['page']) && $_GET['page'] === 'profesorficha') {
         $controller = new ProfesorController();
         $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
     } else {
-        // 🔴 No hay profesor_id en sesión → devolver error JSON
         header('Content-Type: application/json');
         http_response_code(401); // Unauthorized
         echo json_encode(['error' => 'Sesión inválida o profesor no identificado.']);
@@ -102,10 +100,10 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantesporficha') {
 
 // --- AÑADE ESTE BLOQUE PARA EL NotificacionController ---
 if (isset($_GET['page']) && $_GET['page'] === 'marcar_notificacion') {
-    require_once '../controllers/NotificacionController.php'; // Incluye el nuevo controlador
-    $controller = new NotificacionController(); // Instancia el controlador
-    $controller->marcarLeida(); // Llama al método que maneja la lógica JSON
-    exit; // ¡CRUCIAL! Detiene la ejecución para que no se renderice HTML adicional
+    require_once '../controllers/NotificacionController.php'; 
+    $controller = new NotificacionController(); 
+    $controller->marcarLeida();
+    exit; 
 }
 // --- FIN DEL BLOQUE A AÑADIR ---
 
@@ -218,8 +216,25 @@ if (isset($_GET['page']) && $_GET['page'] === 'estudiantes') {
     exit;
 }
 
+// Ver perfil
+if (isset($_GET['page']) && $_GET['page'] === 'ver_perfil') {
+    require_once '../controllers/PerfilController.php';
+    $controller = new PerfilController();
+    $controller->ver();
+    exit;
+}
 
-
+// Editar perfil
+if (isset($_GET['page']) && $_GET['page'] === 'editar_perfil') {
+    require_once '../controllers/PerfilController.php';
+    $controller = new PerfilController();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->actualizar();
+    } else {
+        $controller->editar();
+    }
+    exit;
+}
 
 // --- DASHBOARDS Y VISTAS DE USUARIO ---
 

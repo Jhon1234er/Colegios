@@ -185,9 +185,9 @@ if ($usuario_id && $tipo_usuario) {
           <ul class="divide-y divide-gray-200 p-4 pt-0">
             <li class="py-2">
               <div class="flex items-center justify-between">
-                <button class="cursor-pointer font-semibold text-gray-800 hover:text-blue-600">
+                <a href="/?page=ver_perfil" class="cursor-pointer font-semibold text-gray-800 hover:text-blue-600">
                   Ver mi Perfil
-                </button>
+                </a>
                 <div class="text-sm text-gray-500 transition-all peer-hover:translate-x-1">
                   <svg xmlns="http://www.w3.org/2000/svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
@@ -198,9 +198,9 @@ if ($usuario_id && $tipo_usuario) {
             </li>
             <li class="py-1">
               <div class="flex items-center justify-between">
-                <button class="cursor-pointer font-semibold text-gray-800 hover:text-blue-600">
+                <a href="/?page=editar_perfil" class="cursor-pointer font-semibold text-gray-800 hover:text-blue-600">
                   Editar Perfil
-                </button>
+                </a>
                 <div class="text-sm text-gray-500 transition-all peer-hover:translate-x-1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>

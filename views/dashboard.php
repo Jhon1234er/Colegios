@@ -10,9 +10,9 @@ if (!isset($_SESSION['usuario'])) {
 $usuario = $_SESSION['usuario'] ?? null;
 $isAdmin = isset($usuario['rol_id']) && $usuario['rol_id'] == 1;
 //PARA LLAMAR EL TOTAL DE USUARIOS
-require_once __DIR__ . '/../models/Usuario.php';
-$usuarioModel = new Usuario();
-$totalUsuarios = $usuarioModel->contarUsuarios();
+require_once __DIR__ . '/../models/Ficha.php';
+$fichas = new Ficha();
+$totalFichas = $fichas->contarFichas();
 
 //PARA LLAMAR EL TOTAL DE ESTUDIANTES
 require_once __DIR__ . '/../models/Estudiante.php';
@@ -185,14 +185,14 @@ function formatearNombreColegio($nombre) {
         </div>
         
         <div class="div5">
-            <h3>Total de Programas Registrados</h3>
+            <h3>Total de Programas en Curso</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalMaterias ?>
             </p>
         </div>
         
         <div class="div6">
-            <h3>Total de Facilitadores Registrados en la Plataforma</h3>
+            <h3>Total de Facilitadores Activos</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalProfesores ?>
             </p>
@@ -201,12 +201,12 @@ function formatearNombreColegio($nombre) {
         <div class="div7">
             <h3>Total de Fichas Activas</h3>
             <p style="font-size: 2rem; font-weight: bold;">
-            <?= $totalUsuarios ?>
+            <?= $totalFichas ?>
             </p>
         </div>
 
         <div class="div8">
-            <h3>Total de Aprendices Matriculados al Programa Tecno Academia</h3>
+            <h3>Total de Aprendices Matriculados</h3>
             <p style="font-size: 2rem; font-weight: bold;">
             <?= $totalEstudiante ?>
             </p>

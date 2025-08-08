@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../config/db.php';
 
-$usuario = $_SESSION['usuario'] ?? null;
+$usuario_sesion = $_SESSION['usuario'] ?? null;
 $usuario_id = $usuario['id'] ?? null;
 $rol_id = $usuario['rol_id'] ?? null;
 
@@ -15,23 +15,6 @@ $roles = [
 ];
 
 $tipo_usuario = $roles[$rol_id] ?? null;
-// Las variables de notificaciones ya no son necesarias aquí, se manejan en sidebar_menu.php
-// $notificaciones = [];
-// $totalNoLeidas = 0;
-
-// if ($usuario_id && $tipo_usuario) {
-//     try {
-//         $pdo = Database::conectar();
-//         $stmt = $pdo->prepare("SELECT * FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? ORDER BY fecha DESC LIMIT 5");
-//         $stmt->execute([$usuario_id, $tipo_usuario]);
-//         $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-//         $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? AND estado = 'no_leida'");
-//         $stmtTotal->execute([$usuario_id, $tipo_usuario]);
-//         $totalNoLeidas = $stmtTotal->fetchColumn();
-//     } catch (PDOException $e) {
-//         error_log("Error al obtener notificaciones: " . $e->getMessage());
-//     }
-// }
 ?>
 
 <!DOCTYPE html>
@@ -41,7 +24,6 @@ $tipo_usuario = $roles[$rol_id] ?? null;
   <title>Sistem Scholl</title>
   <link rel="stylesheet" href="/css/Componentes/encabezado.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-  <!-- Asegúrate de que Tailwind CSS esté enlazado globalmente o en tu archivo principal -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body>
@@ -106,7 +88,6 @@ $tipo_usuario = $roles[$rol_id] ?? null;
 
         <!-- Aquí se incluye el nuevo menú lateral -->
         <?php include __DIR__ . '/sidebar_menu.php'; ?>
-
       <?php endif; ?>
     </div>
   </div>
