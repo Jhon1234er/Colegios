@@ -108,11 +108,3 @@ function toggleDropdown() {
   dropdown.classList.toggle("hidden");
 }
 
-// Ocultar dropdown si se hace clic afuera
-document.addEventListener('click', function (event) {
-  const campana = document.querySelector('.group');
-  const dropdown = document.getElementById("dropdown-notificaciones");
-  if (!campana.contains(event.target)) {
-    dropdown.classList.add("hidden");
-  }
-});

@@ -138,6 +138,7 @@ function formatearNombreColegio($nombre) {
     <meta charset="UTF-8">
     <title>Panel de Administrador</title>
     <link rel="stylesheet" href="/css/dashboard.css">
+      <script src="https://echarts.apache.org/en/js/vendors/echarts/dist/echarts.min.js"></script>
 </head>
 <body>
     <?php include 'Componentes/encabezado.php'; ?>
@@ -152,7 +153,7 @@ function formatearNombreColegio($nombre) {
         <div class="div3" style="overflow-y: auto; padding: 1rem;">
             <h3>Estadísticas</h3>
             <p class="esta"style="color: #666;">Selecciona un colegio en la tabla para ver las asistencias de sus Aprendices  </p> 
-            <canvas id="graficoColegios" width="400" height="100"></canvas>
+            <div id="chart-container" style="width:100%;height:400px;"></div>
         </div>
 
         

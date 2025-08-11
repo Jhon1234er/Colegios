@@ -33,37 +33,44 @@ if ($usuario_id && $tipo_usuario) {
 ?>
 
 <style>
-/* CSS para el sidebar */
 #sidebar-menu {
-  position: fixed; /* Fijo para que se mantenga en su lugar */
-  top: 64px; /* Ajusta según la altura de tu encabezado */
-  right: 0; /* Alineado a la derecha */
-  height: calc(100vh - 64px); /* Altura total menos la altura del encabezado */
-  width: 16rem; /* Ancho del menú lateral */
-  background-color: #f5f5f5; /* Color de fondo */
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Sombra para el menú */
-  transition: width 0.3s ease; /* Transición suave para el ancho del sidebar */
+  position: fixed; 
+  top: 64px;
+  right: 0;
+  height: calc(100vh - 64px);
+  width: 16rem; 
+  background-color: #f5f5f5; 
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease; 
 }
 
-/* Ajustes para el menú colapsado */
 #sidebar-menu.w-16 {
-  width: 4rem; /* Ancho colapsado */
+  width: 4rem; 
 }
 
-/* Ajustes para el contenido del menú */
+body {
+  padding-right: 16rem;
+  transition: padding-right 0.3s ease;
+}
+
+/* Clase para cuando el sidebar está colapsado */
+body.sidebar-collapsed {
+  padding-right: 4rem;
+}
+
 .expandable-content {
-  max-height: 0; /* Colapsado por defecto */
-  overflow: hidden; /* Oculta el contenido que excede el max-height */
-  transition: max-height 0.3s ease-out; /* Transición suave */
+  max-height: 0;
+  overflow: hidden; 
+  transition: max-height 0.3s ease-out;
 }
 
 .expandable-content.open {
-  max-height: 500px; /* Ajusta este valor según el contenido */
+  max-height: 500px; 
 }
 
 </style>
-<div id="sidebar-menu" class="fixed top-16 left-0 h-[calc(100vh-70px)] w-20 bg-gray-100 shadow-lg transition-all duration-300 z-50 overflow-y-auto">
-  <ul class="flex flex-col gap-1 p-2">
+<div id="sidebar-menu" >
+  <ul class="">
 
     <!-- Hamburger Icon / Toggle Button -->
     <li class="w-full mb-2">

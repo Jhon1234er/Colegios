@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../../config/db.php';
 
-$usuario_sesion = $_SESSION['usuario'] ?? null;
+$usuario = $_SESSION['usuario'] ?? null;
 $usuario_id = $usuario['id'] ?? null;
 $rol_id = $usuario['rol_id'] ?? null;
 

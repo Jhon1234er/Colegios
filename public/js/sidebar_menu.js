@@ -3,44 +3,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebarToggle = document.getElementById('sidebar-toggle');
   const sidebarItems = document.querySelectorAll('.sidebar-item'); // Todos los <li> que son ítems del menú
 
-  let isSidebarExpandedByClick = false; // Controla si el sidebar principal está expandido por un clic
+  let isSidebarExpandedByClick = localStorage.getItem('sidebarExpanded') === 'true' ? true : false;
 
   // Función para expandir/colapsar el sidebar principal
   function toggleSidebar() {
-    isSidebarExpandedByClick = !isSidebarExpandedByClick; // Alternar estado de expansión por clic
-    sidebar.classList.toggle('w-16', isSidebarExpandedByClick); // Colapsar si está expandido por clic
-    sidebar.classList.toggle('w-64', !isSidebarExpandedByClick); // Expandir si no está expandido por clic
+  isSidebarExpandedByClick = !isSidebarExpandedByClick;
+  localStorage.setItem('sidebarExpanded', isSidebarExpandedByClick);
+  
+  sidebar.classList.toggle('w-16', isSidebarExpandedByClick);
+  sidebar.classList.toggle('w-64', !isSidebarExpandedByClick);
 
-    // Mostrar/ocultar texto de los ítems del menú principal
-    sidebar.querySelectorAll('.font-semibold.whitespace-nowrap').forEach(text => {
-      text.classList.toggle('hidden', isSidebarExpandedByClick);
+  sidebar.querySelectorAll('.font-semibold.whitespace-nowrap').forEach(text => {
+    text.classList.toggle('hidden', isSidebarExpandedByClick);
+  });
+
+  if (isSidebarExpandedByClick) {
+    sidebarItems.forEach(item => {
+      const expandableContent = item.querySelector('.expandable-content');
+      if (expandableContent) {
+        expandableContent.classList.remove('open');
+        expandableContent.classList.add('max-h-0');
+      }
     });
-
-    // Colapsar todos los submenús al colapsar el sidebar principal
-    if (isSidebarExpandedByClick) {
-      sidebarItems.forEach(item => {
-        const expandableContent = item.querySelector('.expandable-content');
-        if (expandableContent) {
-          expandableContent.classList.remove('open'); // Colapsa la altura
-          expandableContent.classList.add('max-h-0'); // Asegura que esté colapsado
-        }
-      });
-    }
   }
+}
+// Después de definir isSidebarExpandedByClick, añade esta función para aplicar el estado guardado
+function applySidebarState() {
+  sidebar.classList.toggle('w-16', isSidebarExpandedByClick);
+  sidebar.classList.toggle('w-64', !isSidebarExpandedByClick);
+
+  sidebar.querySelectorAll('.font-semibold.whitespace-nowrap').forEach(text => {
+    text.classList.toggle('hidden', isSidebarExpandedByClick);
+  });
+
+  if (isSidebarExpandedByClick) {
+    sidebarItems.forEach(item => {
+      const expandableContent = item.querySelector('.expandable-content');
+      if (expandableContent) {
+        expandableContent.classList.remove('open');
+        expandableContent.classList.add('max-h-0');
+      }
+    });
+  }
+}
+
+applySidebarState();
+
 
   // Evento para el botón de hamburguesa (toggle del sidebar principal)
   sidebarToggle.addEventListener('click', toggleSidebar);
 
-  // Evento para expandir el sidebar principal al pasar el mouse (solo si no está expandido por clic)
-  sidebar.addEventListener('mouseenter', () => {
-    if (!isSidebarExpandedByClick) {
-      sidebar.classList.remove('w-16');
-      sidebar.classList.add('w-64');
-      sidebar.querySelectorAll('.font-semibold.whitespace-nowrap').forEach(text => {
-        text.classList.remove('hidden');
-      });
-    }
-  });
+
 
   // Evento para colapsar el sidebar principal al salir el mouse (solo si no está expandido por clic)
   sidebar.addEventListener('mouseleave', () => {
@@ -125,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           data = JSON.parse(text);
         } catch (error) {
-          console.error("❌ Respuesta no es JSON válido:", text);
+          console.error(" Respuesta no es JSON válido:", text);
           return;
         }
 
@@ -152,10 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         } else {
-          console.error("⚠️ Error en la respuesta del servidor:", data);
+          console.error("Error en la respuesta del servidor:", data);
         }
       } catch (err) {
-        console.error("❌ Error al marcar notificación:", err);
+        console.error("Error al marcar notificación:", err);
       }
     });
   });

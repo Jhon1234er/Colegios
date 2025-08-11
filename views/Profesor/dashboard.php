@@ -24,7 +24,7 @@
 <h2>Bienvenido, Facilitador <?= htmlspecialchars($_SESSION['usuario']['nombres']) ?></h2>
 
 <h3>Mis Fichas</h3>
-<a href="/?page=crear_tarea" class="boton-tarea">Nueva tarea </a>
+<a href="/?page=crear_tarea" class="boton-tarea">Nueva Actividad</a>
 
 <ul id="lista-fichas"></ul>
 

@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     data.forEach(p => {
                         html += `
                             <div class="profesor-card">
-                                <div class="profesor-name">${p.nombre} <p class="profesor-materia"> Materia: ${p.materia}</p></div>
+                                <div class="profesor-name">${p.nombre} 
+                                    <p class="profesor-materia">Materia: ${p.materia}</p>
+                                </div>
                             </div>`;
                     });
-                    html += '</ul>';
                     div1.innerHTML = html;
                 })
                 .catch(err => console.error('Error cargando profesores:', err));
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(data => {
                     const div2 = document.querySelector('.div2');
-                     document.querySelector('.esta')?.remove();
+                    document.querySelector('.esta')?.remove();
                     if (!data.length) {
                         div2.innerHTML = '<p>No hay aprendices registrados para este colegio.</p>';
                         return;
@@ -38,133 +39,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     let html = '<h3>Aprendices</h3>';
                     data.forEach(e => {
-                            console.log(e); 
                         html += `
-                                <div class="student-card">
-                                    <div class="student-name">${e.nombre_completo}</div>
-                                    <div class="student-details">
-                                        Grado: ${e.grado}, Jornada: ${e.jornada}<br>
-                                        <strong>Acudiente:</strong> ${e.nombre_completo_acudiente}<br>
-                                        <strong>Celular:</strong> ${e.telefono_acudiente}<br>
-                                        <strong>Parentesco:</strong> ${e.parentesco}<br>
-                                        <strong>Ficha:</strong> ${e.numero_ficha}
-                                    </div>
-                                </div>`;
+                            <div class="student-card">
+                                <div class="student-name">${e.nombre_completo}</div>
+                                <div class="student-details">
+                                    Grado: ${e.grado}, Jornada: ${e.jornada}<br>
+                                    <strong>Acudiente:</strong> ${e.nombre_completo_acudiente}<br>
+                                    <strong>Celular:</strong> ${e.telefono_acudiente}<br>
+                                    <strong>Parentesco:</strong> ${e.parentesco}<br>
+                                    <strong>Ficha:</strong> ${e.numero_ficha}
+                                </div>
+                            </div>`;
                     });
-                    html += '</ul>';
                     div2.innerHTML = html;
                 })
                 .catch(err => console.error('Error cargando estudiantes:', err));
 
-            // 🔹 Mostrar Gráfico Estadístico
-            const canvas = document.getElementById('graficoColegios');
-            if (!canvas) return;
+            // 🔹 Mostrar Estadísticas ECharts
+            fetch(`../ajax/asistencias_por_colegio.php?colegio_id=${colegioId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const dom = document.getElementById('chart-container');
+                    const myChart = echarts.init(dom, 'dark');
 
-            const ctx = canvas.getContext('2d');
-            if (window.chartInstance) window.chartInstance.destroy();
+                    const fichasData = data.fichas.map(f => ({
+                        value: f.total_fallas,
+                        name: `Ficha ${f.numero_ficha}`
+                    }));
 
-            window.chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Matemáticas', 'Español', 'Inglés', 'Ciencias'],
-                    datasets: [{
-                        label: 'Cantidad de profesores por materia',
-                        data: [10, 7, 4, 2], // 🔸 Sustituir por datos reales desde el servidor si aplica
-                        backgroundColor: [
-                            'rgba(34, 197, 94, 0.6)',   // Verde
-                            'rgba(59, 130, 246, 0.6)',  // Azul
-                            'rgba(249, 115, 22, 0.6)',  // Naranja
-                            'rgba(234, 88, 12, 0.6)'    // Rojo oscuro
-                        ],
-                        borderColor: [
-                            'rgba(34, 197, 94, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(249, 115, 22, 1)',
-                            'rgba(234, 88, 12, 1)'
-                        ],
-                        borderWidth: 1.5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Profesores por materia en el colegio seleccionado',
-                            font: {
-                                size: 18,
-                                weight: 'bold'
-                            },
-                            color: '#1e293b'
-                        },
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+                    const option = {
+                        legend: { top: 'bottom' },
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                mark: { show: true },
+                                dataView: { show: true, readOnly: false },
+                                restore: { show: true },
+                                saveAsImage: { show: true }
                             }
-                        }
+                        },
+                        series: [
+                            {
+                                name: 'Fallas por ficha',
+                                type: 'pie',
+                                radius: [50, 250],
+                                center: ['50%', '50%'],
+                                roseType: 'area',
+                                itemStyle: { borderRadius: 8 },
+                                data: fichasData
+                            }
+                        ]
+                    };
+
+                    myChart.setOption(option);
+
+                    // 🔹 Mostrar alertas de estudiantes con >= 3 fallas
+                    if (data.alertas.length > 0) {
+                        let alertHtml = '<h4>⚠ Estudiantes con 3+ fallas</h4><ul>';
+                        data.alertas.forEach(e => {
+                            alertHtml += `<li><strong>${e.nombres} ${e.apellidos}</strong> - Ficha ${e.numero_ficha} (${e.total_fallas} fallas)</li>`;
+                        });
+                        alertHtml += '</ul>';
+                        document.querySelector('.div3').insertAdjacentHTML('beforeend', alertHtml);
                     }
-                }
-            });
+                })
+                .catch(err => console.error('Error cargando estadísticas:', err));
         });
     });
-
-    document.addEventListener('click', function(e) {
-      if (e.target && e.target.id === 'volver-dashboard') {
-        document.getElementById('dashboard-resultados').style.display = 'none';
-        document.getElementById('dashboard-normal').style.display = 'block';
-      }
-    });
-
-    document.querySelectorAll('.fila-resultado').forEach(function(row) {
-      row.addEventListener('click', function() {
-        const ths = this.closest('table').querySelectorAll('th');
-        const tds = this.querySelectorAll('td');
-        let detalleHTML = '<div class="detalle-hoja-vida"><h3>Detalle</h3><ul>';
-        tds.forEach((td, i) => {
-          detalleHTML += `<li><strong>${ths[i].textContent}:</strong> ${td.textContent}</li>`;
-        });
-        detalleHTML += '</ul></div>';
-        document.getElementById('detalle-resultado').innerHTML = detalleHTML;
-      });
-    });
-
-    const dashboardNormal = document.getElementById('dashboard-normal');
-    const dashboardResultados = document.getElementById('dashboard-resultados');
-    const overlay = document.getElementById('dashboard-overlay');
-    const volverBtn = document.getElementById('volver-dashboard');
-
-    function showResultados() {
-      dashboardNormal.classList.add('anim-out');
-      dashboardResultados.classList.add('anim-in');
-      overlay.classList.add('active');
-      dashboardResultados.style.display = '';
-    }
-    function hideResultados() {
-      dashboardNormal.classList.remove('anim-out');
-      dashboardResultados.classList.remove('anim-in');
-      overlay.classList.remove('active');
-      setTimeout(() => {
-        dashboardResultados.style.display = 'none';
-        dashboardNormal.style.display = '';
-      }, 500); // espera la animación
-    }
-
-    // Mostrar resultados si corresponde al cargar
-    if (dashboardResultados && dashboardResultados.style.display !== 'none') {
-      showResultados();
-    }
-
-    // Botón volver al inicio
-    if (volverBtn) {
-      volverBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        hideResultados();
-      });
-    }
 });
