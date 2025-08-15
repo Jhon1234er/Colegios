@@ -123,13 +123,24 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 }
 
 function formatearNombreColegio($nombre) {
-    // Aplica formato título y convierte siglas tipo X.x. o X.x a mayúsculas
-    $nombre = ucwords(strtolower($nombre));
-    $nombre = preg_replace_callback('/\b([a-z])\.([a-z])\.?/i', function($m) {
-        return strtoupper($m[1]) . '.' . strtoupper($m[2]);
+    // Formato título con soporte para tildes
+    $nombre = mb_convert_case($nombre, MB_CASE_TITLE, "UTF-8");
+    
+    // Siglas con puntos (ej: D.C. o , D.C.)
+    $nombre = preg_replace_callback('/(\s|,)\s*([A-Za-z])\.([A-Za-z])\.?/u', function ($m) {
+            return $m[1] . strtoupper($m[2]) . '.' . strtoupper($m[3]);
+        },
+        $nombre
+    );
+    
+    // Siglas en paréntesis (ej: (ied) → (IED))
+    $nombre = preg_replace_callback('/\(([a-zA-Z]{2,})\)/u', function($m) {
+        return '(' . strtoupper($m[1]) . ')';
     }, $nombre);
+    
     return $nombre;
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -151,14 +162,14 @@ function formatearNombreColegio($nombre) {
         <div class="div2" style="overflow-y: auto; padding: 1rem;"> <p style="color: #666;">Selecciona un colegio en la tabla para ver sus Aprendices</p> </div>
         
         <div class="div3" style="overflow-y: auto; padding: 1rem;">
-            <h3>Estadísticas</h3>
+            <h3>Estadísticas de asistencias por ficha</h3>
             <p class="esta"style="color: #666;">Selecciona un colegio en la tabla para ver las asistencias de sus Aprendices  </p> 
             <div id="chart-container" style="width:100%;height:400px;"></div>
         </div>
 
         
         <div class="div4">
-            <h3 class="Tabla">Colegios Existentes</h3>
+            <h3 class="Tabla">Colegios Gestionados</h3>
             <table class="tabla-colegios">
                 <thead>
                     <tr>
@@ -174,8 +185,8 @@ function formatearNombreColegio($nombre) {
                         <tr>
                             <td><?= formatearNombreColegio(htmlspecialchars($colegio['nombre'])) ?></td>
                             <td><?= htmlspecialchars($colegio['tipo_institucion']) ?></td>
-                            <td><?= ucwords(strtolower(htmlspecialchars($colegio['departamento']))) ?></td>
-                            <td><?= ucwords(strtolower(htmlspecialchars($colegio['municipio']))) ?></td>
+                            <td><?=formatearNombreColegio(htmlspecialchars($colegio['departamento'])) ?></td>
+                            <td><?=formatearNombreColegio(htmlspecialchars($colegio['municipio'])) ?></td>
                             <td>
                                 <button class="btn-ver-colegio" data-id="<?= $colegio['id'] ?>">Ver Informacion</button>
                             </td>
@@ -217,6 +228,8 @@ function formatearNombreColegio($nombre) {
             <p> <strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres']) ?> <?= htmlspecialchars($usuario['apellidos']) ?> a Sistem scholl Tecno Academia</p>
             <p class="texto-rol"><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
         </div>
+    <?php include 'Componentes/footer.php'; ?> 
+        
     </div>
     </div>
 
@@ -229,6 +242,5 @@ function formatearNombreColegio($nombre) {
     <!-- Tu JS personalizado -->
     <script src="/js/dashboard.js"></script>
     <script src="/js/encabezado.js"></script>
-    <?php include 'Componentes/footer.php'; ?> 
 </body>
 </html>

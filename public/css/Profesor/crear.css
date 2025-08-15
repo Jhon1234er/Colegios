@@ -1,83 +1,79 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-
-
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f5ffe3;
+  background-color: whitesmoke;
   margin-top: 7%;
 }
 
-.container {
+.formulario-registro {
   max-width: 900px;
   margin: 60px auto;
-  background-color: #fff;
+  background: #fff;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
+.formulario-registro h2 {
   text-align: center;
   margin-bottom: 30px;
   font-size: 28px;
   color: #304d2f;
 }
 
-form {
+.formulario-registro form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.row {
+.formulario-registro .row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
 }
 
-.col-md-6 {
+.formulario-registro .col-md-6 {
   flex: 1 2 48%;
   display: flex;
   flex-direction: column;
   gap: 13px;
 }
 
-label,
-.form-label {
+.formulario-registro label {
   font-size: 14px;
   font-weight: 500;
   color: #536387;
   margin-bottom: 5px;
 }
 
-input,
-.form-control,
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-select,
-.form-select {
+.formulario-registro input,
+.formulario-registro select,
+.formulario-registro .form-control,
+.formulario-registro .form-select {
+  all: unset; /* quita cualquier estilo heredado */
+  box-sizing: border-box;
   padding: 12px 16px;
   border: 1px solid #dde3ec;
   border-radius: 6px;
-  background-color: #fff;
+  background: #fff;
   font-size: 16px;
   color: #333;
+  font-family: 'Inter', sans-serif;
 }
 
-input:focus,
-select:focus,
-.form-select:focus {
+.formulario-registro input:focus,
+.formulario-registro select:focus,
+.formulario-registro .form-control:focus,
+.formulario-registro .form-select:focus {
   border-color: #6a64f1;
   outline: none;
   box-shadow: 0 0 6px rgba(106, 100, 241, 0.2);
 }
 
-button.btn,
-button.btn-primary {
-  background-color: #4c7840;
+.formulario-registro button.btn {
+  background: #4c7840;
   color: white;
   padding: 14px 24px;
   font-size: 16px;
@@ -85,26 +81,25 @@ button.btn-primary {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
   align-self: center;
 }
 
-button.btn:hover,
-button.btn-primary:hover {
-  background-color: #3a5e2f;
+.formulario-registro button.btn:hover {
+  background: #3a5e2f;
 }
 
-.mb-3 {
+.formulario-registro .mb-3 {
   margin-bottom: 1.2rem !important;
 }
 
-#materias {
+.formulario-registro #materias {
   height: 120px;
   padding: 10px;
 }
 
-/* Mejorar visibilidad de las listas de sugerencias */
-.autocomplete-list {
+/* Autocompletado */
+.formulario-registro .autocomplete-list {
   position: absolute;
   z-index: 2000;
   width: 100%;
@@ -116,29 +111,31 @@ button.btn-primary:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-.autocomplete-list .list-group-item {
+.formulario-registro .autocomplete-list .list-group-item {
   cursor: pointer;
   padding: 0.75rem 1rem;
   font-size: 1.1rem;
 }
 
-.autocomplete-list .list-group-item:hover,
-.autocomplete-list .list-group-item.active {
+.formulario-registro .autocomplete-list .list-group-item:hover,
+.formulario-registro .autocomplete-list .list-group-item.active {
   background: #007bff;
   color: #fff;
 }
 
-/* Ajusta el ancho, bordes y fuente para Choices */
-.choices__inner {
+/* Choices.js */
+.formulario-registro .choices__inner {
   border-radius: 4px;
   border: 1px solid #ced4da;
   min-height: 38px;
   font-size: 1rem;
   background: #fff;
 }
-.choices__list--single {
+
+.formulario-registro .choices__list--single {
   padding: 6px 16px 6px 6px;
 }
-.choices__list--dropdown {
+
+.formulario-registro .choices__list--dropdown {
   font-size: 1rem;
 }

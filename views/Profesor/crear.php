@@ -52,7 +52,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
         </select>
 
         <label for="ficha_id">Fichas</label>
-        <select name="fichas[]" id="ficha_id" class="form-select" multiple required>
+        <select name="fichas" id="ficha_id" class="form-select" multiple required>
           <option value="">Seleccione un colegio primero</option>
         </select>
       </div>

@@ -5,12 +5,16 @@ require_once __DIR__ . '/../../models/Profesor.php';
 $model = new Profesor();
 $profesores = $model->obtenerTodos();
 ?>
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link rel="stylesheet" href="/css/Profesor/lista_profesor.css">
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/Profesor/lista_profesor.css">
 
 <div class="container mt-4">
     <h2 class="mb-4">Facilitadores Activos</h2>
-    <a href="/?page=profesores&action=crear" class="btn btn-success mb-3">Crear Facilitador</a>
+    
+    <div class="d-flex gap-2 mb-3">
+        <a href="/?page=profesores&action=crear" class="btn btn-success">Crear Facilitador</a>
+        <a href="/?page=profesores&action=reajuste_fichas" class="btn btn-warning">Reajuste de fichas</a>
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">

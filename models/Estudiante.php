@@ -130,27 +130,39 @@ class Estudiante {
         $stmt = $pdo->query("SELECT COUNT(*) AS total FROM estudiantes");
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
-    public function obtenerPorColegio($colegioId) {
-        $pdo = Database::conectar();
-        $stmt = $pdo->prepare("
-            SELECT CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo, e.grado, e.jornada, e.nombre_completo_acudiente, e.telefono_acudiente, e.parentesco
-            FROM estudiantes e
-            JOIN usuarios u ON e.usuario_id = u.id
-            WHERE e.colegio_id = ?
-        ");
-        $stmt->execute([$colegioId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+public function obtenerPorColegio($colegioId) {
+    $pdo = Database::conectar();
+    $stmt = $pdo->prepare("
+        SELECT 
+            CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo,
+            e.grado,
+            e.jornada,
+            f.nombre AS ficha,
+            e.nombre_completo_acudiente,
+            e.telefono_acudiente,
+            e.parentesco
+        FROM estudiantes e
+        JOIN usuarios u ON e.usuario_id = u.id
+        JOIN fichas f ON e.ficha_id = f.id
+        WHERE e.colegio_id = ?
+    ");
+    $stmt->execute([$colegioId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
     public function buscarPorNombre($q) {
         $stmt = $this->pdo->prepare("
-            SELECT 
-                u.nombres, u.apellidos, u.tipo_documento, u.numero_documento,
-                u.correo_electronico, u.telefono, e.grado, e.grupo, e.jornada,
-                c.nombre AS colegio, e.nombre_completo_acudiente
+            SELECT CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo, 
+                e.grado, 
+                e.jornada, 
+                e.nombre_completo_acudiente, 
+                e.telefono_acudiente, 
+                e.parentesco,
+                f.nombre AS ficha
             FROM estudiantes e
-            INNER JOIN usuarios u ON e.usuario_id = u.id
-            INNER JOIN colegios c ON e.colegio_id = c.id
-            WHERE u.nombres LIKE ? OR u.apellidos LIKE ?
+            JOIN usuarios u ON e.usuario_id = u.id
+            JOIN fichas f ON e.ficha_id = f.id
+            WHERE e.colegio_id = ?
         ");
         $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

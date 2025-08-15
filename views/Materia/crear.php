@@ -88,6 +88,8 @@ $materias = $materiaModel->obtenerTodas();
         </div>
     <?php endif; ?>
 </div>
+<script src="/js/crearP.js"></script>
+
 <?php
 require_once __DIR__ . '/../../models/Colegio.php';
 $colegioModel = new Colegio();
@@ -152,7 +154,7 @@ $fichas = $fichaModel->obtenerTodas();
                             </td>
                             <td>
                                 <a href="/?page=fichas&action=editar&id=<?= urlencode($ficha['id']) ?>" class="btn-accion btn-warning">Editar</a>
-                                <a href="/?page=fichas&action=eliminar&id=<?= urlencode($ficha['id']) ?>" class="btn-accion btn-danger" onclick="return confirm('¿Eliminar esta ficha?')">Eliminar</a>
+                                <a href="/?page=fichas&action=eliminar&id=<?= urlencode($ficha['id']) ?>" class="btn-accion btn-danger" onclick="return confirm('¿Eliminar esta ficha?')">Suspender</a>
                             </td>
                         </tr>
                     <?php endforeach ?>

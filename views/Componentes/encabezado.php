@@ -36,15 +36,20 @@ $tipo_usuario = $roles[$rol_id] ?? null;
         <div class="header-buttons">
           <div class="menu">
             <?php if ($rol_id === 1): ?>
-              <form class="buscador-header">
-                <select class="select-buscador-header">
-                  <option value="colegio">Colegios</option>
-                  <option value="profesor">Facilitadores</option>
-                  <option value="estudiante">Aprendices</option>
-                </select>
-                <input type="text" class="input-buscador-header" placeholder="Buscar..." />
-                <button type="submit" class="button-buscador-header">Buscar</button>
-              </form>
+            <?php if ($rol_id === 1 && (!isset($_GET['page']) || $_GET['page'] === 'dashboard')): ?>
+              <div class="buscador-header-container">
+                <form class="buscador-header">
+                  <select class="select-buscador-header">
+                    <option value="colegio">Colegios</option>
+                    <option value="profesor">Facilitadores</option>
+                    <option value="estudiante">Aprendices</option>
+                  </select>
+                  <input type="text" class="input-buscador-header" placeholder="Buscar..." />
+                  <button type="submit" class="button-buscador-header">Buscar</button>
+                </form>
+              </div>
+            <?php endif; ?>
+              </div>
               <div class="dropdown">
                 <button class="dropbtn">Registros</button>
                 <div class="dropdown-content">

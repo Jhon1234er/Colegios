@@ -12,9 +12,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Inicializa Choices y guarda la instancia
-  const materiasChoices = new Choices(materiasSelect, { removeItemButton: false, shouldSort: false });
-  const fichasChoices = new Choices(fichaSelect, { removeItemButton: true, shouldSort: false });
+  // Inicializa Choices en TODOS los selects
+  const choicesInstances = {};
+  document.querySelectorAll("select").forEach(select => {
+    // Guarda las instancias para materias y fichas
+    if (select.id === "materias") {
+      choicesInstances.materias = new Choices(select, { removeItemButton: false, shouldSort: false });
+    } else if (select.id === "ficha_id") {
+      choicesInstances.fichas = new Choices(select, { removeItemButton: true, shouldSort: false });
+    } else {
+      new Choices(select, { removeItemButton: false, shouldSort: false });
+    }
+  });
+
+  const materiasChoices = choicesInstances.materias;
+  const fichasChoices = choicesInstances.fichas;
 
   if (colegioSelect) {
     colegioSelect.addEventListener('change', async function () {
@@ -60,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
             data.map(f => ({ value: f.id, label: f.nombre })),
             'value', 'label', false
           );
-          // No seleccionar ninguna automáticamente
         } else {
           fichasChoices.setChoices([{ value: '', label: 'Este colegio no tiene fichas registradas', selected: true, disabled: true }], 'value', 'label', true);
         }

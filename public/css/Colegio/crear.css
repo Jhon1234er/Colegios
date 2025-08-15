@@ -1,6 +1,10 @@
+body{
+    background-color: whitesmoke;
+
+}
 .formulario-registro-colegio {
   font-family: 'Inter', sans-serif;
-  background-color: #f5ffe3;
+  background-color: whitesmoke;
   margin-top: 7%;
   padding: 40px 0;
 }

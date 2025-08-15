@@ -106,7 +106,6 @@ $colegios = $colegioModel->obtenerTodos();
             <select name="tipo_documento_acudiente" required>
               <option value="">Seleccione</option>
               <option value="CC">CC</option>
-              <option value="TI">TI</option>
             </select>
           </div>
           <div class="col-md-6">

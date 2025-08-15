@@ -39,7 +39,7 @@ if ($usuario_id && $tipo_usuario) {
   right: 0;
   height: calc(100vh - 64px);
   width: 16rem; 
-  background-color: #f5f5f5; 
+  background-color: #bfd2db; 
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   transition: width 0.3s ease; 
 }
@@ -49,6 +49,7 @@ if ($usuario_id && $tipo_usuario) {
 }
 
 body {
+  background-color: #436b7e;
   padding-right: 16rem;
   transition: padding-right 0.3s ease;
 }
@@ -56,6 +57,8 @@ body {
 /* Clase para cuando el sidebar está colapsado */
 body.sidebar-collapsed {
   padding-right: 4rem;
+  background-color: #436b7e;
+
 }
 
 .expandable-content {

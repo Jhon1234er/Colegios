@@ -1,6 +1,6 @@
 </div> 
-<link rel="stylesheet" href="/css/Componentes/footer.css">
-<footer style="text-align: center; padding: 1rem; margin-top: 2rem;">
+  <link rel="stylesheet" href="/css/Componentes/footer.css">
+<footer class="footer">
     <small>Sistem Scholl - Sena © <?= date('Y') ?></small>
 </footer>
 

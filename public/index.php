@@ -15,8 +15,6 @@ if (isset($_POST['login'])) {
             header('Location: /?page=dashboard');
         } elseif ($rol == 2) {
             header('Location: /?page=dashboard_profesor');
-        } elseif ($rol == 3) {
-            header('Location: /?page=dashboard_estudiante');
         } else {
             header('Location: /');
         }

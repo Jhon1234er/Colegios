@@ -1,0 +1,560 @@
+14:32:12 GET: Array
+(
+    [colegio_id] => 1
+)
+
+14:32:12 obtenerFallasPorFicha result: 
+14:37:31 GET: Array
+(
+    [colegio_id] => 1
+)
+
+14:37:31 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:40:45 GET: Array
+(
+    [colegio_id] => 1
+)
+
+14:40:45 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:43:16 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:44:59 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:45:23 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:45:40 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:46:31 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:46:50 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:49:22 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:57:29 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+14:58:30 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:18:49 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:19:22 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:38:03 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:42:00 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:52:09 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 3
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 1
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+
+15:54:54 obtenerFallasPorFicha result: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 6
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+    [2] => Array
+        (
+            [ficha_id] => 3
+            [numero_ficha] => 1231231
+            [total_fallas] => 0
+        )
+
+    [3] => Array
+        (
+            [ficha_id] => 4
+            [numero_ficha] => 52312342
+            [total_fallas] => 0
+        )
+
+)
+

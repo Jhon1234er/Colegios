@@ -107,7 +107,13 @@ class Profesor {
     public function obtenerPorColegio($colegioId) {
         $pdo = Database::conectar();
         $stmt = $pdo->prepare("
-            SELECT CONCAT(u.nombres, ' ', u.apellidos) AS nombre, m.nombre AS materia
+            SELECT 
+                CONCAT(u.nombres, ' ', u.apellidos) AS nombre,
+                m.nombre AS materia,
+                p.correo_institucional,
+                p.tip_contrato,
+                u.telefono,
+                u.correo_electronico
             FROM profesores p
             JOIN usuarios u ON p.usuario_id = u.id
             JOIN materia_profesor mp ON p.id = mp.profesor_id
