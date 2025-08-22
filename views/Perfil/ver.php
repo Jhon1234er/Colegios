@@ -51,16 +51,6 @@
       </div>
     </div>
 
-    <!-- DATOS ACADÉMICOS -->
-    <div class="card">
-      <h2>Datos Académicos</h2>
-      <p><strong>Colegio:</strong> <?= $usuario['colegio'] ?? '—' ?></p>
-      <p><strong>Centro:</strong> <?= $usuario['centro'] ?? '—' ?></p>
-      <p><strong>Especialidad:</strong> <?= $usuario['especialidad'] ?? '—' ?></p>
-      <p><strong>Grupo:</strong> <?= $usuario['grupo'] ?? '—' ?></p>
-      <p><strong>Periodo:</strong> <?= $usuario['periodo'] ?? '—' ?></p>
-    </div>
-
     <!-- DATOS DE CONTACTO -->
     <div class="card contacto">
       <h2>Datos de Contacto</h2>

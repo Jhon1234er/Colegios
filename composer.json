@@ -1,0 +1,17 @@
+{
+    "name": "sena/colegios",
+    "require-dev": {
+        "no": "no"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sena\\Colegios\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jhon"
+        }
+    ],
+    "require": {}
+}

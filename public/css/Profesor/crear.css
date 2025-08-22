@@ -2,140 +2,317 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: whitesmoke;
-  margin-top: 7%;
+  background-color: #f8fafc;
+  margin: 0;
 }
 
+/* Contenedor principal */
 .formulario-registro {
-  max-width: 900px;
-  margin: 60px auto;
+  max-width: 1000px;
+  margin: 40px auto;
   background: #fff;
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
 }
 
 .formulario-registro h2 {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 28px;
+  margin-bottom: 40px;
+  font-size: 32px;
+  font-weight: 700;
   color: #304d2f;
+  letter-spacing: -0.5px;
 }
 
-.formulario-registro form {
+/* Grid de formulario */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+  align-items: start; /* Alinear al inicio */
+}
+
+.columna {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px; /* Espaciado más uniforme */
+  min-height: 600px; /* Altura mínima para ambas columnas */
 }
 
-.formulario-registro .row {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.formulario-registro .col-md-6 {
-  flex: 1 2 48%;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
-
-.formulario-registro label {
+/* Grupos de campo uniformes */
+.columna > label {
   font-size: 14px;
-  font-weight: 500;
-  color: #536387;
-  margin-bottom: 5px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.25px;
+  min-height: 20px; /* Altura mínima para todos los labels */
+  display: block;
 }
 
-.formulario-registro input,
-.formulario-registro select,
-.formulario-registro .form-control,
-.formulario-registro .form-select {
-  all: unset; /* quita cualquier estilo heredado */
-  box-sizing: border-box;
+.columna > input {
+  margin-bottom: 21px; /* Espaciado consistente después de cada campo */
+}
+
+/* ====== Estilos uniformes para todos los inputs ====== */
+.form-nombre,
+.form-apellido,
+.form-tipo,
+.form-documento,
+.form-personal,
+.form-institucional,
+.form-numero,
+.form-nacimiento,
+.form-select-rh,
+.form-selec-genero,
+.form-control-titulo,
+.form-control-especialidad,
+.form-select-contrato,
+.form-contraseña {
+  height: 48px;
   padding: 12px 16px;
-  border: 1px solid #dde3ec;
-  border-radius: 6px;
-  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
   font-size: 16px;
-  color: #333;
   font-family: 'Inter', sans-serif;
-}
-
-.formulario-registro input:focus,
-.formulario-registro select:focus,
-.formulario-registro .form-control:focus,
-.formulario-registro .form-select:focus {
-  border-color: #6a64f1;
+  color: #1f2937;
   outline: none;
-  box-shadow: 0 0 6px rgba(106, 100, 241, 0.2);
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.formulario-registro button.btn {
-  background: #4c7840;
+/* Selectores con estilos personalizados */
+select.form-tipo,
+select.form-select-rh,
+select.form-selec-genero,
+select.form-select-contrato {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="%23374151" d="M8 11L3 6h10l-5 5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* Campo de fecha con icono */
+.form-nacimiento {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23374151" stroke-width="2"><rect x="3" y="4" width="18" height="15" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* Estados de foco */
+.form-nombre:focus,
+.form-apellido:focus,
+.form-tipo:focus,
+.form-documento:focus,
+.form-personal:focus,
+.form-institucional:focus,
+.form-numero:focus,
+.form-nacimiento:focus,
+.form-select-rh:focus,
+.form-selec-genero:focus,
+.form-control-titulo:focus,
+.form-control-especialidad:focus,
+.form-select-contrato:focus,
+.form-contraseña:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fefefe;
+}
+
+/* Hover effects */
+.form-nombre:hover,
+.form-apellido:hover,
+.form-tipo:hover,
+.form-documento:hover,
+.form-personal:hover,
+.form-institucional:hover,
+.form-numero:hover,
+.form-nacimiento:hover,
+.form-select-rh:hover,
+.form-selec-genero:hover,
+.form-control-titulo:hover,
+.form-control-especialidad:hover,
+.form-select-contrato:hover,
+.form-contraseña:hover {
+  border-color: #d1d5db;
+}
+
+/* Placeholders */
+.form-nombre::placeholder, 
+.form-apellido::placeholder,
+.form-documento::placeholder,
+.form-personal::placeholder,
+.form-institucional::placeholder,
+.form-numero::placeholder,
+.form-control-titulo::placeholder,
+.form-control-especialidad::placeholder,
+.form-contraseña::placeholder {
+  color: #1b5dcf;
+  opacity: 1;
+  font-style: italic;
+}
+
+/* Botón mejorado */
+.btn-registrar {
+  display: block;
+  width: 280px;
+  height: 56px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #4c7840 0%, #3a5e2f 100%);
   color: white;
-  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
-  border: none;
-  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
   cursor: pointer;
-  transition: background 0.2s;
-  align-self: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(76, 120, 64, 0.2);
+  letter-spacing: 0.5px;
 }
 
-.formulario-registro button.btn:hover {
-  background: #3a5e2f;
+.btn-registrar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(76, 120, 64, 0.3);
+  background: linear-gradient(135deg, #3a5e2f 0%, #304d2f 100%);
 }
 
-.formulario-registro .mb-3 {
-  margin-bottom: 1.2rem !important;
+.btn-registrar:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(76, 120, 64, 0.2);
 }
 
-.formulario-registro #materias {
-  height: 120px;
-  padding: 10px;
+/* Eliminar validación visual que causa desnivelación */
+.form-nombre,
+.form-apellido,
+.form-documento,
+.form-personal,
+.form-institucional,
+.form-numero,
+.form-control-titulo,
+.form-control-especialidad,
+.form-contraseña {
+  border-color: #e5e7eb !important; /* Forzar borde uniforme */
 }
 
-/* Autocompletado */
-.formulario-registro .autocomplete-list {
-  position: absolute;
-  z-index: 2000;
-  width: 100%;
-  max-height: 250px;
-  overflow-y: auto;
-  background: #fff;
-  border: 1px solid #007bff;
-  border-radius: 0 0 0.5rem 0.5rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+/* Solo mostrar validación en focus */
+.form-nombre:focus:invalid,
+.form-apellido:focus:invalid,
+.form-documento:focus:invalid,
+.form-personal:focus:invalid,
+.form-institucional:focus:invalid,
+.form-numero:focus:invalid,
+.form-control-titulo:focus:invalid,
+.form-control-especialidad:focus:invalid,
+.form-contraseña:focus:invalid {
+  border-color: #db2121;
 }
 
-.formulario-registro .autocomplete-list .list-group-item {
-  cursor: pointer;
-  padding: 0.75rem 1rem;
-  font-size: 1.1rem;
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .formulario-registro {
+    padding: 24px;
+    margin: 20px auto;
+    border-radius: 12px;
+  }
+
+  .formulario-registro h2 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .columna {
+    gap: 20px;
+    min-height: auto; /* Remover altura mínima en móvil */
+  }
+
+  .btn-registrar {
+    width: 100%;
+    height: 52px;
+    font-size: 15px;
+  }
 }
 
-.formulario-registro .autocomplete-list .list-group-item:hover,
-.formulario-registro .autocomplete-list .list-group-item.active {
-  background: #007bff;
-  color: #fff;
+@media (max-width: 480px) {
+  .formulario-registro {
+    padding: 20px;
+  }
+
+  .formulario-registro h2 {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+
+  .form-nombre,
+  .form-apellido,
+  .form-tipo,
+  .form-documento,
+  .form-personal,
+  .form-institucional,
+  .form-numero,
+  .form-nacimiento,
+  .form-select-rh,
+  .form-selec-genero,
+  .form-control-titulo,
+  .form-control-especialidad,
+  .form-select-contrato,
+  .form-contraseña {
+    height: 44px;
+    font-size: 15px;
+  }
 }
 
-/* Choices.js */
-.formulario-registro .choices__inner {
-  border-radius: 4px;
-  border: 1px solid #ced4da;
-  min-height: 38px;
-  font-size: 1rem;
-  background: #fff;
+/* Mejoras de accesibilidad */
+.formulario-registro label:focus-within {
+  color: #6366f1;
 }
 
-.formulario-registro .choices__list--single {
-  padding: 6px 16px 6px 6px;
+/* Animación suave al cargar */
+.formulario-registro {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.formulario-registro .choices__list--dropdown {
-  font-size: 1rem;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Efectos especiales para los selectores */
+select.form-tipo:focus,
+select.form-select-rh:focus,
+select.form-selec-genero:focus,
+select.form-select-contrato:focus {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="%236366f1" d="M8 11L3 6h10l-5 5z"/></svg>');
+}
+
+.form-nacimiento:focus {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%236366f1" stroke-width="2"><rect x="3" y="4" width="18" height="15" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>');
 }

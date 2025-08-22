@@ -108,6 +108,18 @@ if (isset($_GET['page']) && $_GET['page'] === 'marcar_notificacion') {
 
 // --- VISTAS PRINCIPALES ---
 
+// Exportar PDF
+if (isset($_GET['page']) && $_GET['page'] === 'exportar_pdf') {
+    require_once '../views/Archivos/generar_pdf.php';
+    exit;
+}
+
+// Exportar Excel
+if (isset($_GET['page']) && $_GET['page'] === 'exportar_excel') {
+    require_once '../views/Archivos/generar_excel.php';
+    exit;
+}
+
 // Materias
 if (isset($_GET['page']) && $_GET['page'] === 'materias') {
     require_once '../controllers/MateriaController.php';

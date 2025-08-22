@@ -1,11 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const colegioSelect = document.getElementById('colegio_id');
-  const gradoSelect = document.getElementById('grado');
-  const jornadaSelect = document.getElementById('jornada');
-  const tipoDocumentoSelect = document.querySelector('select[name="tipo_documento"]');
-  const generoSelect = document.querySelector('select[name="genero"]');
-  const filtroSelect = document.querySelector('select[name="filtro"]');
-  const tipoDocumentoAcudienteSelect = document.querySelector('select[name="tipo_documento_acudiente"]');
+  const selects = [
+    { element: document.getElementById('colegio_id'), id: 'colegio' },
+    { element: document.getElementById('grado'), id: 'grado' },
+    { element: document.getElementById('jornada'), id: 'jornada' },
+    { element: document.querySelector('select[name="tipo_documento"]'), id: 'tipo_documento' },
+    { element: document.querySelector('select[name="genero"]'), id: 'genero' },
+    { element: document.querySelector('select[name="tipo_documento_acudiente"]'), id: 'tipo_documento_acudiente' },
+    { element: document.querySelector('select[name="filtro"]'), id: 'filtro' }
+  ];
 
   const choicesInstances = {};
 
@@ -21,15 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  initChoices(colegioSelect, 'colegio');
-  initChoices(gradoSelect, 'grado');
-  initChoices(jornadaSelect, 'jornada');
-  initChoices(tipoDocumentoSelect, 'tipo_documento');
-  initChoices(generoSelect, 'genero');
-  initChoices(tipoDocumentoAcudienteSelect, 'tipo_documento_acudiente');
-  initChoices(filtroSelect, 'filtro');
+  selects.forEach(s => initChoices(s.element, s.id));
+
+  // Actualizar grados y jornadas según colegio
+  const colegioSelect = document.getElementById('colegio_id');
+  const gradoSelect = document.getElementById('grado');
+  const jornadaSelect = document.getElementById('jornada');
 
   colegioSelect.addEventListener('change', function () {
+    // Limpiar opciones previas
     gradoSelect.innerHTML = '<option value="">Seleccione grado</option>';
     jornadaSelect.innerHTML = '<option value="">Seleccione jornada</option>';
 
@@ -40,16 +42,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const grados = (selected.getAttribute('data-grados') || '').split(',').map(g => g.trim()).filter(g => g);
     const jornadas = (selected.getAttribute('data-jornada') || '').split(',').map(j => j.trim()).filter(j => j);
 
-    const gradosFiltrados = grados.filter(g => ['7', '8', '9', '10'].includes(g));
-    gradosFiltrados.forEach(g => {
+    grados.forEach(g => {
       const opt = document.createElement('option');
       opt.value = g;
       opt.textContent = g;
       gradoSelect.appendChild(opt);
     });
 
-    const jornadasFiltradas = jornadas.filter(j => ['MAÑANA', 'TARDE'].includes(j.toUpperCase()));
-    jornadasFiltradas.forEach(j => {
+    jornadas.forEach(j => {
       const opt = document.createElement('option');
       opt.value = j;
       opt.textContent = j.charAt(0).toUpperCase() + j.slice(1).toLowerCase();
@@ -103,4 +103,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
   showStep(currentStep);
 });
-

@@ -173,6 +173,7 @@ function formatearNombreColegio($nombre) {
             <table class="tabla-colegios">
                 <thead>
                     <tr>
+                        <th>Dane</th>
                         <th>Nombre</th>
                         <th>Tipo</th>
                         <th>Departamento</th>
@@ -183,6 +184,7 @@ function formatearNombreColegio($nombre) {
                 <tbody>
                     <?php foreach ($colegios as $colegio): ?>
                         <tr>
+                            <td><?= htmlspecialchars($colegio['codigo_dane']) ?></td>
                             <td><?= formatearNombreColegio(htmlspecialchars($colegio['nombre'])) ?></td>
                             <td><?= htmlspecialchars($colegio['tipo_institucion']) ?></td>
                             <td><?=formatearNombreColegio(htmlspecialchars($colegio['departamento'])) ?></td>

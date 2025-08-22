@@ -1,9 +1,5 @@
 <?php
 require_once __DIR__ . '/../Componentes/encabezado.php';
-require_once __DIR__ . '/../../models/Materia.php';
-
-$materiaModel = new Materia();
-$materias = $materiaModel->obtenerTodas(); // Asegúrate que existe este método en Materia.php
 ?>
 <link rel="stylesheet" href="/css/Colegio/crear.css">
 <div class="formulario-registro-colegio">
@@ -59,12 +55,6 @@ $materias = $materiaModel->obtenerTodas(); // Asegúrate que existe este método
                     <label for="calendario" class="form-label">Calendario</label>
                     <input type="text" class="form-control" id="calendario" name="calendario" required>
 
-                    <label for="materias" class="form-label">Materias Asociadas</label>
-                    <select id="materias" name="materias[]" class="form-select" multiple required>
-                        <?php foreach ($materias as $materia): ?>
-                            <option value="<?= $materia['id'] ?>"><?= htmlspecialchars($materia['nombre']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
                 </div>
             </div>
 
@@ -75,35 +65,6 @@ $materias = $materiaModel->obtenerTodas(); // Asegúrate que existe este método
 <!-- Choices.js -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script>
-    new Choices('#materias', {
-        removeItemButton: true,
-        placeholderValue: 'Selecciona materias',
-        noResultsText: 'No se encontraron materias',
-        searchEnabled: true
-    });
-
-const departamentoChoices = new Choices('#departamento', {
-    searchEnabled: true,
-    itemSelectText: '',
-    placeholderValue: 'Selecciona un departamento'
-});
-const municipioChoices = new Choices('#municipio', {
-    searchEnabled: true,
-    itemSelectText: '',
-    placeholderValue: 'Selecciona un municipio'
-});
-const colegioChoices = new Choices('#nombre', {
-    searchEnabled: true,
-    itemSelectText: '',
-    placeholderValue: 'Selecciona un colegio'
-});
-const tipoInstitucionChoices = new Choices('#tipo_institucion', {
-    searchEnabled: false,
-    itemSelectText: '',
-    placeholderValue: 'Seleccione tipo de institución'
-});
-</script>
 <script src="js/filtros.js"></script>
 
 <?php require_once __DIR__ . '/../Componentes/footer.php'; ?>

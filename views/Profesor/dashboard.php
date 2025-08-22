@@ -11,12 +11,27 @@
     </div>
 
     <!-- div2: Bienvenida -->
-    <div class="div2">
-      <div class="panel-secciones">
-        <h2>Bienvenido, Facilitador <?= htmlspecialchars($_SESSION['usuario']['nombres']) ?></h2>
-      </div>
-    </div>
-    
+<div class="div2">
+  <div class="panel-secciones">
+<?php 
+      $tip_contrato = strtolower($tip_contrato ?? '');
+      $nombre_usuario = htmlspecialchars($_SESSION['usuario']['nombres']);
+
+      if ($tip_contrato === 'contratista') {
+          $saludo = "Bienvenid@, Facilitador $nombre_usuario";
+      } elseif ($tip_contrato === 'planta') {
+          $saludo = "Bienvenid@, Instructor $nombre_usuario";
+      } else {
+          $saludo = "Bienvenido, $nombre_usuario";
+      }
+    ?>
+    <h2><?= $saludo ?></h2>
+
+  </div>
+</div>
+
+
+
     <!-- div3: Lista de fichas -->
     <div class="div3">
       <div class="panel-navegacion">PANEL DE FICHAS</div>

@@ -164,12 +164,6 @@ $colegios = $colegioModel->obtenerTodos();
               <option value="">Seleccione jornada</option>
             </select>
           </div>
-          <div class="col-md-6">
-            <label>Ficha</label>
-            <select name="ficha_id" id="ficha_id" required>
-              <option value="">Seleccione un colegio primero</option>
-            </select>
-          </div>
         </div>
         <div class="form-navigation">
           <button type="button" class="prev-btn">Anterior</button>

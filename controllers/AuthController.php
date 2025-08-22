@@ -3,39 +3,41 @@ require_once __DIR__ . '/../models/Usuario.php';
 require_once __DIR__ . '/../config/db.php';
 
 class AuthController {
-    public static function login($correo, $password) {
-        require_once __DIR__ . '/../models/Usuario.php';
-        $usuarioModel = new Usuario();
-        $usuario = $usuarioModel->buscarPorCorreo($correo);
+        public static function login($correo, $password) {
+            require_once __DIR__ . '/../models/Usuario.php';
+            $usuarioModel = new Usuario();
+            $usuario = $usuarioModel->buscarPorCorreo($correo);
 
-        if ($usuario && password_verify($password, $usuario['password_hash'])) {
-            // Conexión a base de datos
-            $pdo = Database::conectar();
+            if ($usuario && password_verify($password, $usuario['password_hash'])) {
+                // Conexión a base de datos
+                $pdo = Database::conectar();
 
-            // Guarda datos básicos del usuario
-            $_SESSION['usuario'] = [
-                'id' => $usuario['id'],
-                'rol_id' => $usuario['rol_id'],
-                'nombres' => $usuario['nombres'],
-                'apellidos' => $usuario['apellidos']
-            ];
+                // Guarda datos básicos del usuario
+                $_SESSION['usuario'] = [
+                    'id'        => $usuario['id'],
+                    'rol_id'    => $usuario['rol_id'],
+                    'nombres'   => $usuario['nombres'],
+                    'apellidos' => $usuario['apellidos'],
+                ];
 
-            // Si es profesor, buscar su ID en la tabla profesores
-            if ($usuario['rol_id'] == 2) {
-                $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
-                $stmt->execute([$usuario['id']]);
-                $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
+                // Si es profesor, buscar su ID y contrato en la tabla profesores
+                if ($usuario['rol_id'] == 2) {
+                    $stmt = $pdo->prepare("SELECT id, tip_contrato FROM profesores WHERE usuario_id = ?");
+                    $stmt->execute([$usuario['id']]);
+                    $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                if ($profesor) {
-                    $_SESSION['usuario']['profesor_id'] = $profesor['id'];
+                    if ($profesor) {
+                        $_SESSION['usuario']['profesor_id']  = $profesor['id'];
+                        $_SESSION['usuario']['tip_contrato'] = $profesor['tip_contrato']; // 👈 aquí lo asignas
+                    }
                 }
+
+                return true;
             }
 
-            return true;
+            return false;
         }
 
-        return false;
-    }
 
 
     public static function registrar($data) {

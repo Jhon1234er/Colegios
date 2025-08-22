@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         feature: {
                             mark: { show: true },
                             dataView: { show: true, readOnly: false },
-                            restore: { show: true },
+                            restore: { show: false },
                             saveAsImage: { show: true }
                         }
                     },

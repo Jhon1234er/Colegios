@@ -6,11 +6,11 @@ require_once __DIR__ . '/../../config/db.php';
 $usuario = $_SESSION['usuario'] ?? null;
 $usuario_id = $usuario['id'] ?? null;
 $rol_id = $usuario['rol_id'] ?? null;
+$tip_contrato = $usuario['tip_contrato'] ?? null; // 👈 correcto
 
 $roles = [
     1 => 'administrador',
     2 => 'profesor',
-    3 => 'estudiante',
     4 => 'rector'
 ];
 
@@ -55,8 +55,8 @@ $tipo_usuario = $roles[$rol_id] ?? null;
                 <div class="dropdown-content">
                   <a href="/?page=profesores&action=crear">Crear Facilitador</a>
                   <a href="/?page=estudiantes&action=crear">Crear Aprendiz</a>
-                  <a href="/?page=colegios&action=crear">Registrar Colegio</a>
-                  <a href="/?page=crear_materia">Registrar Materia / Ficha</a>
+                  <a href="/?page=colegios&action=crear">Registrar Colegios</a>
+                  <a href="/?page=crear_materia">Registrar Cursos</a>
                 </div>
               </div>
               <div class="dropdown">
@@ -70,8 +70,7 @@ $tipo_usuario = $roles[$rol_id] ?? null;
               <a href="/?page=dashboard" class="navlink">Inicio</a>
             <?php elseif ($rol_id === 2): ?>
               <a href="/?page=dashboard_profesor" class="navlink">Mis Fichas</a>
-            <?php elseif ($rol_id === 3): ?>
-              <a href="/?page=mis_asistencias" class="navlink">Mis Asistencias</a>
+              <a href=" " class="navlink">Registrar nueva Ficha</a>
             <?php endif; ?>
 
             <form action="/logout.php" method="post" style="display:inline;">
