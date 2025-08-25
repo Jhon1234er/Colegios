@@ -91,6 +91,18 @@ class Profesor {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerFichasPorProfesor($profesor_id) {
+        $stmt = $this->pdo->prepare("
+            SELECT DISTINCT f.id, f.nombre AS numero_ficha
+            FROM fichas f
+            JOIN asistencias a ON f.id = a.ficha_id
+            WHERE a.profesor_id = ?
+            ORDER BY f.nombre
+        ");
+        $stmt->execute([$profesor_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function obtenerPorColegio($colegioId) {
         $stmt = $this->pdo->prepare("
             SELECT 

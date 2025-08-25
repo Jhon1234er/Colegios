@@ -33,7 +33,7 @@ class Asistencia {
                 e.id AS estudiante_id,
                 u.nombres,
                 u.apellidos,
-                f.nombre,
+                f.nombre AS numero_ficha,
                 COUNT(a.id) AS total_fallas
             FROM estudiantes e
             INNER JOIN usuarios u ON u.id = e.usuario_id

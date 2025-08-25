@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="/css/Profesor/dashboard_profesor.css">
 
 <main>
+  <?php require_once __DIR__ . '/../../helpers/auth.php'; ?>
+  <input type="hidden" id="csrf_token" value="<?= csrf_token() ?>">
   <div class="parent">
     
     <!-- div1: Panel secciones -->
@@ -49,6 +51,7 @@
         <h3>Mis Fichas</h3>
           <!-- Tarjetas de fichas -->
         <div id="tarjetasFichas" class="contenedor-tarjetas"></div>
+        <div id="estudiantesContainer"></div>
         <!-- Registro de asistencia  -->
         <div id="calendarioAsistencia" class="calendario-wrapper"></div>
 

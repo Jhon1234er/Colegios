@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const fichasContainer = document.getElementById('fichasContainer');
   const estudiantesContainer = document.getElementById('estudiantesContainer');
+  const csrfToken = document.getElementById('csrf_token')?.value ?? '';
 
   if (!fichasContainer || !estudiantesContainer) {
     console.warn('Contenedores no encontrados en el DOM.');
@@ -17,9 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (Array.isArray(fichas) && fichas.length > 0) {
         fichas.forEach(ficha => {
           const btn = document.createElement('button');
-          btn.textContent = ficha.nombre;
+          btn.textContent = ficha.numero_ficha;
           btn.classList.add('btn-ficha');
           btn.dataset.fichaId = ficha.id;
+          btn.dataset.fichaNombre = ficha.numero_ficha;
           fichasContainer.appendChild(btn);
         });
       } else {
@@ -337,6 +339,15 @@ document.addEventListener('DOMContentLoaded', () => {
         fichasContainer.appendChild(btn);
       });
 
+      fichas.forEach(ficha => {
+          const btn = document.createElement('button');
+          btn.textContent = ficha.numero_ficha;
+          btn.classList.add('btn-ficha');
+          btn.dataset.fichaId = ficha.id;
+          btn.dataset.fichaNombre = ficha.numero_ficha;
+          fichasContainer.appendChild(btn);
+        });
+
       // Tarjetas (div4) - sin filtro por ahora
       fichas.forEach(ficha => {
         const card = document.createElement('div');
@@ -344,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
           <div class="banner"></div>
           <div class="contenido">
-            <h4>${ficha.nombre}</h4>
+            <h4>${ficha.numero_ficha}</h4>
             <p>${ficha.descripcion || 'Formación Titulada Virtual y a Distancia'}</p>
           </div>
           <div class="menu">⋮</div>
@@ -361,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!e.target.matches('.btn-ficha')) return;
 
     const fichaId = e.target.dataset.fichaId;
-    const fichaNombre = e.target.dataset.fichaNombre || (fichasGlobal.find(f=>String(f.id)===String(fichaId))?.nombre ?? 'Ficha');
+    const fichaNombre = e.target.dataset.fichaNombre || (fichasGlobal.find(f=>String(f.id)===String(fichaId))?.numero_ficha ?? 'Ficha');
 
     fichaSeleccionada = { id: fichaId, nombre: fichaNombre };
     semanaOffset = 0; // siempre volvemos a la semana actual al seleccionar ficha

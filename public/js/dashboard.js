@@ -28,10 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const stats = await fetchJson(`/ajax/asistencias_por_colegio.php?colegio_id=${encodeURIComponent(colegioId)}`);
       renderAsistencias(stats || { fichas: [], alertas: [] });
 
-      // Fetch totales dinámicos
-      const totals = await fetchJson(`/public/ajax/totales_por_colegio.php?colegio_id=${encodeURIComponent(colegioId)}`);
-      renderTotales(totals || {});
-
 
 
     } catch (err) {
@@ -167,13 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alertHtml += '</ul></div>';
       div3.insertAdjacentHTML('beforeend', alertHtml);
     }
-  }
-
-  function renderTotales(data) {
-    document.querySelector('.div5 p').textContent = data.materias ?? 0;
-    document.querySelector('.div6 p').textContent = data.profesores ?? 0;
-    document.querySelector('.div7 p').textContent = data.fichas ?? 0;
-    document.querySelector('.div8 p').textContent = data.estudiantes ?? 0;
   }
 
   // pequeñas utilidades

@@ -5,12 +5,17 @@ if (!isset($resultados) || !isset($filtro) || !isset($query)) {
     header('Location: /?page=dashboard');
     exit;
 }
+
+$filtro_texto = ucfirst($filtro);
+if ($filtro === 'profesor') {
+    $filtro_texto = 'Facilitador/Instructor';
+}
 ?>
 
 <div class="p-4 md:p-6">
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl md:text-2xl font-bold text-gray-800">
-            Resultados para <span class="text-purple-600"><?= htmlspecialchars($query) ?></span> en <span class="text-purple-600"><?= htmlspecialchars(ucfirst($filtro)) ?></span>
+            Resultados para <span class="text-green-600"><?= htmlspecialchars($query) ?></span> en <span class="text-green-600"><?= htmlspecialchars($filtro_texto) ?></span>
         </h2>
         <button id="volver-dashboard" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
             &larr; Volver al Panel

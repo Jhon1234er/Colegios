@@ -7546,3 +7546,624 @@
 (
 )
 
+14:03:49 colegio_id recibido: 1
+14:03:49 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+14:03:49 alertas: Array
+(
+)
+
+14:03:50 colegio_id recibido: 1
+14:03:50 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+14:03:50 alertas: Array
+(
+)
+
+14:03:51 colegio_id recibido: 2
+14:03:51 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+14:03:51 alertas: Array
+(
+)
+
+14:33:04 colegio_id recibido: 1
+14:33:04 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+14:33:04 alertas: Array
+(
+)
+
+14:33:05 colegio_id recibido: 1
+14:33:05 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+14:33:05 alertas: Array
+(
+)
+
+14:33:10 colegio_id recibido: 2
+14:33:10 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+14:33:10 alertas: Array
+(
+)
+
+15:35:00 colegio_id recibido: 1
+15:35:00 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:35:00 alertas: Array
+(
+)
+
+15:35:01 colegio_id recibido: 1
+15:35:01 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:35:01 alertas: Array
+(
+)
+
+15:57:56 colegio_id recibido: 1
+15:57:56 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:57:56 alertas: Array
+(
+)
+
+15:57:57 colegio_id recibido: 1
+15:57:57 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:57:57 alertas: Array
+(
+)
+
+15:57:57 colegio_id recibido: 2
+15:57:57 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+15:57:57 alertas: Array
+(
+)
+
+15:57:58 colegio_id recibido: 2
+15:57:58 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+15:57:58 alertas: Array
+(
+)
+
+15:58:27 colegio_id recibido: 1
+15:58:27 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:58:27 alertas: Array
+(
+)
+
+15:58:27 colegio_id recibido: 2
+15:58:27 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+15:58:27 alertas: Array
+(
+)
+
+15:58:46 colegio_id recibido: 1
+15:58:46 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:58:46 alertas: Array
+(
+)
+
+15:58:47 colegio_id recibido: 1
+15:58:47 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+15:58:47 alertas: Array
+(
+)
+
+15:58:48 colegio_id recibido: 2
+15:58:48 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+15:58:48 alertas: Array
+(
+)
+
+18:42:03 colegio_id recibido: 1
+18:42:03 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+18:42:03 alertas: Array
+(
+)
+
+18:58:16 colegio_id recibido: 1
+18:58:16 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+18:58:16 alertas: Array
+(
+)
+
+18:58:17 colegio_id recibido: 1
+18:58:17 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+18:58:17 alertas: Array
+(
+)
+
+18:58:18 colegio_id recibido: 1
+18:58:18 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+18:58:18 alertas: Array
+(
+)
+
+19:00:28 colegio_id recibido: 1
+19:00:28 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+19:00:28 alertas: Array
+(
+)
+
+19:01:10 colegio_id recibido: 1
+19:01:10 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+19:01:10 alertas: Array
+(
+)
+
+19:02:52 colegio_id recibido: 1
+19:02:52 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+19:02:52 alertas: Array
+(
+)
+
+19:04:31 colegio_id recibido: 2
+19:04:31 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 5
+            [numero_ficha] => 2826774
+            [total_fallas] => 1
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 6
+            [numero_ficha] => 2935732
+            [total_fallas] => 0
+        )
+
+)
+
+19:04:31 alertas: Array
+(
+)
+
+19:04:33 colegio_id recibido: 1
+19:04:33 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+19:04:33 alertas: Array
+(
+)
+
+19:04:44 colegio_id recibido: 1
+19:04:44 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+19:04:44 alertas: Array
+(
+)
+

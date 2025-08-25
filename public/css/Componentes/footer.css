@@ -1,13 +1,68 @@
 .footer {
-  background-color: #436b7e;
+  /* Colores y tipografía */
+  background: linear-gradient(135deg, #436b7e 0%, #3a5d70 100%);
+  color: #ffffff;
   text-align: center;
-  padding: 1rem;
-  font-size: 0.85rem;
-  border-top: 2px solid var(--color1);
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-
-  position: fixed;  /* Siempre visible en la parte inferior */
+  font-size: 0.875rem; /* 14px - más específico que 0.85rem */
+  font-weight: 400;
+  line-height: 1.5;
+  
+  /* Espaciado */
+  padding: 1.25rem 1rem; /* Más padding vertical para mejor proporción */
+  
+  /* Posicionamiento */
+  position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
+  right: 0; /* Mejor que width: 100% para evitar scroll horizontal */
+  z-index: 1000; /* Asegura que esté sobre otros elementos */
+  
+  /* Efectos visuales */
+  border-top: 2px solid var(--color1);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15), 
+              0 -1px 3px rgba(0, 0, 0, 0.08); /* Sombra más sutil y realista */
+  backdrop-filter: blur(10px); /* Efecto de desenfoque si hay contenido detrás */
+  
+  /* Transiciones suaves */
+  transition: all 0.3s ease;
+}
+
+/* Hover effect para interactividad */
+.footer:hover {
+  background: linear-gradient(135deg, #3a5d70 0%, #436b7e 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.2), 
+              0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enlaces dentro del footer */
+.footer a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.footer a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .footer {
+    font-size: 0.8125rem; /* 13px en mobile */
+    padding: 1rem 0.75rem;
+  }
+}
+
+/* Para evitar que el contenido principal quede oculto detrás del footer */
+/* Agregar esta clase al body o contenedor principal */
+.body-with-footer {
+  padding-bottom: 80px; /* Ajustar según la altura del footer */
+}
+
+/* Variante para footer no fijo (opcional) */
+.footer--static {
+  position: static;
+  margin-top: auto; /* Para empujar el footer al final en flexbox */
 }

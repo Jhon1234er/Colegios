@@ -48,14 +48,12 @@ document.addEventListener('DOMContentLoaded', function () {
       formData.append('notificacion_id', id);
 
       try {
-          const res = await fetch('/?page=marcar_notificacion', {
+        const res = await fetch('/?page=marcar_notificacion', {
           method: 'POST',
           body: formData
         });
 
         const text = await res.text();
-
-        // 👇 Validamos que sea JSON real antes de intentar usarlo
         let data;
         try {
           data = JSON.parse(text);
@@ -66,16 +64,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (data.success) {
           const item = btn.closest('li');
-          // AÑADE ESTA COMPROBACIÓN:
-          if (item) { // Solo si 'item' no es null
-            item.classList.add('opacity-60'); // Usamos opacity-60 como en tu HTML
-            btn.remove(); // Elimina el botón "Marcar como leída"
+          if (item) {
+            item.classList.add('opacity-60');
+            btn.remove();
           } else {
-            console.warn("No se encontró el elemento <li> padre para el botón de notificación. El botón será eliminado de todas formas.");
-            // Si no se encuentra el <li>, al menos intenta eliminar el botón para que no se pueda hacer clic de nuevo
+            console.warn("No se encontró el <li> padre.");
             btn.remove();
           }
-
 
           if (lista && lista.querySelectorAll('li:not(.opacity-60)').length === 0) {
             mensajeVacio.classList.remove('hidden');
@@ -100,11 +95,20 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
-}); // <-- Cierre del DOMContentLoaded
+
+  // 👇 Aquí sí: inicializa Choices en tu select de búsqueda
+  document.querySelectorAll(".search-select").forEach(select => {
+    new Choices(select, {
+      removeItemButton: false,
+      shouldSort: false,
+      searchEnabled: false,
+      itemSelectText: ""
+    });
+  });
+}); // <-- cierre del DOMContentLoaded
 
 // Dropdown de notificaciones
 function toggleDropdown() {
   const dropdown = document.getElementById("dropdown-notificaciones");
   dropdown.classList.toggle("hidden");
 }
-

@@ -65,9 +65,7 @@ if ($page === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
 // Fichas del profesor autenticado
 if ($page === 'profesorficha') {
     require_login(); require_role(2);
-    require_once '../controllers/ProfesorController.php';
-    $controller = new ProfesorController();
-    $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
+    require_once '../controllers/ProfesorFichaController.php';
     exit;
 }
 
@@ -88,6 +86,12 @@ if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once '../controllers/NotificacionController.php';
     $controller = new NotificacionController();
     $controller->marcarLeida();
+    exit;
+}
+
+if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../controllers/TareaController.php';
+    TareaController::guardarAsistencias();
     exit;
 }
 
@@ -123,6 +127,15 @@ if ($page === 'estudiantes') {
     if ($action === 'crear')          $c->crear();
     elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') { csrf_validate(); $c->guardar(); }
     else $c->index();
+    exit;
+}
+
+if ($page === 'crear_materia') {
+    require_login(); 
+    require_role(1);
+    require_once '../controllers/MateriaController.php';
+    $c = new MateriaController();
+    $c->crear();
     exit;
 }
 
