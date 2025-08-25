@@ -1,19 +1,22 @@
 <?php
+require_once '../helpers/auth.php';
 require_once '../controllers/AuthController.php';
-session_start(); // <-- ¡Asegúrate de que session_start() esté aquí, al principio!
+
+start_secure_session();
 
 $error = null;
 
-// --- LOGIN ---
-if (isset($_POST['login'])) {
-    $resultado = AuthController::login($_POST['correo'], $_POST['password']);
-    if (!$resultado) {
+// ====== LOGIN ======
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    csrf_validate();
+    $ok = AuthController::login($_POST['correo'] ?? '', $_POST['password'] ?? '');
+    if (!$ok) {
         $error = "Correo o contraseña incorrectos";
     } else {
-        $rol = $_SESSION['usuario']['rol_id'];
-        if ($rol == 1) {
+        $rol = (int)$_SESSION['usuario']['rol_id'];
+        if ($rol === 1) {
             header('Location: /?page=dashboard');
-        } elseif ($rol == 2) {
+        } elseif ($rol === 2) {
             header('Location: /?page=dashboard_profesor');
         } else {
             header('Location: /');
@@ -22,256 +25,154 @@ if (isset($_POST['login'])) {
     }
 }
 
-// --- REGISTRO ---
+// ====== REGISTRO ======
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
+    csrf_validate();
     AuthController::registrar($_POST);
     exit;
 }
 
-// --- API/ENDPOINTS (antes de mostrar vistas) ---
+// ====== ENDPOINTS PÚBLICOS (AJAX lean) ======
+$page = $_GET['page'] ?? null;
 
 // Materias por colegio
-if (isset($_GET['page']) && $_GET['page'] === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
+if ($page === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
     require_once '../models/ColegioMateria.php';
     $colegioMateriaModel = new ColegioMateria();
-    $materias = $colegioMateriaModel->obtenerMateriasPorColegio($_GET['colegio_id']);
     header('Content-Type: application/json');
-    echo json_encode($materias);
+    echo json_encode($colegioMateriaModel->obtenerMateriasPorColegio($_GET['colegio_id']));
     exit;
 }
 
 // Profesores por colegio
-if (isset($_GET['page']) && $_GET['page'] === 'profesores_por_colegio' && isset($_GET['colegio_id'])) {
+if ($page === 'profesores_por_colegio' && isset($_GET['colegio_id'])) {
     require_once '../models/Profesor.php';
     $profesorModel = new Profesor();
-    $profesores = $profesorModel->obtenerPorColegio($_GET['colegio_id']);
     header('Content-Type: application/json');
-    echo json_encode($profesores);
+    echo json_encode($profesorModel->obtenerPorColegio($_GET['colegio_id']));
     exit;
 }
-
-// Fichas 
 
 // Estudiantes por colegio
-if (isset($_GET['page']) && $_GET['page'] === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
+if ($page === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
     require_once '../models/Estudiante.php';
     $estudianteModel = new Estudiante();
-    $estudiantes = $estudianteModel->obtenerPorColegio($_GET['colegio_id']);
     header('Content-Type: application/json');
-    echo json_encode($estudiantes);
+    echo json_encode($estudianteModel->obtenerPorColegio($_GET['colegio_id']));
     exit;
 }
-if (isset($_GET['page']) && $_GET['page'] === 'profesorficha') {
+
+// Fichas del profesor autenticado
+if ($page === 'profesorficha') {
+    require_login(); require_role(2);
     require_once '../controllers/ProfesorController.php';
-
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_start();
-    }
-
-    // ✅ Verificar que el profesor_id exista en sesión
-    if (isset($_SESSION['usuario']['profesor_id'])) {
-        $controller = new ProfesorController();
-        $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
-    } else {
-        header('Content-Type: application/json');
-        http_response_code(401); // Unauthorized
-        echo json_encode(['error' => 'Sesión inválida o profesor no identificado.']);
-    }
-
+    $controller = new ProfesorController();
+    $controller->fichasPorProfesor($_SESSION['usuario']['profesor_id']);
     exit;
 }
 
-if (isset($_GET['page']) && $_GET['page'] === 'estudiantesporficha') {
+// Estudiantes por ficha
+if ($page === 'estudiantesporficha') {
+    require_login();
     require_once '../controllers/EstudianteController.php';
     $controller = new EstudianteController();
     $ficha_id = $_GET['ficha_id'] ?? null;
-
-    if ($ficha_id) {
-        $controller->obtenerPorFicha($ficha_id);
-    } else {
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'Falta ficha_id']);
-    }
-
+    header('Content-Type: application/json');
+    echo $ficha_id ? $controller->obtenerPorFicha($ficha_id) : json_encode(['error' => 'Falta ficha_id']);
     exit;
 }
 
-// --- AÑADE ESTE BLOQUE PARA EL NotificacionController ---
-if (isset($_GET['page']) && $_GET['page'] === 'marcar_notificacion') {
-    require_once '../controllers/NotificacionController.php'; 
-    $controller = new NotificacionController(); 
+// Marcar notificación como leída
+if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_once '../controllers/NotificacionController.php';
+    $controller = new NotificacionController();
     $controller->marcarLeida();
-    exit; 
-}
-// --- FIN DEL BLOQUE A AÑADIR ---
-
-
-// --- VISTAS PRINCIPALES ---
-
-// Exportar PDF
-if (isset($_GET['page']) && $_GET['page'] === 'exportar_pdf') {
-    require_once '../views/Archivos/generar_pdf.php';
     exit;
 }
 
-// Exportar Excel
-if (isset($_GET['page']) && $_GET['page'] === 'exportar_excel') {
-    require_once '../views/Archivos/generar_excel.php';
-    exit;
-}
-
-// Materias
-if (isset($_GET['page']) && $_GET['page'] === 'materias') {
-    require_once '../controllers/MateriaController.php';
-    $controller = new MateriaController();
-    $action = $_GET['action'] ?? 'index';
-    if ($action === 'editar' && isset($_GET['id'])) {
-        $controller->editar();
-    } elseif ($action === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->actualizar();
-    } elseif ($action === 'desactivar' && isset($_GET['id'])) {
-        $controller->desactivar();
-    } elseif ($action === 'activar' && isset($_GET['id'])) {
-        $controller->activar();
-    } elseif ($action === 'guardar_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->guardarFicha();
-    } else {
-        $controller->index();
-    }
-    exit;
-}
-
-// Crear Materia
-if (isset($_GET['page']) && $_GET['page'] === 'crear_materia') {
-    include '../views/Materia/crear.php';
-    exit;
-}
-// Crear Tarea
-if (isset($_GET['page']) && $_GET['page'] === 'crear_tarea') {
-    include '../views/Profesor/crear_tarea.php';
-    exit;
-}
-
-// Ver Notas
-if (isset($_GET['page']) && $_GET['page'] === 'ver_notas') {
-    include '../views/Profesor/ver_notas.php';
-    exit;
-}
-
-// Guardar tarea
-if (isset($_GET['page']) && $_GET['page'] === 'guardar_tarea' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '../controllers/TareaController.php';
-    TareaController::guardarTarea();
-    exit;
-}
-
-// Guardar notas
-if (isset($_GET['page']) && $_GET['page'] === 'guardar_notas' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '../controllers/TareaController.php';
-    TareaController::guardarNotas();
-    exit;
-}
-// Guardar asistencia
-if (isset($_GET['page']) && $_GET['page'] === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '../controllers/TareaController.php';
-    TareaController::guardarAsistencias();
-    exit;
-}
-
-
-// Colegios
-if (isset($_GET['page']) && $_GET['page'] === 'colegios') {
+// ====== RUTAS PROTEGIDAS (VISTAS) ======
+if ($page === 'colegios') {
+    require_login(); require_role(1);
     require_once '../controllers/ColegioController.php';
-    $controller = new ColegioController();
+    $c = new ColegioController();
     $action = $_GET['action'] ?? 'index';
-    if ($action === 'crear') {
-        $controller->crear();
-    } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->guardar();
-    } elseif ($action === 'eliminar' && isset($_GET['id'])) {
-        $controller->eliminar();
-    } else {
-        $controller->index();
-    }
+    if ($action === 'crear')          $c->crear();
+    elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') { csrf_validate(); $c->guardar(); }
+    elseif ($action === 'eliminar' && isset($_GET['id'])) $c->eliminar();
+    else $c->index();
     exit;
 }
 
-// Profesores
-if (isset($_GET['page']) && $_GET['page'] === 'profesores') {
+if ($page === 'profesores') {
+    require_login(); require_role(1);
     require_once '../controllers/ProfesorController.php';
-    $controller = new ProfesorController();
+    $c = new ProfesorController();
     $action = $_GET['action'] ?? 'index';
-    if ($action === 'crear') {
-        $controller->crear();
-    } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->guardar();
-    } else {
-        $controller->index();
-    }
+    if ($action === 'crear')          $c->crear();
+    elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') { csrf_validate(); $c->guardar(); }
+    else $c->index();
     exit;
 }
 
-// Estudiantes
-if (isset($_GET['page']) && $_GET['page'] === 'estudiantes') {
+if ($page === 'estudiantes') {
+    require_login(); require_role([1]); // ajusta si estudiantes también pueden ver algo
     require_once '../controllers/EstudianteController.php';
-    $controller = new EstudianteController();
+    $c = new EstudianteController();
     $action = $_GET['action'] ?? 'index';
-    if ($action === 'crear') {
-        $controller->crear();
-    } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->guardar();
-    } else {
-        $controller->index();
+    if ($action === 'crear')          $c->crear();
+    elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') { csrf_validate(); $c->guardar(); }
+    else $c->index();
+    exit;
+}
+
+// Perfil
+if ($page === 'ver_perfil')   { require_login(); require_once '../controllers/PerfilController.php'; (new PerfilController())->ver(); exit; }
+if ($page === 'editar_perfil'){ require_login(); require_once '../controllers/PerfilController.php'; $ctl=new PerfilController(); if ($_SERVER['REQUEST_METHOD']==='POST'){ csrf_validate(); $ctl->actualizar(); } else { $ctl->editar(); } exit; }
+
+// ====== DASHBOARDS O BÚSQUEDA AJAX ======
+if ($page === 'dashboard' && isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    require_login();
+    require_role(1);
+
+    $filtro = $_GET['filtro'] ?? 'colegio';
+    $query = $_GET['q'] ?? '';
+    $resultados = [];
+
+    switch ($filtro) {
+        case 'colegio':
+            require_once '../models/Colegio.php';
+            $resultados = (new Colegio())->buscarPorNombre($query);
+            break;
+        case 'profesor':
+            require_once '../models/Profesor.php';
+            $resultados = (new Profesor())->buscarPorNombre($query);
+            break;
+        case 'estudiante':
+            require_once '../models/Estudiante.php';
+            $resultados = (new Estudiante())->buscarPorNombre($query);
+            break;
     }
+
+    // Cargar una vista solo para los resultados
+    include '../views/Archivos/resultados_busqueda.php';
     exit;
 }
 
-// Ver perfil
-if (isset($_GET['page']) && $_GET['page'] === 'ver_perfil') {
-    require_once '../controllers/PerfilController.php';
-    $controller = new PerfilController();
-    $controller->ver();
-    exit;
+if (!empty($_SESSION['usuario'])) {
+    if ((int)$_SESSION['usuario']['rol_id'] === 1) { include '../views/dashboard.php'; exit; }
+    if ((int)$_SESSION['usuario']['rol_id'] === 2) { include '../views/Profesor/dashboard.php'; exit; }
 }
 
-// Editar perfil
-if (isset($_GET['page']) && $_GET['page'] === 'editar_perfil') {
-    require_once '../controllers/PerfilController.php';
-    $controller = new PerfilController();
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->actualizar();
-    } else {
-        $controller->editar();
-    }
-    exit;
-}
-
-// --- DASHBOARDS Y VISTAS DE USUARIO ---
-
-// Dashboard general (admin)
-if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 1) {
-    include '../views/dashboard.php';
-    exit;
-}
-
-// Dashboard profesor
-if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 2) {
-    include '../views/Profesor/dashboard.php';
-    exit;
-}
-
-// Dashboard estudiante
-if (isset($_SESSION['usuario']) && $_SESSION['usuario']['rol_id'] == 3) {
-    include '../views/Estudiante/dashboard.php';
-    exit;
-}
-
-// Registro
+// ====== REGISTRO (vista) ======
 if (isset($_GET['registro']) && $_GET['registro'] === 'true') {
     include '../views/registro.php';
     exit;
 }
 
-// Login (por defecto)
-include '../views/login.php';
+// ====== LOGIN (por defecto) ======
+// ====== LOGIN (por defecto) ======
+require_once '../controllers/AuthController.php';
+$c = new AuthController();
+$c->loginForm();
 exit;

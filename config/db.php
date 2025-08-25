@@ -1,12 +1,18 @@
 <?php
 class Database {
-    public static function conectar() {
-        try {
-            $pdo = new PDO('mysql:host=localhost;dbname=sistema_escolar', 'root', '1234');
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $pdo;
-        } catch (PDOException $e) {
-            die('Error de conexión: ' . $e->getMessage());
-        }
+    public static function conectar(): PDO {
+        $host = getenv('DB_HOST') ?: 'localhost';
+        $db   = getenv('DB_NAME') ?: 'sistema_escolar';
+        $user = getenv('DB_USER') ?: 'root';
+        $pass = getenv('DB_PASS') ?: '1234';
+
+        $dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
+        $opt = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+
+        return new PDO($dsn, $user, $pass, $opt);
     }
 }

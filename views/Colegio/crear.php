@@ -12,6 +12,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
         <?php endif; ?>
 
         <form method="POST" action="/?page=colegios&action=guardar">
+            <?= csrf_input(); ?>
             <div class="row">
                 <div class="col-md-6">
                     <label for="departamento" class="form-label">Departamento</label>

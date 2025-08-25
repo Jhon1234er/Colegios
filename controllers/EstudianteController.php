@@ -11,42 +11,40 @@ class EstudianteController {
     }
 
     public function guardar() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $estudianteModel = new Estudiante();
+        start_secure_session();
+        require_login(); require_role(1);
+        csrf_validate();
 
-            $datos = [
-                'nombre' => $_POST['nombres'],
-                'apellido' => $_POST['apellidos'],
-                'tipo_documento' => $_POST['tipo_documento'],
-                'numero_documento' => $_POST['numero_documento'],
-                'correo_electronico' => $_POST['correo_electronico'],
-                'telefono' => $_POST['telefono'],
-                'genero' => $_POST['genero'],
-                'contrasena' => $_POST['password'],
-                'fecha_nacimiento' => $_POST['fecha_nacimiento'],
-                'colegio_id' => $_POST['colegio_id'],
-                'ficha_id' => $_POST['ficha_id'],
-                'grado' => $_POST['grado'],
-                'grupo' => $_POST['grupo'],
-                'jornada' => $_POST['jornada'],
-                'fecha_ingreso' => date('Y-m-d'),
-                'nombre_completo_acudiente' => $_POST['nombre_completo_acudiente'],
-                'tipo_documento_acudiente' => $_POST['tipo_documento_acudiente'],
-                'numero_documento_acudiente' => $_POST['numero_documento_acudiente'],
-                'telefono_acudiente' => $_POST['telefono_acudiente'],
-                'parentesco' => $_POST['parentesco'],
-                'ocupacion' => $_POST['ocupacion']
-            ];
+        $datos = [
+            'nombres'                     => trim($_POST['nombres'] ?? ''),
+            'apellidos'                   => trim($_POST['apellidos'] ?? ''),
+            'tipo_documento'              => $_POST['tipo_documento'] ?? '',
+            'numero_documento'            => trim($_POST['numero_documento'] ?? ''),
+            'correo_electronico'          => trim($_POST['correo_electronico'] ?? ''),
+            'telefono'                    => trim($_POST['telefono'] ?? ''),
+            'fecha_nacimiento'            => $_POST['fecha_nacimiento'] ?? '',
+            'genero'                      => $_POST['genero'] ?? '',
+            'colegio_id'                  => $_POST['colegio_id'] ?? null,
+            'grado'                       => $_POST['grado'] ?? '',
+            'grupo'                       => trim($_POST['grupo'] ?? ''),
+            'jornada'                     => $_POST['jornada'] ?? '',
+            'fecha_ingreso'               => date('Y-m-d'),
+            'nombre_completo_acudiente'   => trim($_POST['nombre_completo_acudiente'] ?? ''),
+            'tipo_documento_acudiente'    => $_POST['tipo_documento_acudiente'] ?? '',
+            'numero_documento_acudiente'  => trim($_POST['numero_documento_acudiente'] ?? ''),
+            'telefono_acudiente'          => trim($_POST['telefono_acudiente'] ?? ''),
+            'parentesco'                  => trim($_POST['parentesco'] ?? ''),
+            'ocupacion'                   => trim($_POST['ocupacion'] ?? '')
+        ];
 
-            $exito = $estudianteModel->guardar($datos);
+        require_once __DIR__ . '/../models/Estudiante.php';
+        $estudianteModel = new Estudiante();
 
-            if ($exito) {
-                header("Location: /?page=estudiantes&success=1");
-                exit;
-            } else {
-                echo "❌ Error al registrar estudiante.";
-            }
+        if ($estudianteModel->guardar($datos)) {
+            header("Location: /?page=estudiantes&success=1");
+            exit;
         }
+        echo "❌ Error al registrar estudiante.";
     }
 
     public function index() {

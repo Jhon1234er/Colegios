@@ -10,6 +10,8 @@
     <?php endif; ?>
 
     <form method="POST" action="<?= isset($materia) ? '/?page=materias&action=actualizar' : '/materias/guardar' ?>">
+      <?= csrf_input(); ?>
+        
         <?php if (isset($materia)): ?>
             <input type="hidden" name="id" value="<?= htmlspecialchars($materia['id']) ?>">
         <?php endif; ?>
@@ -20,12 +22,6 @@
                        value="<?= isset($materia) ? htmlspecialchars($materia['nombre']) : '' ?>">
             </div>
 
-            <div class="col-md-6">
-                <label for="codigo" class="form-label">Código</label>
-                <input type="text" id="codigo" name="codigo" class="form-control" required
-                       value="<?= isset($materia) ? htmlspecialchars($materia['codigo']) : '' ?>"
-                       <?= isset($materia) ? 'readonly style="background:#eee;cursor:not-allowed;"' : '' ?>>
-            </div>
         </div>
 
         <div class="row" style="justify-content: flex-end; margin-top: 20px;">
@@ -56,7 +52,6 @@ $materias = $materiaModel->obtenerTodas();
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Código</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -65,7 +60,6 @@ $materias = $materiaModel->obtenerTodas();
                     <?php foreach ($materias as $m): ?>
                         <tr class="<?= (isset($m['activo']) && $m['activo'] == 0) ? 'fila-inactiva' : '' ?>">
                             <td><?= htmlspecialchars($m['nombre']) ?></td>
-                            <td><?= htmlspecialchars($m['codigo']) ?></td>
                             <td>
                                 <?php if (isset($m['activo']) && $m['activo'] == 0): ?>
                                     <span class="badge bg-danger">Inactiva</span>

@@ -21,49 +21,36 @@ class ColegioController {
     }
 
     public function guardar() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nombre = trim($_POST['nombre'] ?? '');
-            $codigo_dane = trim($_POST['codigo_dane'] ?? '');
-            $nit = trim($_POST['nit'] ?? '');
-            $tipo = trim($_POST['tipo_institucion'] ?? '');
-            $direccion = trim($_POST['direccion'] ?? '');
-            $telefono = trim($_POST['telefono'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
-            $municipio = trim($_POST['municipio'] ?? '');
-            $departamento = trim($_POST['departamento'] ?? '');
-            $materias = $_POST['materias'] ?? [];
-            $jornada = $_POST['jornada'] ?? [];
-            $grados = $_POST['grados'] ?? [];
-            $calendario = $_POST['calendario'] ?? [];
+        start_secure_session();
+        require_login(); require_role(1);
+        csrf_validate();
 
-            if (
-                !empty($nombre) && !empty($codigo_dane) && !empty($nit) &&
-                !empty($tipo) && !empty($direccion) && !empty($telefono) &&
-                !empty($correo) && !empty($municipio) && !empty($departamento)
-            ) {
-                $this->colegioModel->guardar([
-                    'nombre' => $nombre,
-                    'codigo_dane' => $codigo_dane,
-                    'nit' => $nit,
-                    'tipo_institucion' => $tipo,
-                    'direccion' => $direccion,
-                    'telefono' => $telefono,
-                    'correo' => $correo,
-                    'municipio' => $municipio,
-                    'departamento' => $departamento,
-                    'jornada' => $jornada,
-                    'grados' => $grados,
-                    'calendario' => $calendario
-                ], $materias);
+        $datos = [
+            'nombre'          => trim($_POST['nombre'] ?? ''),
+            'codigo_dane'     => trim($_POST['codigo_dane'] ?? ''),
+            'nit'             => trim($_POST['nit'] ?? ''),
+            'tipo_institucion'=> $_POST['tipo_institucion'] ?? '',
+            'direccion'       => trim($_POST['direccion'] ?? ''),
+            'telefono'        => trim($_POST['telefono'] ?? ''),
+            'correo'          => trim($_POST['correo'] ?? ''),
+            'municipio'       => trim($_POST['municipio'] ?? ''),
+            'departamento'    => trim($_POST['departamento'] ?? ''),
+            'materias'        => $_POST['materias'] ?? [],
+            'jornada'         => $_POST['jornada'] ?? [],
+            'grados'          => $_POST['grados'] ?? [],
+            'calendario'      => $_POST['calendario'] ?? []
+        ];
 
-                header("Location: /?page=colegios");
-                exit;
-            } else {
-                $error = "Todos los campos son obligatorios.";
-                include __DIR__ . '/../views/Colegio/crear.php';
-            }
+        require_once __DIR__ . '/../models/Colegio.php';
+        $colegioModel = new Colegio();
+
+        if ($colegioModel->guardar($datos)) {
+            header("Location: /?page=colegios&success=1");
+            exit;
         }
+        echo "❌ Error al guardar colegio.";
     }
+
 
     public function eliminar() {
         if (isset($_GET['id'])) {

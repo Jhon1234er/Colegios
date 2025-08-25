@@ -162,9 +162,10 @@ public function obtenerPorColegio($colegioId) {
             FROM estudiantes e
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN fichas f ON e.ficha_id = f.id
-            WHERE e.colegio_id = ?
+            WHERE u.nombres LIKE ? OR u.apellidos LIKE ?
         ");
-        $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
+        $searchTerm = '%' . $q . '%';
+        $stmt->execute([$searchTerm, $searchTerm]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -10,10 +10,10 @@ $fichas = $fichaModel->obtenerTodas();
 <div class="container">
     <h2>Registrar Nueva Ficha</h2>
         <form method="POST" action="/?page=&action=guardar_ficha">
-        <div class="row">
+        <div class="">
             <div class="">
-                <label for="nombre_ficha" class="form-label">Nombre de la Ficha</label>
-                <input type="text" name="nombre" id="nombre_ficha" class="form-control" required>
+                <label for="nombre_ficha" class="">Nombre de la Ficha</label>
+                <input type="text" name="nombre" id="nombre_ficha" class="" required>
             </div>
 
 
@@ -24,8 +24,8 @@ $fichas = $fichaModel->obtenerTodas();
         </div>
 
 </div>
-    <div class="container mt-5">
-        <h2 class="mb-4">Listado de Fichas</h2>
+    <div class="">
+        <h2 class="">Listado de Fichas</h2>
         <div class="table-responsive">
             <table class="tabla-lista">
                 <thead>
@@ -43,9 +43,9 @@ $fichas = $fichaModel->obtenerTodas();
                             <td><?= htmlspecialchars($ficha['colegio']) ?></td>
                             <td>
                                 <?php if ($ficha['activa'] ?? true): ?>
-                                    <span class="badge bg-success">Activa</span>
+                                    <span class="">Activa</span>
                                 <?php else: ?>
-                                    <span class="badge bg-danger">Inactiva</span>
+                                    <span class="">Inactiva</span>
                                 <?php endif; ?>
                             </td>
                             <td>

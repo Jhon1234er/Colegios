@@ -35,6 +35,7 @@ $colegios = $colegioModel->obtenerTodos();
     </ol>
 
     <form id="formEstudiante" action="/?page=estudiantes&action=guardar" method="POST">
+      <?= csrf_input(); ?>
       <!-- Paso 1: Estudiante -->
       <div class="form-step active">
         <h5>Información del Estudiante</h5>

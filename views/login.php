@@ -22,6 +22,7 @@
     <h2>Iniciar Sesión</h2>
 
     <form method="POST" action="/index.php">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
         <div class="form-group">
             <label for="correo">Correo electrónico</label>
             <input type="email" name="correo" required>

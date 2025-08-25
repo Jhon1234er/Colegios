@@ -9,6 +9,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <div class="formulario-registro">
   <h2>Registro de Facilitador</h2>
   <form action="/?page=profesores&action=guardar" method="POST" id="registroProfesorForm">
+      <?= csrf_input(); ?>
     <div class="form-grid">
       <!-- Columna izquierda -->
       <div class="columna">
