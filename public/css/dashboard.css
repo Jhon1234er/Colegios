@@ -61,7 +61,7 @@ body {
 .parent {
   display: grid;
   grid-template-columns: 1fr 2.5fr 1fr;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto minmax(750px, 1fr) auto;
   grid-gap: 1.5rem;
   grid-template-areas: 
     "bienvenida bienvenida bienvenida"
@@ -136,15 +136,14 @@ body {
 .div1, .div2 {
   background: var(--white);
   border-radius: var(--radius-lg);
-  padding: 3rem 1.5rem;
+  padding: 1.5rem;
   box-shadow: var(--shadow-lg);
   border-left: 4px solid var(--primary);
   transition: var(--transition);
   transform: translateY(0);
   min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow-y: auto;
+  max-height: 500px;
 }
 
 .div1:hover, .div2:hover {
@@ -159,15 +158,152 @@ body {
   text-align: center;
 }
 
+/* ===== ESTILOS PARA PROFESORES/FACILITADORES ===== */
+.div1 h3, .div2 h3 {
+  color: var(--gray-800);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.div1 h3::after, .div2 h3::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 2px;
+}
+
+.profesor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profesor-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(52, 211, 153, 0.05));
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.profesor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.profesor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+}
+
+.profesor-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 0.75rem;
+  text-transform: capitalize;
+  border-bottom: 2px solid var(--gray-100);
+  padding-bottom: 0.5rem;
+}
+
+.profesor-card p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  text-align: left !important;
+}
+
+.profesor-card p strong {
+  color: var(--gray-700);
+  margin-right: 0.5rem;
+}
+
+/* ===== ESTILOS PARA ESTUDIANTES/APRENDICES ===== */
+.students-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.student-card {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(16, 185, 129, 0.05));
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.student-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--success), var(--primary));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.student-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+}
+
+.student-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 0.75rem;
+  text-transform: capitalize;
+  border-bottom: 2px solid var(--gray-100);
+  padding-bottom: 0.5rem;
+}
+
+.student-details {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.student-details strong {
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
 /* ===== GRÁFICO ===== */
 .div3 {
   grid-area: grafico;
   background: var(--white);
   border-radius: var(--radius-xl);
-  padding: 2rem;
+  padding: 1.25rem;
   box-shadow: var(--shadow-xl);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 750px;
 }
 
 .div3::before {
@@ -190,11 +326,90 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   text-align: center;
+  flex-shrink: 0;
 }
 
 #chart-container {
-  height: 350px;
+  height: 680px;
   width: 100%;
+  min-height: 650px;
+}
+
+/* ===== ESTILOS PARA ALERTAS ===== */
+.alertas {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.alertas::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--danger), #dc2626);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.alertas h4 {
+  color: var(--danger);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alertas ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.alertas li {
+  background: var(--white);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.alertas li:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.alertas li::before {
+  content: '⚠️';
+  position: absolute;
+  left: -25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.alertas li:hover::before {
+  left: 0.5rem;
+}
+
+.alertas li strong {
+  color: var(--danger);
+  font-weight: 600;
 }
 
 /* ===== CONTADORES ===== */
@@ -295,16 +510,16 @@ body {
 
 /* Botón PDF con hover rojo */
 .div10 .btn {
-  background: linear-gradient(to bottom right, #376e5c, #326551);
+  background: linear-gradient(to bottom right, #5dd1ab, #0ead6e);
 }
 
 .div10 .btn:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: linear-gradient(135deg, #f94747, #ca4444);
 }
 
 /* Botón Excel con hover verde */
 .div11 .btn {
-  background: linear-gradient(to bottom right, #376e5c, #326551);
+  background: linear-gradient(to bottom right, #5dd1ab, #0ead6e);
 }
 
 .div11 .btn:hover {
@@ -443,6 +658,38 @@ body {
   to { opacity: 1; }
 }
 
+/* ===== ANIMACIONES ADICIONALES ===== */
+.profesor-card, .student-card, .alertas li {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== LOADING STATES ===== */
+.loading-pulse {
+  background: linear-gradient(90deg, var(--gray-200) 0%, var(--gray-100) 50%, var(--gray-200) 100%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1400px) {
   .dashboard-panel {
@@ -462,6 +709,10 @@ body {
   
   .dashboard-panel {
     padding: 1rem;
+  }
+  
+  .div1, .div2 {
+    min-height: 350px;
   }
 }
 
@@ -489,6 +740,19 @@ body {
     font-size: 1rem;
   }
   
+  .div1, .div2 {
+    min-height: 300px;
+    padding: 1rem;
+  }
+  
+  .profesor-card, .student-card {
+    padding: 1rem;
+  }
+  
+  .profesor-name, .student-name {
+    font-size: 1rem;
+  }
+  
   .contadores-column {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -505,7 +769,16 @@ body {
   }
   
   #chart-container {
-    height: 280px;
+    height: 10000px;
+  }
+  
+  .alertas {
+    padding: 1rem;
+  }
+  
+  .alertas li {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -522,6 +795,22 @@ body {
     padding: 1rem;
   }
   
+  .div1, .div2 {
+    min-height: 250px;
+  }
+  
+  .profesor-card, .student-card {
+    padding: 0.75rem;
+  }
+  
+  .profesor-name, .student-name {
+    font-size: 0.95rem;
+  }
+  
+  .profesor-card p, .student-details {
+    font-size: 0.8rem;
+  }
+  
   #tabla-colegios {
     display: block;
     overflow-x: auto;
@@ -529,6 +818,14 @@ body {
   }
   
   #chart-container {
-    height: 250px;
+    height: 1000px;
+  }
+  
+  .alertas h4 {
+    font-size: 1rem;
+  }
+  
+  .alertas li {
+    font-size: 0.8rem;
   }
 }

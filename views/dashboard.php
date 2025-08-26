@@ -33,6 +33,12 @@ function formatearNombreColegio($nombre) {
     <meta charset="UTF-8">
     <title>Panel de Administrador</title>
     <link rel="stylesheet" href="/css/dashboard.css">
+    <!-- CSS Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- JS Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 <body>
     <?php include 'Componentes/encabezado.php'; ?>
@@ -69,7 +75,7 @@ function formatearNombreColegio($nombre) {
                 </div>
                 <div class="div11">
                     <h3>Descargar datos de la semana (Excel)</h3>
-                    <a href="/views/Archivos/generar_excel.php" class="btn">Descargar Excel</a>
+                    <button class="btn" data-bs-toggle="modal" data-bs-target="#modalExcel">Descargar Excel</button>
                 </div>
             </div>
 
@@ -114,9 +120,148 @@ function formatearNombreColegio($nombre) {
 
     <?php include 'Componentes/footer.php'; ?> 
 
+
+<!-- Modal Generar Excel -->
+<div class="modal fade" id="modalExcel" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generar Excel de Asistencias</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Select colegio -->
+        <div class="mb-3">
+          <label for="selectColegio" class="form-label">Seleccione Colegio</label>
+          <select id="selectColegio" class="form-select">
+            <option value="">-- Seleccionar --</option>
+            <?php foreach ($colegios as $c): ?>
+              <option value="<?= $c['id'] ?>"><?= formatearNombreColegio(htmlspecialchars($c['nombre'])) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- Select ficha -->
+        <div class="mb-3">
+          <label for="selectFicha" class="form-label">Seleccione Ficha</label>
+          <select id="selectFicha" class="form-select" multiple disabled></select>
+          <div class="form-check mt-2">
+            <input type="checkbox" class="form-check-input" id="checkAllFichas">
+            <label for="checkAllFichas" class="form-check-label">Seleccionar todas</label>
+          </div>
+        </div>
+
+        <!-- Vista previa -->
+        <div id="previewContainer" class="mt-4" style="display:none;">
+          <h6>Vista previa:</h6>
+          <div class="table-responsive">
+            <table class="table table-bordered" id="previewTable">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Documento</th>
+                  <th>Ficha</th>
+                  <th>Jornada</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnPreview" class="btn btn-info">Vista previa</button>
+        <button type="button" id="btnDownloadExcel" class="btn btn-success">Descargar Excel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
     <!-- Librerías JS -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="/js/dashboard.js"></script>
     <script src="/js/encabezado.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+
+  // Al seleccionar colegio → cargar fichas
+  $('#selectColegio').change(function(){
+    let colegioId = $(this).val();
+    if(!colegioId) return;
+
+    $.post(
+      '/public/ajax/get_fichas_por_colegio.php', 
+      { colegio_id: colegioId }, 
+      function(fichas){
+        console.log("Respuesta fichas RAW:", fichas); // 👀 en consola navegador
+        alert(JSON.stringify(fichas)); // 👀 ventana emergente con JSON
+
+        $('#selectFicha').prop('disabled', false).empty();
+
+        if (fichas.length === 0) {
+          $('#selectFicha').append('<option value="">⚠️ No hay fichas</option>');
+        } else {
+          fichas.forEach(f => {
+            let label = f.nombre && f.nombre.trim() !== "" 
+                        ? f.nombre 
+                        : "Ficha " + f.id;
+            $('#selectFicha').append(`<option value="${f.id}">${label}</option>`);
+          });
+        }
+      }, 
+      'json' // 👈 importante: forzar JSON
+    );
+  });
+
+  // Seleccionar todas las fichas
+  $('#checkAllFichas').on('change', function(){
+    if(this.checked){
+      $('#selectFicha option').prop('selected', true);
+    } else {
+      $('#selectFicha option').prop('selected', false);
+    }
+  });
+
+  // Vista previa
+  $('#btnPreview').click(function(){
+    let colegioId = $('#selectColegio').val();
+    let fichas = $('#selectFicha').val();
+    if(!colegioId) { 
+        alert('Seleccione un colegio'); 
+        return; 
+    }
+
+    $.post('/?page=preview',
+            { colegio_id: colegioId, fichas: fichas }, 
+            function(html){
+                $('#previewTable tbody').html(html);
+                $('#previewContainer').show();
+            });
+  });
+
+  // Descargar Excel
+  $('#btnDownloadExcel').click(function(){
+    let colegioId = $('#selectColegio').val();
+    let fichas = $('#selectFicha').val() || [];
+    if(!colegioId) { 
+      alert('Seleccione un colegio'); 
+      return; 
+    }
+
+    let url = `/views/Archivos/generar_excel.php?colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
+    window.location.href = url;
+  });
+
+});
+</script>
+
+
 </body>
 </html>

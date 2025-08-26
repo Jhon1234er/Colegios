@@ -95,6 +95,68 @@ if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+
+// Vista previa de estudiantes por colegio/ficha
+if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../config/db.php';
+
+    $colegioId = $_POST['colegio_id'] ?? null;
+    $fichas    = $_POST['fichas'] ?? [];
+
+    if (!$colegioId) { exit; }
+
+    $pdo = Database::conectar();
+
+    if (!empty($fichas)) {
+        $in  = str_repeat('?,', count($fichas) - 1) . '?';
+        $sql = "SELECT CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo,
+                       u.numero_documento,
+                       f.nombre AS ficha,
+                       e.jornada,
+                       e.estado
+                FROM estudiantes e
+                INNER JOIN usuarios u ON e.usuario_id = u.id
+                INNER JOIN fichas f ON e.ficha_id = f.id
+                WHERE e.colegio_id = ? AND e.ficha_id IN ($in)
+                ORDER BY f.nombre, nombre_completo";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(array_merge([$colegioId], $fichas));
+    } else {
+        $sql = "SELECT CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo,
+                       u.numero_documento,
+                       f.nombre AS ficha,
+                       e.jornada,
+                       e.estado
+                FROM estudiantes e
+                INNER JOIN usuarios u ON e.usuario_id = u.id
+                INNER JOIN fichas f ON e.ficha_id = f.id
+                WHERE e.colegio_id = ?
+                ORDER BY f.nombre, nombre_completo";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$colegioId]);
+    }
+
+    $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($estudiantes)) {
+        echo "<tr><td colspan='5'>⚠️ No hay estudiantes en este colegio/fichas</td></tr>";
+    } else {
+        foreach ($estudiantes as $e): ?>
+            <tr>
+              <td><?= htmlspecialchars($e['nombre_completo']) ?></td>
+              <td><?= htmlspecialchars($e['numero_documento']) ?></td>
+              <td><?= htmlspecialchars($e['ficha']) ?></td>
+              <td><?= htmlspecialchars($e['jornada']) ?></td>
+              <td><?= htmlspecialchars($e['estado']) ?></td>
+            </tr>
+        <?php endforeach;
+    }
+
+    exit;
+}
+
+
+
 // ====== RUTAS PROTEGIDAS (VISTAS) ======
 if ($page === 'colegios') {
     require_login(); require_role(1);

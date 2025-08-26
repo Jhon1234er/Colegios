@@ -4,7 +4,7 @@ require_once '../../config/db.php';
 header('Content-Type: application/json');
 
 try {
-    $colegio_id = $_GET['colegio_id'] ?? null;
+    $colegio_id = $_POST['colegio_id'] ?? $_GET['colegio_id'] ?? null;
 
     if (!$colegio_id) {
         echo json_encode([]);

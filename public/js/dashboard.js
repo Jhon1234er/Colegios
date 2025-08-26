@@ -108,47 +108,94 @@ document.addEventListener('DOMContentLoaded', () => {
     div2.innerHTML = html;
   }
 
-  function renderAsistencias(data) {
-    const dom = document.getElementById('chart-container');
-    if (!dom) return;
-    try {
-      const myChart = echarts.init(dom, 'white', { locale: 'ES' });
-
-      const allFichas = (data.fichas || []).map(f => ({
-        name: `Ficha ${f.numero_ficha}`,
-        total_fallas: Number(f.total_fallas) || 0
-      }));
-
-      const categorias = allFichas.map(f => f.name);
-      const valores = allFichas.map(f => f.total_fallas);
-
-      const option = {
-        tooltip: { trigger: 'axis' },
-        xAxis: {
-          type: 'category',
-          data: categorias,
-          axisLabel: { rotate: 30 }
-        },
-        yAxis: {
-          type: 'value',
-          name: 'Total Asistencias'
-        },
-        series: [
-          {
-            name: 'Fallas por ficha',
-            type: 'bar',
-            data: valores,
-            label: { show: true, position: 'top' },
-            itemStyle: { borderRadius: [4, 4, 0, 0] }
-          }
-        ]
-      };
-
-      myChart.setOption(option);
-    } catch (err) {
-      console.error('Error inicializando ECharts', err);
-      dom.innerHTML = '<p>No se pudo renderizar el gráfico.</p>';
+function renderAsistencias(data) {
+  const dom = document.getElementById('chart-container');
+  if (!dom) return;
+  try {
+    // Limpiar cualquier instancia previa
+    if (window.myChart) {
+      window.myChart.dispose();
     }
+    
+    const myChart = echarts.init(dom, 'white', { 
+      locale: 'ES',
+      devicePixelRatio: window.devicePixelRatio || 1 // Mejora la nitidez
+    });
+    
+    // Guardar referencia global para poder hacer resize
+    window.myChart = myChart;
+    
+    const allFichas = (data.fichas || []).map(f => ({
+      name: `Ficha ${f.numero_ficha}`,
+      total_fallas: Number(f.total_fallas) || 0
+    }));
+    
+    const categorias = allFichas.map(f => f.name);
+    const valores = allFichas.map(f => f.total_fallas);
+    
+    const option = {
+      tooltip: { trigger: 'axis' },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%', // Aumenté para las etiquetas rotadas
+        top: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: categorias,
+        axisLabel: { 
+          rotate: 45,
+          fontSize: 12, // Aumenté el tamaño de fuente
+          color: '#4a5568'
+        }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Total Fallas',
+        nameLocation: 'middle',
+        nameGap: 50,
+        nameTextStyle: {
+          fontSize: 13,
+          color: '#4a5568'
+        }
+      },
+      series: [
+        {
+          name: 'Fallas por ficha',
+          type: 'bar',
+          data: valores,
+          label: { 
+            show: true, 
+            position: 'top',
+            fontSize: 12,
+            fontWeight: 'bold',
+            color: '#2d3748'
+          },
+          itemStyle: { 
+            borderRadius: [6, 6, 0, 0],
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#34d399' },
+              { offset: 1, color: '#10b981' }
+            ])
+          }
+        }
+      ]
+    };
+
+    myChart.setOption(option);
+    
+    // Resize automático para mejorar la nitidez
+    setTimeout(() => {
+      myChart.resize();
+    }, 100);
+    
+  } catch (err) {
+    console.error('Error inicializando ECharts', err);
+    dom.innerHTML = '<p>No se pudo renderizar el gráfico.</p>';
+  }
+
 
     // alertas
     const div3 = document.querySelector('.div3');
