@@ -15,15 +15,15 @@ class Estudiante {
             // Insertar en usuarios
             $stmtUsuario = $this->pdo->prepare("INSERT INTO usuarios (nombres, apellidos, tipo_documento, numero_documento, correo_electronico, telefono,fecha_nacimiento, genero, password_hash,  rol_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmtUsuario->execute([
-                $datos['nombre'],
-                $datos['apellido'],
+                $datos['nombres'],
+                $datos['apellidos'],
                 $datos['tipo_documento'],
                 $datos['numero_documento'],
                 $datos['correo_electronico'],
                 $datos['telefono'],
                 $datos['fecha_nacimiento'],
                 $datos['genero'],
-                password_hash($datos['contrasena'], PASSWORD_DEFAULT),
+                password_hash($datos['password'], PASSWORD_DEFAULT),
                 3 // Estudiante
             ]);
 

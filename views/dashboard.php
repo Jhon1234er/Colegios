@@ -36,18 +36,44 @@ function formatearNombreColegio($nombre) {
 </head>
 <body>
     <?php include 'Componentes/encabezado.php'; ?>
-
+    
     <div id="dashboard-normal" class="dashboard-panel">
         <div class="parent">
-            <!-- Indicaciones -->
-            <div class="div1"><p>Selecciona un colegio para ver sus Facilitadores.</p></div>
-            <div class="div2"><p>Selecciona un colegio para ver sus Aprendices.</p></div>
+    <!-- Bienvenida -->
+        <div class="div9">
+            <p><strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres'].' '.$usuario['apellidos']) ?></p>
+            <p><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
+        </div>
+
+    <!-- Columna izquierda -->
+            <div class="indicaciones-column">
+                <div class="div1"><p>Selecciona un colegio para ver sus Facilitadores/Instrucrores.</p></div>
+                <div class="div2"><p>Selecciona un colegio para ver sus Aprendices.</p></div>
+            </div>
 
             <!-- Gráfico -->
             <div class="div3">
                 <h3>Estadísticas de asistencias por ficha</h3>
-                <div id="chart-container" style="width:100%; height:400px;"></div>
+                <div id="chart-container">Selecciona un colegio</div>
             </div>
+
+            <!-- Totales -->
+            <div class="contadores-column">
+                <div class="div5"><h3>Programas en Curso</h3><p><?= $totalMaterias ?></p></div>
+                <div class="div6"><h3>Facilitadores Activos</h3><p><?= $totalProfesores ?></p></div>
+                <div class="div7"><h3>Fichas Activas</h3><p><?= $totalFichas ?></p></div>
+                <div class="div8"><h3>Aprendices Matriculados</h3><p><?= $totalEstudiante ?></p></div>
+                <div class="div10">
+                    <h3>Descargar reporte de semana (PDF)</h3>
+                    <a href="/views/Archivos/generar_pdf.php" class="btn">Descargar PDF</a>
+                </div>
+                <div class="div11">
+                    <h3>Descargar datos de la semana (Excel)</h3>
+                    <a href="/views/Archivos/generar_excel.php" class="btn">Descargar Excel</a>
+                </div>
+            </div>
+
+            
 
             <!-- Tabla colegios -->
             <div class="div4">
@@ -78,17 +104,7 @@ function formatearNombreColegio($nombre) {
                 </table>
             </div>
 
-            <!-- Totales -->
-            <div class="div5"><h3>Programas en Curso</h3><p><?= $totalMaterias ?></p></div>
-            <div class="div6"><h3>Facilitadores Activos</h3><p><?= $totalProfesores ?></p></div>
-            <div class="div7"><h3>Fichas Activas</h3><p><?= $totalFichas ?></p></div>
-            <div class="div8"><h3>Aprendices Matriculados</h3><p><?= $totalEstudiante ?></p></div>
 
-            <!-- Bienvenida -->
-            <div class="div9">
-                <p><strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres'].' '.$usuario['apellidos']) ?></p>
-                <p><strong>Rol:</strong> <?= $isAdmin ? 'Administrador' : 'Otro' ?></p>
-            </div>
         </div>
     </div>
 

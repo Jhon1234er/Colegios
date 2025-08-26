@@ -13,7 +13,10 @@ class Colegio {
         $colegios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($colegios as &$colegio) {
-            $colegio['materias'] = $this->obtenerMateriasPorColegio($colegio['id']);
+            $colegio['materias']   = $this->obtenerMateriasPorColegio($colegio['id']);
+            $colegio['jornada']    = json_decode($colegio['jornada'], true) ?? [];
+            $colegio['grados']     = json_decode($colegio['grados'], true) ?? [];
+            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
         }
 
         return $colegios;
@@ -38,6 +41,11 @@ class Colegio {
                 (nombre, codigo_dane, nit, tipo_institucion, direccion, telefono, correo, municipio, departamento, jornada, grados, calendario)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
+            // 🔹 Normalizar arrays antes del execute
+            $datos['jornada']   = json_encode($datos['jornada']);
+            $datos['grados']    = json_encode($datos['grados']);
+            $datos['calendario'] = json_encode($datos['calendario']);
+
             $stmt->execute([
                 $datos['nombre'],
                 $datos['codigo_dane'],
@@ -52,6 +60,7 @@ class Colegio {
                 $datos['grados'],
                 $datos['calendario']
             ]);
+
 
             $colegio_id = $this->pdo->lastInsertId();
 
