@@ -1,0 +1,356 @@
+/* === ESTILOS PARA FICHA DE ESTUDIANTES === */
+
+/* Container principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Título principal */
+.container h2 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 600;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+}
+
+/* Información de la ficha */
+.container p {
+    background: white;
+    padding: 12px 15px;
+    margin: 8px 0;
+    border-left: 4px solid #3498db;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 1rem;
+}
+
+.container p strong {
+    color: #2c3e50;
+    font-weight: 600;
+    min-width: 120px;
+    display: inline-block;
+}
+
+/* Sección del link público */
+.link-publico {
+    background: white;
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #e3e8ee;
+}
+
+.link-publico label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.link-publico .form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background: #f8f9fa;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.link-publico .form-control:focus {
+    border-color: #3498db;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Sección de acciones */
+.acciones {
+    margin: 25px 0;
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Separador */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #bdc3c7, transparent);
+    margin: 30px 0;
+}
+
+/* Título de la sección de estudiantes */
+.container h3 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Mensaje cuando no hay estudiantes */
+.container > p:last-of-type {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    font-size: 1.1rem;
+    padding: 40px 20px;
+    background: white;
+    border: 2px dashed #bdc3c7;
+    border-radius: 8px;
+}
+
+/* Tabla responsive */
+.table-responsive {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.tabla-lista {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.tabla-lista thead {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    color: white;
+}
+
+.tabla-lista th {
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #2c3e50;
+    white-space: nowrap;
+}
+
+.tabla-lista tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.tabla-lista tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.tabla-lista tbody tr:nth-child(even) {
+    background: #fdfdfd;
+}
+
+.tabla-lista tbody tr:nth-child(even):hover {
+    background: #f0f8ff;
+}
+
+.tabla-lista td {
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+    vertical-align: middle;
+}
+
+/* Botones de acción */
+.btn-accion {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-1px);
+}
+
+/* === RESPONSIVE DESIGN === */
+
+/* Tablets */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .container h2 {
+        font-size: 1.6rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .tabla-lista {
+        min-width: 700px;
+    }
+    
+    .tabla-lista th,
+    .tabla-lista td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-accion {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        margin: 1px;
+    }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .container h2 {
+        font-size: 1.4rem;
+    }
+    
+    .container p {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .link-publico {
+        padding: 15px;
+    }
+    
+    .link-publico .form-control {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .tabla-lista {
+        min-width: 600px;
+    }
+    
+    .tabla-lista th,
+    .tabla-lista td {
+        padding: 6px 4px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-accion {
+        display: block;
+        margin: 2px 0;
+        text-align: center;
+    }
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Efecto de enfoque para inputs */
+.form-control:focus {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* === ACCESIBILIDAD === */
+.btn:focus,
+.btn-accion:focus,
+.form-control:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Mejor contraste para usuarios con dificultades visuales */
+@media (prefers-high-contrast: high) {
+    .container p {
+        border-left-width: 6px;
+    }
+    
+    .tabla-lista tbody tr:hover {
+        background: #e3f2fd !important;
+    }
+}
+
+/* Reducir animaciones para usuarios sensibles al movimiento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

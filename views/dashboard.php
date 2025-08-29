@@ -71,11 +71,11 @@ function formatearNombreColegio($nombre) {
                 <div class="div8"><h3>Aprendices Matriculados</h3><p><?= $totalEstudiante ?></p></div>
                 <div class="div10">
                     <h3>Descargar reporte de semana (PDF)</h3>
-                    <a href="/views/Archivos/generar_pdf.php" class="btn">Descargar PDF</a>
+                    <button class="btn" data-bs-toggle="modal" data-bs-target="#modalReportes">Descargar PDF</button>
                 </div>
                 <div class="div11">
                     <h3>Descargar datos de la semana (Excel)</h3>
-                    <button class="btn" data-bs-toggle="modal" data-bs-target="#modalExcel">Descargar Excel</button>
+                    <button class="btn" data-bs-toggle="modal" data-bs-target="#modalReportes">Descargar Excel</button>
                 </div>
             </div>
 
@@ -120,13 +120,12 @@ function formatearNombreColegio($nombre) {
 
     <?php include 'Componentes/footer.php'; ?> 
 
-
-<!-- Modal Generar Excel -->
-<div class="modal fade" id="modalExcel" tabindex="-1">
+<!-- Modal Generar Reportes EXCEL/PDF-->
+<div class="modal fade" id="modalReportes" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Generar Excel de Asistencias</h5>
+        <h5 class="modal-title">Generar Reportes de Asistencias</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -137,15 +136,17 @@ function formatearNombreColegio($nombre) {
           <select id="selectColegio" class="form-select">
             <option value="">-- Seleccionar --</option>
             <?php foreach ($colegios as $c): ?>
-              <option value="<?= $c['id'] ?>"><?= formatearNombreColegio(htmlspecialchars($c['nombre'])) ?></option>
+              <option value="<?= $c['id'] ?>">
+                <?= formatearNombreColegio(htmlspecialchars($c['nombre'])) ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
 
-        <!-- Select ficha -->
+        <!-- Fichas dinámicas -->
         <div class="mb-3">
-          <label for="selectFicha" class="form-label">Seleccione Ficha</label>
-          <select id="selectFicha" class="form-select" multiple disabled></select>
+          <label class="form-label">Seleccione Ficha(s)</label>
+          <div id="fichasContainer"></div>
           <div class="form-check mt-2">
             <input type="checkbox" class="form-check-input" id="checkAllFichas">
             <label for="checkAllFichas" class="form-check-label">Seleccionar todas</label>
@@ -175,6 +176,7 @@ function formatearNombreColegio($nombre) {
       <div class="modal-footer">
         <button type="button" id="btnPreview" class="btn btn-info">Vista previa</button>
         <button type="button" id="btnDownloadExcel" class="btn btn-success">Descargar Excel</button>
+        <button type="button" id="btnDownloadPDF" class="btn btn-danger">Descargar PDF</button>
       </div>
     </div>
   </div>
@@ -182,85 +184,118 @@ function formatearNombreColegio($nombre) {
 
 
 
+
+
     <!-- Librerías JS -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="/js/dashboard.js"></script>
     <script src="/js/encabezado.js"></script>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function(){
 
-  // Al seleccionar colegio → cargar fichas
+  // Cargar fichas al seleccionar colegio
   $('#selectColegio').change(function(){
     let colegioId = $(this).val();
     if(!colegioId) return;
 
-    $.post(
-      '/public/ajax/get_fichas_por_colegio.php', 
-      { colegio_id: colegioId }, 
-      function(fichas){
-        console.log("Respuesta fichas RAW:", fichas); // 👀 en consola navegador
-        alert(JSON.stringify(fichas)); // 👀 ventana emergente con JSON
+    $.ajax({
+      url: '/ajax/get_fichas_por_colegio.php',
+      method: 'GET',
+      data: { colegio_id: colegioId },
+      dataType: 'json',
+      success: function(fichas){
+        console.log("✅ Respuesta fichas:", fichas);
+        $('#fichasContainer').empty();
 
-        $('#selectFicha').prop('disabled', false).empty();
-
-        if (fichas.length === 0) {
-          $('#selectFicha').append('<option value="">⚠️ No hay fichas</option>');
+        if (!fichas || fichas.length === 0) {
+          $('#fichasContainer').html('<div class="text-muted">⚠️ No hay fichas</div>');
         } else {
           fichas.forEach(f => {
-            let label = f.nombre && f.nombre.trim() !== "" 
-                        ? f.nombre 
-                        : "Ficha " + f.id;
-            $('#selectFicha').append(`<option value="${f.id}">${label}</option>`);
+            let label = f.nombre && f.nombre.trim() !== "" ? f.nombre : "Ficha " + f.id;
+            $('#fichasContainer').append(`
+              <div class="form-check">
+                <input class="form-check-input ficha-check" type="checkbox" value="${f.id}" id="ficha${f.id}">
+                <label class="form-check-label" for="ficha${f.id}">${label}</label>
+              </div>
+            `);
           });
         }
-      }, 
-      'json' // 👈 importante: forzar JSON
-    );
+      },
+      error: function(xhr, status, err){
+        console.error("❌ Error cargando fichas:", err, xhr.responseText);
+        alert("Error cargando fichas: " + xhr.responseText);
+      }
+    });
   });
 
   // Seleccionar todas las fichas
   $('#checkAllFichas').on('change', function(){
-    if(this.checked){
-      $('#selectFicha option').prop('selected', true);
-    } else {
-      $('#selectFicha option').prop('selected', false);
-    }
+    $('.ficha-check').prop('checked', this.checked);
   });
+
+  // 🔹 Helper: obtener fichas seleccionadas
+  function getFichasSeleccionadas(){
+    let fichas = [];
+    $('.ficha-check:checked').each(function(){
+      fichas.push($(this).val());
+    });
+    return fichas;
+  }
 
   // Vista previa
   $('#btnPreview').click(function(){
     let colegioId = $('#selectColegio').val();
-    let fichas = $('#selectFicha').val();
-    if(!colegioId) { 
-        alert('Seleccione un colegio'); 
-        return; 
+    let fichas = getFichasSeleccionadas();
+    if(!colegioId){
+      alert('Seleccione un colegio');
+      return;
     }
 
-    $.post('/?page=preview',
-            { colegio_id: colegioId, fichas: fichas }, 
-            function(html){
-                $('#previewTable tbody').html(html);
-                $('#previewContainer').show();
-            });
+    $.ajax({
+      url: '/Archivos/preview.php',
+      method: 'POST',
+      data: { colegio_id: colegioId, fichas: fichas },
+      success: function(html){
+        $('#previewTable tbody').html(html);   // insertar filas
+        $('#previewContainer').show();         // mostrar tabla
+      },
+      error: function(xhr, status, err){
+        console.error("❌ Error vista previa:", err, xhr.responseText);
+        alert("Error cargando vista previa: " + xhr.responseText);
+      }
+    });
   });
 
   // Descargar Excel
   $('#btnDownloadExcel').click(function(){
     let colegioId = $('#selectColegio').val();
-    let fichas = $('#selectFicha').val() || [];
+    let fichas = getFichasSeleccionadas();
     if(!colegioId) { 
       alert('Seleccione un colegio'); 
       return; 
     }
+    let url = `/?page=generar_excel&colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
+    console.log("📥 Descargando Excel:", url);
+    window.open(url, "_blank");
+  });
 
-    let url = `/views/Archivos/generar_excel.php?colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
-    window.location.href = url;
+  // Descargar PDF
+  $('#btnDownloadPDF').click(function(){
+    let colegioId = $('#selectColegio').val();
+    let fichas = getFichasSeleccionadas();
+    if(!colegioId) { 
+      alert('Seleccione un colegio'); 
+      return; 
+    }
+    let url = `/?page=generar_pdf&colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
+    console.log("📥 Descargando PDF:", url);
+    window.open(url, "_blank");
   });
 
 });
 </script>
+
 
 
 </body>

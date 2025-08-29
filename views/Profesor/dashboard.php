@@ -33,14 +33,6 @@
 </div>
 
 
-
-    <!-- div3: Lista de fichas -->
-    <div class="div3">
-      <div class="panel-navegacion">PANEL DE FICHAS</div>
-      <div id="fichasContainer" class="lista-fichas"></div>
-    </div>
-
-    <div class="div4">
         <!-- Filtros para las trajetas de fichas -->
       <div class="filtros-cursos"> 
         <div class="filtro">Todos</div> 

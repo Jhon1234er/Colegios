@@ -2,17 +2,20 @@
 require_once __DIR__ . '/../models/Estudiante.php';
 require_once __DIR__ . '/../models/Colegio.php';
 
-
 class EstudianteController {
+
+    /* 📌 Mostrar formulario de creación */
     public function crear() {
         $colegioModel = new Colegio();
         $colegios = $colegioModel->obtenerTodos();
         require __DIR__ . '/../views/Estudiante/crear.php';
     }
 
+    /* 📌 Guardar estudiante nuevo */
     public function guardar() {
         start_secure_session();
-        require_login(); require_role(1);
+        require_login();
+        require_role(1);
         csrf_validate();
 
         $datos = [
@@ -34,30 +37,35 @@ class EstudianteController {
             'numero_documento_acudiente'  => trim($_POST['numero_documento_acudiente'] ?? ''),
             'telefono_acudiente'          => trim($_POST['telefono_acudiente'] ?? ''),
             'parentesco'                  => trim($_POST['parentesco'] ?? ''),
-            'ocupacion'                   => trim($_POST['ocupacion'] ?? '')
+            'ocupacion'                   => trim($_POST['ocupacion'] ?? ''),
+            'ficha_id'                    => $_POST['ficha_id'] ?? null,
         ];
 
-        require_once __DIR__ . '/../models/Estudiante.php';
         $estudianteModel = new Estudiante();
 
         if ($estudianteModel->guardar($datos)) {
-            header("Location: /?page=estudiantes&success=1");
+            // ✅ Redirigir a la vista de la ficha en la que se registró el estudiante
+            $fichaId = $datos['ficha_id'];
+            header("Location: /?page=fichas&action=ver&id=" . urlencode($fichaId) . "&success=1");
             exit;
         }
         echo "❌ Error al registrar estudiante.";
     }
 
+    /* 📌 Listado de estudiantes */
     public function index() {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $estudianteModel = new Estudiante();
         $rol_id = $_SESSION['usuario']['rol_id'] ?? null;
 
-        if ($rol_id == 1) { // Administrador
-            $estudiantes = $estudianteModel->obtenerTodos(); // sin ficha
+        if ($rol_id == 1) { 
+            // Administrador → todos los estudiantes
+            $estudiantes = $estudianteModel->obtenerTodos(); 
         } else {
+            // Otros roles → deben pasar ficha_id
             $ficha_id = $_GET['ficha_id'] ?? null;
             if (!$ficha_id) {
                 die('❌ Ficha no especificada.');
@@ -68,53 +76,31 @@ class EstudianteController {
         require_once __DIR__ . '/../views/Estudiante/lista.php';
     }
 
-    
+    /* 📌 Contar estudiantes (para dashboard) */
     public function contar() {
         $estudianteModel = new Estudiante();
         $totalEstudiante = $estudianteModel->contarEstudiantes();
-
         require 'views/dashboard.php'; 
     }
+
+    /* 📌 API → Estudiantes por colegio (JSON) */
     public function obtenerPorColegio($colegioId) {
-        $pdo = Database::conectar();
-        $stmt = $pdo->prepare("
-            SELECT 
-                CONCAT(u.nombres, ' ', u.apellidos) AS nombre_completo,
-                e.grado,
-                e.jornada,
-                e.nombre_completo_acudiente,
-                e.telefono_acudiente,
-                e.parentesco,
-                f.nombre AS numero_ficha
-            FROM estudiantes e
-            JOIN usuarios u ON e.usuario_id = u.id
-            LEFT JOIN fichas f ON e.ficha_id = f.id
-            WHERE e.colegio_id = ?
-        ");
-        $stmt->execute([$colegioId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $estudianteModel = new Estudiante();
+        $estudiantes = $estudianteModel->obtenerPorColegio($colegioId);
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($estudiantes, JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
+    /* 📌 API → Estudiantes por ficha (JSON) */
     public function obtenerPorFicha($ficha_id) {
-        $pdo = Database::conectar();
-        $sql = "SELECT 
-                    e.id AS id, -- esto es clave
-                    u.nombres, 
-                    u.apellidos, 
-                    e.grado, 
-                    e.jornada,
-                    e.nombre_completo_acudiente, 
-                    e.telefono_acudiente, 
-                    e.parentesco
-                FROM estudiantes e
-                INNER JOIN usuarios u ON u.id = e.usuario_id
-                WHERE e.ficha_id = ?";
-                $stmt = $pdo->prepare($sql);
-        $stmt->execute([$ficha_id]);
-        $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $estudianteModel = new Estudiante();
+        // ✅ Se usa obtenerTodos pasándole ficha_id
+        $estudiantes = $estudianteModel->obtenerTodos($ficha_id);
 
-        header('Content-Type: application/json');
-        echo json_encode($estudiantes);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($estudiantes, JSON_UNESCAPED_UNICODE);
+        exit;
     }
-
 }

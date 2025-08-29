@@ -64,8 +64,11 @@ if ($page === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
 
 // Fichas del profesor autenticado
 if ($page === 'profesorficha') {
-    require_login(); require_role(2);
-    require_once '../controllers/ProfesorFichaController.php';
+    require_login();
+    require_role(2);
+    require_once '../controllers/ProfesorController.php';
+    $controller = new ProfesorController();
+    $controller->obtenerFichasPorProfesor(); // 👈 aquí se ejecuta y devuelve JSON puro
     exit;
 }
 
@@ -156,6 +159,19 @@ if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
+// ===== GENERAR EXCEL/PDF.php ======
+if (isset($_GET['page']) && $_GET['page'] === 'generar_excel') {
+    require __DIR__ . '/../views/Archivos/generar_excel.php';
+    exit;
+}
+
+if (isset($_GET['page']) && $_GET['page'] === 'generar_pdf') {
+    require __DIR__ . '/../views/Archivos/generar_pdf.php';
+    exit;
+}
+
+
+
 
 // ====== RUTAS PROTEGIDAS (VISTAS) ======
 if ($page === 'colegios') {
@@ -182,7 +198,7 @@ if ($page === 'profesores') {
 }
 
 if ($page === 'estudiantes') {
-    require_login(); require_role([1]); // ajusta si estudiantes también pueden ver algo
+    require_login(); require_role([1,2]); // ajusta si estudiantes también pueden ver algo
     require_once '../controllers/EstudianteController.php';
     $c = new EstudianteController();
     $action = $_GET['action'] ?? 'index';
@@ -198,6 +214,29 @@ if ($page === 'crear_materia') {
     require_once '../controllers/MateriaController.php';
     $c = new MateriaController();
     $c->crear();
+    exit;
+}
+
+
+if ($page === 'fichas') {
+    require_login(); 
+    require_role([1, 2]); 
+    require_once '../controllers/FichaController.php';
+    $c = new FichaController();
+    $action = $_GET['action'] ?? 'index';
+
+    if ($action === 'crear') {
+        $c->crear();
+    } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_validate();
+        $c->guardar();
+    } elseif ($action === 'ver' && isset($_GET['id'])) {
+        $c->ver();
+    } elseif ($action === 'eliminar' && isset($_GET['id'])) {
+        $c->eliminar();
+    } else {
+        $c->index();
+    }
     exit;
 }
 
@@ -245,7 +284,6 @@ if (isset($_GET['registro']) && $_GET['registro'] === 'true') {
     exit;
 }
 
-// ====== LOGIN (por defecto) ======
 // ====== LOGIN (por defecto) ======
 require_once '../controllers/AuthController.php';
 $c = new AuthController();

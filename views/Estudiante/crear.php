@@ -3,6 +3,9 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 require_once __DIR__ . '/../../models/Colegio.php';
 $colegioModel = new Colegio();
 $colegios = $colegioModel->obtenerTodos();
+
+// 📌 Capturamos ficha_id desde la URL
+$ficha_id = $_GET['ficha_id'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -36,6 +39,12 @@ $colegios = $colegioModel->obtenerTodos();
 
     <form id="formEstudiante" action="/?page=estudiantes&action=guardar" method="POST">
       <?= csrf_input(); ?>
+
+      <!-- 📌 Campo oculto con el ID de la ficha -->
+      <?php if ($ficha_id): ?>
+        <input type="hidden" name="ficha_id" value="<?= htmlspecialchars($ficha_id) ?>">
+      <?php endif; ?>
+
       <!-- Paso 1: Estudiante -->
       <div class="form-step active">
         <h5>Información del Estudiante</h5>

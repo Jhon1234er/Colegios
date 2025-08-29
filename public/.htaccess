@@ -1,3 +1,10 @@
 RewriteEngine On
+
+# Excluir ajax
+RewriteCond %{REQUEST_URI} ^/public/ajax/
+RewriteRule ^ - [L]
+
+# Todo lo demás va a index
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ index.php [QSA,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]

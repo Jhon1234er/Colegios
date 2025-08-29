@@ -9179,3 +9179,26 @@
 (
 )
 
+13:54:23 colegio_id recibido: 1
+13:54:23 fichas_data: Array
+(
+    [0] => Array
+        (
+            [ficha_id] => 1
+            [numero_ficha] => 2826996
+            [total_fallas] => 5
+        )
+
+    [1] => Array
+        (
+            [ficha_id] => 2
+            [numero_ficha] => 2826775
+            [total_fallas] => 2
+        )
+
+)
+
+13:54:23 alertas: Array
+(
+)
+
