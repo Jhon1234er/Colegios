@@ -44,6 +44,8 @@ if ($usuario_id && $tipo_usuario) {
   <link rel="stylesheet" href="/css/Componentes/encabezado.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </head>
 <body>
@@ -54,28 +56,42 @@ if ($usuario_id && $tipo_usuario) {
     <a href="/?page=dashboard" class="logo">Sistem Scholl</a>
   </div>
 
+  <!-- Buscador (solo para administradores en dashboard) -->
+  <?php if ($usuario && $rol_id === 1): ?>
+    <?php 
+    $current_page = $_GET['page'] ?? '';
+    // Mostrar en dashboard (cuando page=dashboard o cuando no hay page definida y estamos en dashboard)
+    if ($current_page === 'dashboard' || ($current_page === '' && !isset($_GET['action']))): 
+    ?>
+    <div class="search-section">
+      <form id="buscador-global" class="search-form">
+        <div class="select-wrapper">
+          <select id="filtro-busqueda" class="search-select">
+            <option value="colegio">Colegios</option>
+            <option value="profesor">Facilitadores</option>
+            <option value="estudiante">Aprendices</option>
+          </select>
+          <div class="select-arrow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <input id="input-busqueda" type="text" placeholder="Buscar..." class="search-input" />
+        <button type="submit" class="search-btn">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+    <?php endif; ?>
+  <?php endif; ?>
+
   <!-- Navegación Principal -->
   <?php if ($usuario): ?>
     <nav class="nav-main">
       <?php if ($rol_id === 1): ?>
-        <!-- Buscador integrado -->
-        <?php if (!isset($_GET['page']) || $_GET['page'] === 'dashboard'): ?>
-          <div class="search-section">
-            <form id="buscador-global" style="display: flex; align-items: center; gap: 8px;">
-              <select id="filtro-busqueda" class="search-select">
-                <option value="colegio">Colegios</option>
-                <option value="profesor">Facilitadores</option>
-                <option value="estudiante">Aprendices</option>
-              </select>
-              <input id="input-busqueda" type="text" class="search-input" placeholder="Buscar..." />
-              <button type="submit" class="search-btn">
-                <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </button>
-            </form>
-          </div>
-        <?php endif; ?>
 
         <!-- Menús de navegación -->
         <div class="dropdown">
@@ -121,6 +137,12 @@ if ($usuario_id && $tipo_usuario) {
           </svg>
           Mis Fichas
         </a>
+        <a href="/?page=calendario" class="nav-link">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Calendario
+        </a>
         <a href="/?page=fichas&action=crear" class="nav-link">
           <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -158,6 +180,28 @@ if ($usuario_id && $tipo_usuario) {
                 <div class="notification-content">
                   <?= htmlspecialchars(str_replace('profesor', 'facilitador', $n['mensaje'])) ?>
                 </div>
+                
+                <?php if ($n['botones_accion'] && $n['estado'] === 'no_leida'): ?>
+                  <?php $botones = json_decode($n['botones_accion'], true); ?>
+                  <?php $datos = json_decode($n['datos_accion'], true); ?>
+                  <div class="notification-buttons">
+                    <?php if (isset($botones['aceptar'])): ?>
+                      <button class="btn-aceptar" onclick="responderSolicitud(<?= $datos['solicitud_id'] ?>, 'aceptar', <?= $n['id'] ?>)">
+                        <?= $botones['aceptar'] ?>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (isset($botones['rechazar'])): ?>
+                      <button class="btn-rechazar" onclick="responderSolicitud(<?= $datos['solicitud_id'] ?>, 'rechazar', <?= $n['id'] ?>)">
+                        <?= $botones['rechazar'] ?>
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                <?php elseif ($n['botones_accion'] && $n['estado'] === 'leida'): ?>
+                  <div class="notification-buttons-disabled">
+                    <span class="btn-disabled">Procesado</span>
+                  </div>
+                <?php endif; ?>
+                
                 <div class="notification-actions">
                   <span class="notification-date"><?= date('d/m/Y H:i', strtotime($n['fecha'])) ?></span>
                   <?php if ($n['estado'] === 'no_leida'): ?>
@@ -186,12 +230,6 @@ if ($usuario_id && $tipo_usuario) {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
             </svg>
             Ver Perfil
-          </a>
-          <a href="/?page=editar_perfil">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-            Editar Perfil
           </a>
           <a href="#">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,12 +271,12 @@ function toggleNotifications() {
 
 // Marcar notificación como leída
 function markAsRead(notificationId) {
-  fetch('/api/marcar_notificacion_leida.php', {
+  const formData = new FormData();
+  formData.append('notificacion_id', notificationId);
+  
+  fetch('/?page=marcar_notificacion', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ id: notificationId })
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
@@ -252,17 +290,33 @@ function markAsRead(notificationId) {
   });
 }
 
-// Funcionalidad del buscador global
-document.getElementById('buscador-global')?.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const filtro = document.getElementById('filtro-busqueda').value;
-  const query = document.getElementById('input-busqueda').value;
-  
-  if (query.trim()) {
-    // Implementar lógica de búsqueda
-    console.log('Buscando:', filtro, query);
-  }
-});
+// Responder a solicitud de compartir ficha
+function responderSolicitud(solicitudId, respuesta, notificationId) {
+  fetch('index.php?page=responder_solicitud', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ 
+      solicitud_id: solicitudId, 
+      respuesta: respuesta 
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Marcar notificación como leída automáticamente
+      markAsRead(notificationId);
+    } else {
+      alert('Error: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error al procesar la respuesta');
+  });
+}
+
 
 // Cerrar dropdowns al hacer clic fuera
 document.addEventListener('click', function(e) {

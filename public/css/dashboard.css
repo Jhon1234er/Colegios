@@ -54,7 +54,7 @@ body {
 .dashboard-panel {
   padding: 1.5rem;
   width: 100%;
-  min-height: 100vh;
+  min-height: 90vh;
   box-sizing: border-box;
 }
 
@@ -67,20 +67,19 @@ body {
     "bienvenida bienvenida bienvenida"
     "indicaciones grafico contadores"
     "tabla tabla tabla";
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeIn 0.6s ease-out;
   width: 100%;
   max-width: none;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* ===== BIENVENIDA ===== */
@@ -333,6 +332,33 @@ body {
   height: 680px;
   width: 100%;
   min-height: 650px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(52, 211, 153, 0.05));
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--gray-300);
+  transition: var(--transition);
+}
+
+#chart-container:empty::before {
+  content: '📊 Selecciona un colegio para ver estadísticas';
+  color: var(--gray-500);
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+#chart-container.loading {
+  background: linear-gradient(90deg, var(--gray-200) 0%, var(--gray-100) 50%, var(--gray-200) 100%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+#chart-container.loading::before {
+  content: '⏳ Cargando estadísticas...';
+  color: var(--gray-600);
 }
 
 /* ===== ESTILOS PARA ALERTAS ===== */
@@ -633,11 +659,19 @@ body {
 
 /* ===== PANELES DINÁMICOS ===== */
 #dashboard-resultados {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow-y: auto;
+  z-index: 1000;
+  max-height: calc(100vh - 100px);
 }
 
 #dashboard-overlay {
@@ -827,5 +861,239 @@ body {
   
   .alertas li {
     font-size: 0.8rem;
+  }
+}
+
+/* Custom Modal Button Styles */
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-preview {
+  background:linear-gradient(to bottom right, #337072, #148378);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-preview:hover {
+  background: linear-gradient(135deg,rgb(67, 196, 183),rgb(76, 206, 238));
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-excel {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-excel:hover {
+  background: linear-gradient(135deg, #0d9488, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  color: white;
+}
+
+.btn-pdf {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-pdf:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  color: white;
+}
+
+/* Icon styles using CSS pseudo-elements */
+.icon-eye::before {
+  margin-right: 4px;
+}
+
+.icon-excel::before {
+  margin-right: 4px;
+}
+
+.icon-pdf::before {
+  margin-right: 4px;
+}
+
+/* Student Details Sidebar */
+.student-details-sidebar {
+  position: fixed;
+  top: 139px;
+  left: 67%;
+  transform: translateX(-50%);
+  width: 2100px;
+  background: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  z-index: 1000;
+  box-shadow: 0 25px 35px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  height: 1070px;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: linear-gradient(to bottom right, #1e7432, #098b2b);
+  border-radius: 8px;
+  color: white;
+}
+
+.details-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.close-details-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-details-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.student-details-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(108, 117, 125);
+  font-size: 16px;
+}
+
+.student-details-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.info-section {
+  background: white;
+  border: 2px solid #1e7432;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.section-header {
+  background: linear-gradient(to bottom right, #1e7432, #098b2b);
+  color: white;
+  padding: 12px 16px;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.section-content {
+  padding: 28px;
+  min-height: 75px;
+  background: white;
+  width: 2000px;
+}
+
+.section-content p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.section-content p:first-child {
+  margin-top: 0;
+}
+
+.section-content p:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .btn-preview, .btn-excel, .btn-pdf {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .student-details-sidebar {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+    transform: none;
+    height: auto;
+    max-height: 80vh;
+    padding: 15px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - 80px);
   }
 }

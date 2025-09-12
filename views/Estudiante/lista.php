@@ -1,12 +1,16 @@
 <?php require_once __DIR__ . '/../Componentes/encabezado.php'; ?>
-    <link rel="stylesheet" href="/css/lista.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/Estudiante/lista_estudiante.css">
 
-<div class="container mt-5">
-    <h2 class="mb-4">Aprendices Matriculados</h2>
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="content-wrapper">
+                <h2 class="mb-4">Aprendices Matriculados</h2>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle text-center">
-            <thead class="table-dark">
+        <div class="table-container">
+            <table class="table">
+                <thead>
                 <tr>
                     <th>Nombre Completo</th>
                     <th>Documento</th>
@@ -26,27 +30,29 @@
                 <?php if (!empty($estudiantes)) : ?>
                     <?php foreach ($estudiantes as $index => $e) : ?>
                         <tr>
-                            <td><?= htmlspecialchars($e['nombres'] . ' ' . $e['apellidos']) ?></td>
-                            <td><?= htmlspecialchars($e['tipo_documento'] . ' ' . $e['numero_documento']) ?></td>
-                            <td><?= htmlspecialchars($e['correo_electronico']) ?></td>
-                            <td><?= htmlspecialchars($e['telefono']) ?></td>
-                            <td><?= htmlspecialchars($e['colegio']) ?></td>
-                            <td><?= htmlspecialchars($e['grado']) . ' ' . (htmlspecialchars($e['grupo'])) ?></td>
-                            <td><?= htmlspecialchars($e['jornada']) ?></td>
-                            <td><?= htmlspecialchars($e['fecha_ingreso']) ?></td>
-                            <td><?= htmlspecialchars($e['nombre_completo_acudiente']) ?></td>
-                            <td><?= htmlspecialchars($e['tipo_documento_acudiente']) . ' ' . (htmlspecialchars($e['numero_documento_acudiente'])) ?></td> 
-                            <td><?= htmlspecialchars($e['telefono_acudiente']) ?></td>
-                            <td><?= htmlspecialchars($e['parentesco']) ?></td>
+                            <td><span class="estudiante-name"><?= htmlspecialchars($e['nombres'] . ' ' . $e['apellidos']) ?></span></td>
+                            <td><span class="documento"><?= htmlspecialchars($e['tipo_documento'] . ' ' . $e['numero_documento']) ?></span></td>
+                            <td><a href="mailto:<?= htmlspecialchars($e['correo_electronico']) ?>" class="email"><?= htmlspecialchars($e['correo_electronico']) ?></a></td>
+                            <td><span class="telefono"><?= htmlspecialchars($e['telefono']) ?></span></td>
+                            <td><span class="colegio"><?= htmlspecialchars($e['colegio']) ?></span></td>
+                            <td><span class="grado"><?= htmlspecialchars($e['grado']) . ' ' . (htmlspecialchars($e['grupo'])) ?></span></td>
+                            <td><span class="jornada"><?= htmlspecialchars($e['jornada']) ?></span></td>
+                            <td><span class="fecha-ingreso"><?= htmlspecialchars($e['fecha_ingreso']) ?></span></td>
+                            <td><span class="acudiente-name"><?= htmlspecialchars($e['nombre_completo_acudiente']) ?></span></td>
+                            <td><span class="documento"><?= htmlspecialchars($e['tipo_documento_acudiente']) . ' ' . (htmlspecialchars($e['numero_documento_acudiente'])) ?></span></td> 
+                            <td><span class="telefono"><?= htmlspecialchars($e['telefono_acudiente']) ?></span></td>
+                            <td><span class="parentesco"><?= htmlspecialchars($e['parentesco']) ?></span></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
-                        <td colspan="18">No hay estudiantes registrados.</td>
+                        <td colspan="12">No hay estudiantes registrados.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
+            </table>
+            </div>
+        </div>
     </div>
 </div>
 

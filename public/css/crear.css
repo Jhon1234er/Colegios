@@ -233,3 +233,63 @@ select:focus,
   transition: background-color 0.2s;
   align-self: center;
 }
+.registro-completado {
+  text-align: center;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+.registro-completado h2 {
+  color: #28a745;
+  margin-bottom: 15px;
+}
+.mensaje-exito {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin-bottom: 30px;
+}
+.detalles-registro {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  margin: 25px 0;
+  text-align: left;
+}
+.detalles-registro h3 {
+  color: #495057;
+  margin-bottom: 15px;
+}
+.detalles-registro ul {
+  list-style: none;
+  padding: 0;
+}
+.detalles-registro li {
+  text-align: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+.detalles-registro li:last-child {
+  border-bottom: none;
+}
+.acciones-finales {
+  margin-top: 30px;
+}
+.btn {
+  background: #007bff;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.btn:hover {
+  background: #0056b3;
+}

@@ -74,8 +74,8 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
         <label>Tipo de Contrato</label>
         <select name="tip_contrato" class="form-select-contrato" required>
           <option value="">Seleccione...</option>
-          <option value="contratista">Contratista</option>
-          <option value="planta">Planta</option>
+          <option value="contratista">Facilitador</option>
+          <option value="instructor">Instructor</option>
         </select>
 
         <label>Contraseña</label>

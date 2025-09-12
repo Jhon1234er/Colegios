@@ -17,9 +17,10 @@ class Asistencia {
                     f.nombre AS numero_ficha, 
                     COUNT(CASE WHEN a.estado != 'presente' THEN 1 END) AS total_fallas
                 FROM fichas f
-                LEFT JOIN asistencias a 
-                    ON f.id = a.ficha_id
-                WHERE f.colegio_id = ?
+                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+                INNER JOIN profesores p ON pf.profesor_id = p.id
+                LEFT JOIN asistencias a ON f.id = a.ficha_id
+                WHERE p.colegio_id = ?
                 GROUP BY f.id, f.nombre";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$colegio_id]);
@@ -38,9 +39,11 @@ class Asistencia {
             FROM estudiantes e
             INNER JOIN usuarios u ON u.id = e.usuario_id
             INNER JOIN fichas f ON f.id = e.ficha_id
+            INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+            INNER JOIN profesores p ON pf.profesor_id = p.id
             LEFT JOIN asistencias a 
                 ON a.estudiante_id = e.id AND a.estado = 'falla'
-            WHERE f.colegio_id = :colegio_id
+            WHERE p.colegio_id = :colegio_id
             GROUP BY e.id, u.nombres, u.apellidos, f.nombre
             HAVING total_fallas >= :min_fallas
             ORDER BY total_fallas DESC

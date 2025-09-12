@@ -35,6 +35,45 @@ $fichas = $fichaModel->obtenerTodas();
                     <label for="cupo_total">Cupo total de registros</label>
                     <input type="number" name="cupo_total" id="cupo_total" required>
                 </div>
+
+                <div class="">
+                    <label>Días de clases</label>
+                    <div class="dias-semana-container">
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="lunes" checked>
+                                <span class="checkmark"></span>
+                                Lunes
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="martes" checked>
+                                <span class="checkmark"></span>
+                                Martes
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="miercoles" checked>
+                                <span class="checkmark"></span>
+                                Miércoles
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="jueves" checked>
+                                <span class="checkmark"></span>
+                                Jueves
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="viernes" checked>
+                                <span class="checkmark"></span>
+                                Viernes
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="dias_semana[]" value="sabado">
+                                <span class="checkmark"></span>
+                                Sábado
+                            </label>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">Selecciona los días en que se impartirán las clases</small>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Crear Ficha</button>

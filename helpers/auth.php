@@ -30,13 +30,21 @@ function require_login(): void {
     }
 }
 
+/**
+ * Verifica que el usuario tenga el rol requerido
+ * @param int|array $roles Uno o varios roles permitidos
+ */
 function require_role(int|array $roles): void {
     if (empty($_SESSION['usuario'])) {
         header('Location: /');
         exit;
     }
+
     $userRole = (int)($_SESSION['usuario']['rol_id'] ?? 0);
-    $roles = (array)$roles;
+
+    // Asegurar que $roles siempre sea un array
+    $roles = is_array($roles) ? $roles : [$roles];
+
     if (!in_array($userRole, $roles, true)) {
         http_response_code(403);
         echo "Acceso denegado.";
@@ -51,10 +59,12 @@ function csrf_token(): string {
     }
     return $_SESSION['csrf_token'];
 }
+
 function csrf_input(): string {
     $t = htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8');
     return '<input type="hidden" name="csrf_token" value="'.$t.'">';
 }
+
 function csrf_validate(): void {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $token = $_POST['csrf_token'] ?? '';

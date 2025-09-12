@@ -1,0 +1,984 @@
+/* ===== CALENDARIO COLABORATIVO CSS ===== */
+
+/* Contenedor principal */
+.container-fluid {
+    padding: 0 15px;
+}
+
+/* Tarjetas */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Panel lateral */
+.color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Calendario FullCalendar personalización */
+#calendario {
+    min-height: 700px;
+    width: 100%;
+}
+
+.fc-toolbar {
+    margin-bottom: 1rem !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: #2c3e50;
+}
+
+.fc-button-primary {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+}
+
+.fc-button-primary:hover {
+    background-color: #0056b3 !important;
+    border-color: #0056b3 !important;
+    transform: translateY(-1px);
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+    background-color: #004085 !important;
+    border-color: #004085 !important;
+}
+
+/* Eventos del calendario - FORZAR VISIBILIDAD */
+.fc-event {
+    border-radius: 6px !important;
+    border: 2px solid rgba(255,255,255,0.3) !important;
+    padding: 4px 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important;
+    min-height: 22px !important;
+    font-size: 11px !important;
+}
+
+.fc-event:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+}
+
+.fc-event-title {
+    font-size: 0.85rem !important;
+}
+
+/* Estados de eventos */
+.evento-programado {
+    opacity: 1;
+}
+
+.evento-en-curso {
+    animation: pulso 2s infinite;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5) !important;
+}
+
+.evento-finalizado {
+    opacity: 0.7;
+}
+
+.evento-cancelado {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.evento-perdido {
+    animation: parpadeo 1s infinite;
+}
+
+@keyframes pulso {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes parpadeo {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+/* Modal personalización */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Formulario de horario */
+.form-control:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Selector de colores */
+.color-presets {
+    display: flex;
+    gap: 8px;
+}
+
+.color-preset {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-preset:hover {
+    transform: scale(1.1);
+    border-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.color-preset.active {
+    border-color: #007bff;
+    transform: scale(1.1);
+}
+
+/* Botones personalizados */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    border: none;
+    color: #212529;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+}
+
+/* Filtros */
+.form-select {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    transition: all 0.2s ease;
+}
+
+/* Detalles del evento */
+.detalle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.detalle-item:last-child {
+    border-bottom: none;
+}
+
+.detalle-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.detalle-valor {
+    color: #6c757d;
+}
+
+/* Badge de estado */
+.badge-estado {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.badge-programado {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-en-curso {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-finalizado {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-cancelado {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .row.align-items-center > div {
+        margin-bottom: 10px;
+    }
+    
+    .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+    }
+    
+    /* Panel de controles en móvil */
+    .col-md-2, .col-md-3 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-wrap: wrap;
+        gap: 0.25rem !important;
+    }
+}
+
+/* Animaciones de carga */
+.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltips personalizados */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+.tooltip-inner {
+    background-color: #2c3e50;
+    border-radius: 6px;
+}
+
+/* Eventos sincronizados */
+.evento-sincronizado {
+    opacity: 0.8;
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.evento-sincronizado .fc-event-title::after {
+    content: ' ';
+    font-size: 0.8em;
+}
+
+/* Lista de sincronizados */
+.sync-item {
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.sync-item:hover {
+    border-color: #007bff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sync-item .btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.sync-item:hover .btn {
+    opacity: 1;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* Estilos para calendario colaborativo mejorado */
+.calendario-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.card-calendario {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.estadisticas-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+}
+
+.estadisticas-card .card-body {
+    padding: 1.5rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* Filtros mejorados */
+.filtros-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Calendario mejorado */
+#calendario {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Encabezado del calendario */
+.fc-toolbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    padding: 1rem !important;
+    border-radius: 10px !important;
+    margin-bottom: 1rem !important;
+}
+
+.fc-toolbar-title {
+    color: white !important;
+    font-weight: 600 !important;
+    font-size: 1.5rem !important;
+}
+
+.fc-button {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.fc-button:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+.fc-button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Días de la semana */
+.fc-col-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.fc-col-header-cell {
+    padding: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    text-transform: uppercase !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 1px !important;
+}
+
+/* Etiquetas de tiempo horizontales - FORZAR */
+.fc-timegrid-axis,
+.fc-timegrid-slot-label,
+.fc-timegrid-slot-label-frame,
+.fc-timegrid-slot-label-cushion {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    padding: 0.2rem !important;
+    font-size: 0.7rem !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Contenedor principal del eje de tiempo */
+.fc-timegrid-axis-cushion {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    font-size: 0.7rem !important;
+    font-weight: 500 !important;
+    color: #495057 !important;
+}
+
+/* Forzar orientación en todos los elementos de tiempo */
+.fc-timegrid .fc-scrollgrid-section > * > tr > .fc-timegrid-axis {
+    width: 90px !important;
+    min-width: 90px !important;
+}
+
+/* Asegurar que el texto no se rote */
+.fc-timegrid-slot-label * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+}
+
+/* Selectores ultra específicos para FullCalendar */
+#calendario .fc-timegrid-axis,
+#calendario .fc-timegrid-slot-label,
+#calendario .fc-timegrid-slot-label-frame,
+#calendario .fc-timegrid-slot-label-cushion,
+#calendario .fc-timegrid-axis-cushion {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    -webkit-transform: rotate(0deg) !important;
+    -moz-transform: rotate(0deg) !important;
+    -ms-transform: rotate(0deg) !important;
+    -o-transform: rotate(0deg) !important;
+}
+
+/* Forzar en elementos específicos de la tabla */
+#calendario .fc-timegrid .fc-scrollgrid-section table tbody tr td.fc-timegrid-axis {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+}
+
+/* Elementos internos de las celdas de tiempo */
+#calendario .fc-timegrid-axis .fc-timegrid-axis-cushion,
+#calendario .fc-timegrid-slot-label .fc-timegrid-slot-label-cushion {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    display: block !important;
+    text-align: center !important;
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+    padding: 0.1rem !important;
+}
+
+/* Sobrescribir cualquier rotación de FullCalendar */
+#calendario .fc-timegrid-axis *,
+#calendario .fc-timegrid-slot-label *,
+#calendario .fc-timegrid-axis-cushion *,
+#calendario .fc-timegrid-slot-label-cushion * {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    transform: rotate(0deg) !important;
+    -webkit-transform: rotate(0deg) !important;
+    -moz-transform: rotate(0deg) !important;
+    -ms-transform: rotate(0deg) !important;
+    -o-transform: rotate(0deg) !important;
+}
+
+/* Celdas del calendario */
+.fc-daygrid-day {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+    min-height: 120px !important;
+    padding: 0.5rem !important;
+}
+
+/* Slots de tiempo con más altura */
+.fc-timegrid-slot {
+    height: 60px !important;
+    min-height: 60px !important;
+}
+
+.fc-timegrid-slot-minor {
+    height: 30px !important;
+    min-height: 30px !important;
+}
+
+.fc-day-past {
+    background-color: rgba(108, 117, 125, 0.05) !important;
+    pointer-events: none !important;
+}
+
+.fc-day-past .fc-daygrid-day-number {
+    color: #6c757d !important;
+    opacity: 0.6 !important;
+}
+
+.fc-timegrid-slot.fc-slot-past {
+    background-color: rgba(108, 117, 125, 0.1) !important;
+    pointer-events: none !important;
+}
+
+.fc-daygrid-day:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+    transform: scale(1.02) !important;
+}
+
+.fc-daygrid-day-number {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+/* Eventos mejorados - MÁXIMA VISIBILIDAD */
+.fc-event {
+    border: 2px solid rgba(255,255,255,0.4) !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    margin: 2px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7) !important;
+    min-height: 25px !important;
+}
+
+.fc-event::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.fc-event:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25) !important;
+    z-index: 10 !important;
+}
+
+.fc-event-title {
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    font-size: 12px !important;
+}
+
+.fc-event-time {
+    color: white !important;
+    font-weight: 600 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Estados de eventos mejorados - solo animaciones y efectos */
+.evento-programado {
+    color: white !important;
+}
+
+.evento-pasado {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    opacity: 0.7 !important;
+    color: #f8f9fa !important;
+}
+
+.evento-pasado .fc-event-title {
+    color: #f8f9fa !important;
+    text-decoration: line-through !important;
+}
+
+.evento-en-curso {
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5) !important;
+}
+
+.evento-cancelado {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    opacity: 0.8 !important;
+    animation: blink 1.5s infinite;
+    filter: grayscale(0.3);
+}
+
+.evento-cancelado .fc-event-title {
+    text-decoration: line-through !important;
+    color: white !important;
+}
+
+.evento-cancelado {
+    text-decoration: line-through !important;
+    opacity: 0.6 !important;
+}
+
+.evento-finalizado {
+    opacity: 0.7 !important;
+    filter: grayscale(0.3);
+}
+
+.evento-perdido {
+    animation: blink 1s infinite;
+}
+
+/* Eventos sincronizados mejorados */
+.evento-sincronizado {
+    border-left: 4px solid #17a2b8 !important;
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+    position: relative !important;
+}
+
+.evento-sincronizado::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+/* Múltiples eventos en el mismo slot */
+.fc-daygrid-event-harness {
+    margin-bottom: 1px !important;
+}
+
+.fc-daygrid-day-events {
+    margin: 0 2px !important;
+}
+
+/* Cuando hay muchos eventos */
+.fc-daygrid-more-link {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    color: white !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    margin: 1px !important;
+    transition: all 0.3s ease !important;
+}
+
+.fc-daygrid-more-link:hover {
+    transform: scale(1.1) !important;
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%) !important;
+}
+
+/* Modal mejorado */
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+}
+
+/* Alert de información mejorado */
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: 1px solid #b8daff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Presets de colores */
+.color-presets {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.color-preset {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-preset:hover,
+.color-preset.active {
+    border-color: #495057;
+    transform: scale(1.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+/* Loading states mejorados */
+.btn.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: 50%;
+    left: 50%;
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+    .calendario-container {
+        padding: 0.5rem;
+    }
+    
+    #calendario {
+        padding: 0.5rem;
+        overflow-x: auto;
+        min-width: 100%;
+    }
+    
+    .fc-event {
+        font-size: 0.65rem !important;
+        padding: 2px 4px !important;
+    }
+    
+    .fc-daygrid-day {
+        min-height: 80px !important;
+    }
+    
+    .filtros-container {
+        padding: 1rem;
+    }
+    
+    /* Asegurar que el calendario use todo el ancho disponible */
+    .fc-view-harness {
+        min-width: 100% !important;
+    }
+    
+    .fc-daygrid-body {
+        width: 100% !important;
+    }
+}
+
+/* Mejoras para múltiples eventos */
+.fc-daygrid-day-frame {
+    position: relative;
+}
+
+.fc-daygrid-day-events {
+    position: relative;
+    z-index: 1;
+}
+
+/* Indicador de conflictos */
+.evento-conflicto {
+    border: 2px solid #dc3545 !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* Lista de calendarios sincronizados mejorada */
+.sync-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 10px;
+}
+
+.sync-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transition: all 0.3s ease;
+}
+
+.sync-item:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Scrollbar personalizado mejorado */
+.sync-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sync-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.sync-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.sync-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}

@@ -1,127 +1,374 @@
-body {
-  background: #f5f5f5;
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  margin-top: 7%;
+.perfil-container * {
+    box-sizing: border-box;
 }
 
-.perfil-contenedor {
-  padding: 2rem;
-  max-width: 1300px;
-  margin: auto;
+.perfil-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: whitesmoke;
+    padding: 20px;
+    margin-top: 100px;
 }
 
-.titulo {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
+.perfil-container .container {
+    max-width: 95%;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-.perfil-grid {
-  display: grid;
-  grid-template-areas:
-    "foto-academico academico"
-    "contacto contacto";
-  grid-template-columns: 2fr 2fr;
-  gap: 2rem;
+.perfil-container .header {
+    background:linear-gradient(to bottom right, #17784d, #19a65e);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.card {
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.perfil-container .header h1 {
+    font-size: 22px;
+    font-weight: 600;
 }
 
-.foto-datos {
-  display: flex;
-  flex-direction: column;
-  grid-area: foto-academico;
-  height: 150%;
-  position: relative;
+.perfil-container .header-buttons {
+    display: flex;
+    gap: 10px;
 }
 
-.foto-datos-superior {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
+.perfil-container .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.zona-foto {
-  flex: 1.2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.perfil-container .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
 }
 
-.form-foto {
-  flex: 1.3;
-  display: none;
-  flex-direction: column;
-  justify-content: start;
-  padding-left: 1rem;
+.perfil-container .btn-outline:hover {
+    background: rgba(255,255,255,0.1);
 }
 
-.form-foto input[type="file"] {
-  margin: 0.5rem 0;
+.perfil-container .btn-primary {
+    background: #ef4444;
+    color: white;
 }
 
-.acciones-foto {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+.perfil-container .btn-primary:hover {
+    background: #dc2626;
 }
 
-.datos-personales {
-  flex: 2.5;
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  margin-top: 1.5rem;
-  padding-left: 1rem;
+.perfil-container .main-content {
+    display: grid;
+    grid-template-columns: 450px 1fr;
+    min-height: 700px;
 }
 
-.contacto {
-  grid-area: contacto;
-  width: 49%;
-  max-width: 200%;
-  margin-left: auto;
+.perfil-container .profile-section {
+    background: linear-gradient(to bottom right, #17784d, #19a65e);
+    color: white;
+    padding: 30px;
+    text-align: center;
+    position: relative;
 }
 
-.foto-perfil {
-  width: 130px;
-  height: 130px;
-  border-radius: 100%;
-  object-fit: cover;
-  margin-bottom: 1rem;
+.perfil-container .profile-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 5px;
 }
 
-.btn {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  width: 100%;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
+.perfil-container .profile-subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 30px;
 }
 
-.btn.azul { background: #1d9260; color: white; }
-.btn.rojo { background: #EF4444; color: white; }
-.btn.verde { background: #1075b9; color: white; }
-.btn.gris { background: #dd2215; color: white; }
-.btn.amarillo { background: #f59e0b; color: white; }
-
-.btn:hover {
-  opacity: 0.9;
+.perfil-container .profile-avatar {
+    width: 140px;
+    height: 140px;
+    background: #60a5fa;
+    border-radius: 50%;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 4px solid rgba(255,255,255,0.3);
 }
 
-.botones-secundarios {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  width: 100%;
+.perfil-container .avatar-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.perfil-container .profile-id {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 10px;
+}
+
+.perfil-container .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.perfil-container .action-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+
+.perfil-container .btn-green {
+    background: #10b981;
+    color: white;
+}
+
+.perfil-container .btn-green:hover {
+    background: #059669;
+}
+
+.perfil-container .btn-blue {
+    background: #3b82f6;
+    color: white;
+}
+
+.perfil-container .btn-blue:hover {
+    background: #2563eb;
+}
+
+.perfil-container .btn-orange {
+    background: #f59e0b;
+    color: white;
+}
+
+.perfil-container .btn-orange:hover {
+    background: #d97706;
+}
+
+.perfil-container .content-right {
+    padding: 40px;
+    background: #f8fafc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    align-content: start;
+}
+
+.perfil-container .info-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .info-section h3 {
+    font-size: 16px;
+    color: #374151;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-container .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.perfil-container .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.perfil-container .info-row:last-child {
+    border-bottom: none;
+}
+
+.perfil-container .info-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+    flex: 0 0 auto;
+    min-width: 120px;
+}
+
+.perfil-container .info-value {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+    text-align: right;
+    flex: 1;
+}
+
+.perfil-container .academic-section {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .academic-section h3 {
+    font-size: 18px;
+    color: #374151;
+    margin-bottom: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-container .academic-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.perfil-container .stat-item {
+    text-align: center;
+    padding: 25px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: #6366f1;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.perfil-container .stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.perfil-container .status-badge {
+    background: #10b981;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.perfil-container .recent-section {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .recent-section h3 {
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-container .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.perfil-container .recent-item {
+    text-align: left;
+}
+
+.perfil-container .recent-item h4 {
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.perfil-container .recent-value {
+    font-size: 12px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.perfil-container .editable-field {
+    position: relative;
+}
+
+.perfil-container .edit-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+    background: #f9fafb;
+}
+
+.perfil-container .edit-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+@media (max-width: 1200px) {
+    .perfil-container .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .perfil-container .content-right {
+        grid-template-columns: 1fr;
+    }
+    
+    .perfil-container .academic-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .perfil-container .recent-grid {
+        grid-template-columns: 1fr;
+    }
 }

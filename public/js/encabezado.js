@@ -1,147 +1,4 @@
-// ============================================
-// COMPORTAMIENTO MEJORADO DE LA NAVBAR Y MODAL
-// ============================================
-
 document.addEventListener('DOMContentLoaded', function () {
-  
-  // ============================================
-  // CONFIGURACIÓN DEL MODAL DEL BUSCADOR
-  // ============================================
-  
-  const buscador = document.getElementById('buscador-global');
-  const dashboardOverlay = document.getElementById('dashboard-overlay');
-  const dashboardResultados = document.getElementById('dashboard-resultados');
-  const dashboardNormal = document.getElementById('dashboard-normal');
-  
-  if (buscador) {
-    buscador.addEventListener('submit', function (e) {
-      e.preventDefault();
-      
-      const filtro = document.getElementById('filtro-busqueda').value;
-      const query = document.getElementById('input-busqueda').value.trim();
-      
-      if (!query) {
-        // Mostrar mensaje de error suave
-        mostrarNotificacionTemporal('Por favor ingresa un término de búsqueda', 'warning');
-        return;
-      }
-      
-      // Mostrar indicador de carga
-      const submitBtn = buscador.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.classList.add('btn-loading');
-      submitBtn.disabled = true;
-      
-      // Realizar búsqueda
-      fetch(`/?page=dashboard&filtro=${encodeURIComponent(filtro)}&q=${encodeURIComponent(query)}&ajax=1`)
-        .then(res => {
-          if (!res.ok) throw new Error('Error en la búsqueda');
-          return res.text();
-        })
-        .then(html => {
-          // Configurar el contenido del modal
-          dashboardResultados.innerHTML = `
-            <div class="modal-header">
-              <h3 class="modal-title">Resultados de búsqueda: "${query}"</h3>
-              <button id="volver-dashboard" class="modal-close-btn" title="Cerrar">
-                <span>×</span>
-              </button>
-            </div>
-            <div class="modal-content">
-              ${html}
-            </div>
-          `;
-          
-          // Mostrar el modal con animaciones
-          mostrarModal();
-          
-          // Configurar el botón de cerrar
-          configurarBotonesCerrarModal();
-          
-        })
-        .catch(error => {
-          console.error('Error en la búsqueda:', error);
-          mostrarNotificacionTemporal('Error al realizar la búsqueda. Intenta nuevamente.', 'error');
-        })
-        .finally(() => {
-          // Remover indicador de carga
-          submitBtn.classList.remove('btn-loading');
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        });
-    });
-  }
-  
-  // ============================================
-  // FUNCIONES DEL MODAL
-  // ============================================
-  
-  function mostrarModal() {
-    // Prevenir scroll del body
-    document.body.classList.add('no-scroll');
-    
-    // Mostrar overlay
-    dashboardOverlay.classList.add('active');
-    
-    // Animar dashboard normal
-    if (dashboardNormal) {
-      dashboardNormal.classList.add('anim-out');
-    }
-    
-    // Mostrar y animar resultados
-    dashboardResultados.style.display = 'block';
-    dashboardResultados.classList.remove('anim-out');
-    
-    // Forzar reflow para la animación
-    void dashboardResultados.offsetWidth;
-    
-    dashboardResultados.classList.add('anim-in');
-  }
-  
-  function cerrarModal() {
-    // Animar cierre
-    dashboardResultados.classList.remove('anim-in');
-    dashboardResultados.classList.add('anim-out');
-    dashboardOverlay.classList.remove('active');
-    
-    if (dashboardNormal) {
-      dashboardNormal.classList.remove('anim-out');
-    }
-    
-    // Restaurar scroll del body
-    document.body.classList.remove('no-scroll');
-    
-    // Ocultar después de la animación
-    setTimeout(() => {
-      dashboardResultados.style.display = 'none';
-      dashboardResultados.classList.remove('anim-out');
-      if (dashboardNormal) {
-        dashboardNormal.style.display = '';
-      }
-    }, 400);
-  }
-  
-  function configurarBotonesCerrarModal() {
-    // Botón cerrar específico
-    const volverBtn = document.getElementById('volver-dashboard');
-    if (volverBtn) {
-      volverBtn.addEventListener('click', cerrarModal);
-    }
-    
-    // Cerrar al hacer clic en el overlay (fuera del modal)
-    dashboardOverlay.addEventListener('click', function(e) {
-      if (e.target === dashboardOverlay) {
-        cerrarModal();
-      }
-    });
-  }
-  
-  // Cerrar modal con tecla ESC
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && dashboardOverlay.classList.contains('active')) {
-      cerrarModal();
-    }
-  });
   
   // ============================================
   // MANEJO MEJORADO DE DROPDOWNS
@@ -178,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
           cerrarDropdown(dropdown);
           dropdownActivo = null;
         }
-      }, 300); // Delay de 300ms para permitir movimiento del mouse
+      }, 600); //
     });
     
     // Mouse enter de vuelta al dropdown (cancelar cierre)
@@ -216,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!dropdown.classList.contains('dropdown-stay-open')) {
           content.style.display = '';
         }
-      }, 300);
+      }, 600);
     }
   }
   
@@ -306,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
           data = JSON.parse(text);
         } catch (error) {
-          console.error("❌ Respuesta no es JSON válido:", text);
           mostrarNotificacionTemporal('Error al procesar la respuesta', 'error');
           return;
         }
@@ -355,12 +211,10 @@ document.addEventListener('DOMContentLoaded', function () {
           mostrarNotificacionTemporal('Notificación marcada como leída', 'success');
           
         } else {
-          console.error("⚠️ Error en la respuesta del servidor:", data);
           mostrarNotificacionTemporal('Error al marcar la notificación', 'error');
         }
         
       } catch (err) {
-        console.error("❌ Error al marcar notificación:", err);
         mostrarNotificacionTemporal('Error de conexión', 'error');
       } finally {
         // Restaurar botón si hubo error
@@ -371,63 +225,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   
-  // ============================================
-  // INICIALIZACIÓN DE CHOICES.JS
-  // ============================================
-  
-  // Configurar Choices.js en selects de búsqueda
-  document.querySelectorAll(".search-select").forEach(select => {
-    // Verificar si ya tiene Choices inicializado
-    if (select.classList.contains('choices__input')) return;
-    
-    try {
-      new Choices(select, {
-        removeItemButton: false,
-        shouldSort: false,
-        searchEnabled: false,
-        itemSelectText: "",
-        classNames: {
-          containerOuter: 'choices',
-          containerInner: 'choices__inner',
-          input: 'choices__input',
-          inputCloned: 'choices__input--cloned',
-          list: 'choices__list',
-          listItems: 'choices__list--multiple',
-          listSingle: 'choices__list--single',
-          listDropdown: 'choices__list--dropdown',
-          item: 'choices__item',
-          itemSelectable: 'choices__item--selectable',
-          itemDisabled: 'choices__item--disabled',
-          itemChoice: 'choices__item--choice',
-          placeholder: 'choices__placeholder',
-          group: 'choices__group',
-          groupHeading: 'choices__heading',
-          button: 'choices__button',
-          activeState: 'is-active',
-          focusState: 'is-focused',
-          openState: 'is-open',
-          disabledState: 'is-disabled',
-          highlightedState: 'is-highlighted',
-          selectedState: 'is-selected',
-          flippedState: 'is-flipped',
-          loadingState: 'is-loading',
-        },
-        callbackOnCreateTemplates: function(template) {
-          return {
-            option: function(classNames, data) {
-              return template(`
-                <div class="${classNames.item} ${classNames.itemChoice} ${data.highlighted ? classNames.highlightedState : classNames.itemSelectable}" data-select-text="${this.config.itemSelectText}" data-choice ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'} data-id="${data.id}" data-value="${data.value}" ${data.groupId > 0 ? 'role="treeitem"' : 'role="option"'}>
-                  <span>${data.label}</span>
-                </div>
-              `);
-            }
-          };
-        }
-      });
-    } catch (error) {
-      console.warn('Error inicializando Choices.js:', error);
-    }
-  });
   
   // ============================================
   // EFECTOS DE SCROLL DE LA NAVBAR
@@ -571,14 +368,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (dropdownNotificaciones) {
       dropdownNotificaciones.classList.add('hidden');
     }
-    
-    // Ajustar modal en mobile
-    if (dashboardOverlay.classList.contains('active') && window.innerWidth <= 480) {
-      const modalContent = dashboardResultados.querySelector('.modal-content');
-      if (modalContent) {
-        modalContent.style.maxHeight = 'calc(100vh - 80px)';
-      }
-    }
   });
   
   // ============================================
@@ -663,28 +452,402 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.lazy-load').forEach(el => {
     observer.observe(el);
   });
-  
+
   // ============================================
-  // LOGS DE DESARROLLO
+  // FUNCIONALIDAD DE BÚSQUEDA PARA ADMINISTRADORES
   // ============================================
   
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.log('🎉 Navbar mejorada cargada correctamente');
-    console.log('📱 Dropdowns configurados:', dropdowns.length);
-    console.log('🔍 Buscador modal:', buscador ? 'Configurado' : 'No encontrado');
-    console.log('🔔 Sistema de notificaciones:', badge ? 'Activo' : 'No encontrado');
+  const buscador = document.getElementById('buscador-global');
+  if (buscador) {
+    buscador.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const filtro = document.getElementById('filtro-busqueda').value;
+      const query = document.getElementById('input-busqueda').value.trim();
+      
+      if (!query) {
+        alert('Por favor ingresa un término de búsqueda');
+        return;
+      }
+      
+      // Mostrar indicador de carga
+      const searchBtn = buscador.querySelector('.search-btn');
+      const originalHTML = searchBtn.innerHTML;
+      searchBtn.innerHTML = '<div class="spinner"></div>';
+      searchBtn.disabled = true;
+      
+      // Realizar búsqueda AJAX
+      fetch(`/?page=dashboard&ajax=1&filtro=${encodeURIComponent(filtro)}&q=${encodeURIComponent(query)}`)
+        .then(response => response.text())
+        .then(html => {
+          // Mostrar resultados en el panel dinámico
+          const dashboardNormal = document.getElementById('dashboard-normal');
+          const dashboardResultados = document.getElementById('dashboard-resultados');
+          const overlay = document.getElementById('dashboard-overlay');
+          
+          if (dashboardNormal && dashboardResultados && overlay) {
+            dashboardNormal.style.display = 'none';
+            dashboardResultados.innerHTML = html;
+            dashboardResultados.style.display = 'block';
+            overlay.style.display = 'block';
+            
+            // Agregar botón para volver
+            const backBtn = document.createElement('button');
+            backBtn.className = 'back-to-dashboard-btn';
+            backBtn.innerHTML = '← Volver al Dashboard';
+            backBtn.onclick = function() {
+              dashboardNormal.style.display = 'block';
+              dashboardResultados.style.display = 'none';
+              overlay.style.display = 'none';
+              // Limpiar formulario
+              document.getElementById('input-busqueda').value = '';
+            };
+            
+            dashboardResultados.insertBefore(backBtn, dashboardResultados.firstChild);
+            
+            // INICIALIZAR FUNCIONALIDAD DE BOTONES "VER DETALLES" DESPUÉS DE CARGAR AJAX
+            initializeStudentDetailsButtons();
+          }
+        })
+        .catch(error => {
+          console.error('Error en la búsqueda:', error);
+          alert('Error al realizar la búsqueda. Inténtalo de nuevo.');
+        })
+        .finally(() => {
+          // Restaurar botón
+          searchBtn.innerHTML = originalHTML;
+          searchBtn.disabled = false;
+        });
+    });
   }
-  
-}); // Fin del DOMContentLoaded
+
+}); // Closing brace for DOMContentLoaded
 
 // ============================================
-// FUNCIONES GLOBALES (para compatibilidad)
+// FUNCIONALIDAD DE BOTONES "VER DETALLES" PARA ESTUDIANTES
 // ============================================
 
-// Función global para toggleDropdown (mantener compatibilidad)
-function toggleDropdown() {
-  const dropdown = document.getElementById("dropdown-notificaciones");
-  if (dropdown) {
-    dropdown.classList.toggle("hidden");
+function initializeStudentDetailsButtons() {
+  // Manejar clicks en botones "Ver Detalles"
+  const buttons = document.querySelectorAll('.btn-ver-detalles');
+  
+  buttons.forEach((button, index) => {
+    // Remover listeners previos para evitar duplicados
+    button.replaceWith(button.cloneNode(true));
+    const newButton = document.querySelectorAll('.btn-ver-detalles')[index];
+    
+    newButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const resultCard = this.closest('.result-card');
+      
+      // PRIMERO: Resetear TODOS los botones (incluyendo este)
+      buttons.forEach(btn => {
+        // Verificar que el botón aún existe en el DOM
+        if (!btn || !btn.parentNode) {
+          return; // Saltar botones que ya no existen
+        }
+        
+        btn.textContent = 'Ver Detalles';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        btn.disabled = false;
+        
+        // Deshabilitar todos los botones de editar
+        const resultCard = btn.closest('.result-card');
+        if (resultCard) {
+          const editBtn = resultCard.querySelector('.btn-editar');
+          if (editBtn) {
+            editBtn.style.opacity = '0.5';
+            editBtn.style.pointerEvents = 'none';
+            editBtn.classList.remove('enabled');
+          }
+        }
+      });
+      
+      // Mostrar el sidebar de detalles
+      const sidebar = document.getElementById('student-details-sidebar');
+      const detailsContainer = document.getElementById('student-details-content');
+      
+      if (!sidebar || !detailsContainer) {
+        console.error('No se encontró el sidebar o contenedor de detalles!');
+        return;
+      }
+      
+      // Obtener datos del estudiante desde la tarjeta
+      const studentData = extractStudentData(resultCard);
+      
+      // Mostrar el sidebar
+      sidebar.style.display = 'block';
+      
+      // Mostrar detalles en el sidebar
+      showStudentDetails(detailsContainer, studentData);
+      
+      // DESPUÉS: Cambiar estado SOLO de este botón
+      this.textContent = 'Detalles Mostrados';
+      this.classList.remove('btn-primary');
+      this.classList.add('btn-secondary');
+      this.disabled = true;
+      
+      // Habilitar SOLO el botón de editar de este estudiante
+      const editButton = resultCard.querySelector('.btn-editar');
+      if (editButton) {
+        editButton.style.opacity = '1';
+        editButton.style.pointerEvents = 'auto';
+        editButton.classList.add('enabled');
+      }
+    });
+  });
+}
+
+function extractStudentData(resultCard) {
+  const data = {};
+  
+  // Extraer datos básicos del estudiante
+  const nameElement = resultCard.querySelector('.result-header h4');
+  data.fullName = nameElement ? nameElement.textContent.trim() : '';
+  
+  // Extraer detalles de los párrafos
+  const detailsElements = resultCard.querySelectorAll('.result-details p');
+  detailsElements.forEach(p => {
+    const text = p.textContent;
+    if (text.includes('Documento:')) {
+      data.documento = text.replace('Documento:', '').trim();
+    } else if (text.includes('Email:')) {
+      data.email = text.replace('Email:', '').trim();
+    } else if (text.includes('Teléfono:')) {
+      data.telefono = text.replace('Teléfono:', '').trim();
+    } else if (text.includes('Ficha:')) {
+      data.ficha = text.replace('Ficha:', '').trim();
+    } else if (text.includes('Colegio:')) {
+      data.colegio = text.replace('Colegio:', '').trim();
+    }
+  });
+  
+  // Obtener ID del estudiante del botón
+  data.id = resultCard.querySelector('.btn-ver-detalles').getAttribute('data-id');
+  
+  return data;
+}
+
+function showStudentDetails(container, studentData) {
+  const detailsHTML = `
+    <div class="student-details-content">
+      <!-- Nombres del Aprendiz -->
+      <div class="data-container">
+        <div class="section-title">Nombres del Aprendiz</div>
+        <div class="names-container" style="text-align: center; padding: 20px;">
+          <div class="student-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+            Cargando información del aprendiz...
+          </div>
+        </div>
+      </div>
+      
+      <!-- Detalles del Aprendiz -->
+      <div class="data-container">
+        <div class="section-title">Detalles del Aprendiz</div>
+        <div class="data-grid" id="student-data-grid">
+          <div class="data-item">
+            <div class="data-label">Cargando...</div>
+            <div class="data-value">Información del aprendiz</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Nombres del Acudiente -->
+      <div class="data-container acudiente-container">
+        <div class="section-title">Nombres del Acudiente</div>
+        <div class="names-container" style="text-align: center; padding: 20px;">
+          <div class="acudiente-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">
+            Cargando información del acudiente...
+          </div>
+        </div>
+      </div>
+      
+      <!-- Detalles del Acudiente -->
+      <div class="data-container acudiente-container">
+        <div class="section-title">Detalles del Acudiente</div>
+        <div class="data-grid" id="guardian-data-grid">
+          <div class="data-item">
+            <div class="data-label">Cargando...</div>
+            <div class="data-value">Información del acudiente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = detailsHTML;
+  
+  // Cargar datos completos del estudiante y acudiente via AJAX
+  if (studentData.id) {
+    loadStudentCompleteData(studentData.id, container);
+  } else {
+    console.error('No se encontró ID del estudiante');
   }
+}
+
+function loadStudentCompleteData(studentId, container) {
+  // Hacer llamada AJAX para obtener datos completos del estudiante y acudiente
+  console.log('Haciendo petición AJAX para ID:', studentId);
+  fetch(`./ajax/get_student_details.php?id=${studentId}`)
+    .then(response => {
+      console.log('Respuesta recibida:', response);
+      return response.json();
+    })
+    .then(data => {
+      console.log('Datos recibidos:', data);
+      if (data.success) {
+        const student = data.student;
+        
+        // Actualizar nombre del aprendiz
+        const studentNameElement = container.querySelector('.student-name');
+        if (studentNameElement) {
+          studentNameElement.textContent = student.nombre_completo || 'No disponible';
+        }
+        
+        // Actualizar detalles del aprendiz usando data-grid
+        const studentDataGrid = container.querySelector('#student-data-grid');
+        if (studentDataGrid) {
+          let studentItems = '';
+          
+          if (student.tipo_documento && student.numero_documento) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Documento</div>
+                <div class="data-value">${student.tipo_documento} ${student.numero_documento}</div>
+              </div>`;
+          }
+          
+          if (student.email) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Email</div>
+                <div class="data-value">${student.email}</div>
+              </div>`;
+          }
+          
+          if (student.telefono) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Teléfono</div>
+                <div class="data-value">${student.telefono}</div>
+              </div>`;
+          }
+          
+          if (student.ficha_nombre) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Ficha</div>
+                <div class="data-value">${student.ficha_nombre}</div>
+              </div>`;
+          }
+          
+          if (student.colegio_nombre) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Colegio</div>
+                <div class="data-value">${student.colegio_nombre}</div>
+              </div>`;
+          }
+          
+          if (student.jornada) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Jornada</div>
+                <div class="data-value">${student.jornada}</div>
+              </div>`;
+          }
+          
+          if (student.estado) {
+            studentItems += `
+              <div class="data-item">
+                <div class="data-label">Estado</div>
+                <div class="data-value">
+                  <span class="status-badge">${student.estado}</span>
+                </div>
+              </div>`;
+          }
+          
+          studentDataGrid.innerHTML = studentItems || `
+            <div class="data-item">
+              <div class="data-label">Sin información</div>
+              <div class="data-value">No hay información adicional del aprendiz</div>
+            </div>`;
+        }
+        
+        // Actualizar nombre del acudiente
+        const guardianNameElement = container.querySelector('.acudiente-name');
+        if (guardianNameElement) {
+          guardianNameElement.textContent = student.nombre_completo_acudiente || 'No disponible';
+        }
+        
+        // Actualizar detalles del acudiente usando data-grid
+        const guardianDataGrid = container.querySelector('#guardian-data-grid');
+        if (guardianDataGrid) {
+          let guardianItems = '';
+          
+          if (student.tipo_documento_acudiente && student.numero_documento_acudiente) {
+            guardianItems += `
+              <div class="data-item">
+                <div class="data-label">Documento</div>
+                <div class="data-value">${student.tipo_documento_acudiente} ${student.numero_documento_acudiente}</div>
+              </div>`;
+          }
+          
+          if (student.telefono_acudiente) {
+            guardianItems += `
+              <div class="data-item">
+                <div class="data-label">Teléfono</div>
+                <div class="data-value">${student.telefono_acudiente}</div>
+              </div>`;
+          }
+          
+          if (student.parentesco) {
+            guardianItems += `
+              <div class="data-item">
+                <div class="data-label">Parentesco</div>
+                <div class="data-value">${student.parentesco}</div>
+              </div>`;
+          }
+          
+          if (student.ocupacion) {
+            guardianItems += `
+              <div class="data-item">
+                <div class="data-label">Ocupación</div>
+                <div class="data-value">${student.ocupacion}</div>
+              </div>`;
+          }
+          
+          guardianDataGrid.innerHTML = guardianItems || `
+            <div class="data-item">
+              <div class="data-label">Sin información</div>
+              <div class="data-value">No hay información del acudiente registrada</div>
+            </div>`;
+        }
+        
+      } else {
+        // Si no hay datos, mostrar mensaje de error
+        const dataGrids = container.querySelectorAll('.data-grid');
+        dataGrids.forEach(grid => {
+          grid.innerHTML = `
+            <div class="data-item">
+              <div class="data-label">Error</div>
+              <div class="data-value">No se pudieron cargar los datos</div>
+            </div>`;
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando datos completos:', error);
+      console.error('URL intentada:', `./ajax/get_student_details.php?id=${studentId}`);
+      const dataGrids = container.querySelectorAll('.data-grid');
+      dataGrids.forEach(grid => {
+        grid.innerHTML = `
+          <div class="data-item">
+            <div class="data-label">Error</div>
+            <div class="data-value">Error al cargar información</div>
+          </div>`;
+      });
+    });
 }

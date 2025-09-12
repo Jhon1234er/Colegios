@@ -91,8 +91,8 @@ class AuthController {
             }
 
             if ((int)$data['rol_id'] === 1) {
-                $stmtAdmin = $pdo->prepare("INSERT INTO administradores (usuario_id, fecha_designacion) VALUES (?, CURDATE())");
-                $stmtAdmin->execute([$usuario_id]);
+                $stmtAdmin = $pdo->prepare("INSERT INTO administradores (usuario_id, correo_institucional, fecha_designacion) VALUES (?, ?, CURDATE())");
+                $stmtAdmin->execute([$usuario_id, $data['correo_institucional']]);
             }
 
             $pdo->commit();

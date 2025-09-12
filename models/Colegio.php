@@ -13,13 +13,35 @@ class Colegio {
         $colegios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($colegios as &$colegio) {
-            $colegio['materias']   = $this->obtenerMateriasPorColegio($colegio['id']);
-            $colegio['jornada']    = json_decode($colegio['jornada'], true) ?? [];
-            $colegio['grados']     = json_decode($colegio['grados'], true) ?? [];
+            $colegio['materias'] = $this->obtenerMateriasPorColegio($colegio['id']);
+            
+            // 🔹 Normalizar jornada
+            $colegio['jornada'] = $this->normalizarCampo($colegio['jornada']);
+
+            // 🔹 Normalizar grados
+            $colegio['grados'] = $this->normalizarCampo($colegio['grados']);
+
+            // 🔹 Calendario siempre en JSON
             $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
         }
 
         return $colegios;
+    }
+
+    private function normalizarCampo($valor) {
+        // Si está vacío
+        if (!$valor) {
+            return [];
+        }
+
+        // Intentar decodificar como JSON
+        $json = json_decode($valor, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+            return $json;
+        }
+
+        // Si no era JSON, interpretarlo como lista separada por comas
+        return array_map('trim', explode(',', $valor));
     }
 
     public function obtenerMateriasPorColegio($colegio_id) {
@@ -41,9 +63,9 @@ class Colegio {
                 (nombre, codigo_dane, nit, tipo_institucion, direccion, telefono, correo, municipio, departamento, jornada, grados, calendario)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            // 🔹 Normalizar arrays antes del execute
-            $datos['jornada']   = json_encode($datos['jornada']);
-            $datos['grados']    = json_encode($datos['grados']);
+            // 🔹 Asegurar que se guarden como JSON
+            $datos['jornada']    = json_encode($datos['jornada']);
+            $datos['grados']     = json_encode($datos['grados']);
             $datos['calendario'] = json_encode($datos['calendario']);
 
             $stmt->execute([
@@ -60,7 +82,6 @@ class Colegio {
                 $datos['grados'],
                 $datos['calendario']
             ]);
-
 
             $colegio_id = $this->pdo->lastInsertId();
 
@@ -94,12 +115,43 @@ class Colegio {
     public function obtenerPorId($id) {
         $stmt = $this->pdo->prepare("SELECT * FROM colegios WHERE id = ?");
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $colegio = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($colegio) {
+            $colegio['materias']   = $this->obtenerMateriasPorColegio($id);
+            $colegio['jornada']    = $this->normalizarCampo($colegio['jornada']);
+            $colegio['grados']     = $this->normalizarCampo($colegio['grados']);
+            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
+        }
+
+        return $colegio;
     }
 
     public function buscarPorNombre($q) {
-        $stmt = $this->pdo->prepare("SELECT * FROM colegios WHERE nombre LIKE ?");
-        $stmt->execute(['%' . $q . '%']);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM colegios 
+            WHERE nombre LIKE ? 
+               OR codigo_dane LIKE ? 
+               OR municipio LIKE ? 
+               OR departamento LIKE ?
+            ORDER BY nombre ASC
+        ");
+        $searchTerm = '%' . $q . '%';
+        $stmt->execute([$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+        $colegios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($colegios as &$colegio) {
+            $colegio['materias']   = $this->obtenerMateriasPorColegio($colegio['id']);
+            $colegio['jornada']    = $this->normalizarCampo($colegio['jornada']);
+            $colegio['grados']     = $this->normalizarCampo($colegio['grados']);
+            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
+        }
+
+        return $colegios;
+    }
+
+    public function contarColegios() {
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM colegios");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
 }

@@ -14,9 +14,11 @@ class Profesor {
                    u.correo_electronico, u.telefono,
                    p.id AS profesor_id,
                    p.titulo_academico, p.especialidad, p.fecha_ingreso,
-                   p.rh, p.correo_institucional, p.tip_contrato
+                   p.rh, p.correo_institucional, p.tip_contrato,
+                   c.nombre AS colegio
             FROM profesores p
             JOIN usuarios u ON p.usuario_id = u.id
+            LEFT JOIN colegios c ON p.colegio_id = c.id
             ORDER BY p.fecha_ingreso DESC
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -84,10 +86,14 @@ class Profesor {
                    p.tip_contrato, p.rh, p.correo_institucional
             FROM profesores p
             JOIN usuarios u ON p.usuario_id = u.id
-            WHERE u.nombres LIKE ? OR u.apellidos LIKE ?
-            ORDER BY p.fecha_ingreso DESC
+            WHERE u.nombres LIKE ? 
+               OR u.apellidos LIKE ? 
+               OR p.especialidad LIKE ?
+               OR u.numero_documento LIKE ?
+            ORDER BY u.apellidos ASC, u.nombres ASC
         ");
-        $stmt->execute(['%' . $q . '%', '%' . $q . '%']);
+        $searchTerm = '%' . $q . '%';
+        $stmt->execute([$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -123,6 +129,29 @@ class Profesor {
             ORDER BY u.apellidos, u.nombres
         ");
         $stmt->execute([$colegioId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function obtenerMateriasPorProfesor($profesor_id) {
+        $stmt = $this->pdo->prepare("
+            SELECT m.nombre
+            FROM materias m
+            INNER JOIN materia_profesor mp ON m.id = mp.materia_id
+            WHERE mp.profesor_id = ?
+            ORDER BY m.nombre
+        ");
+        $stmt->execute([$profesor_id]);
+        $materias = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $materias;
+    }
+
+    public function obtenerTodosExcepto($usuarioId) {
+        $sql = "SELECT p.id, u.nombres, u.apellidos, p.tip_contrato 
+                FROM profesores p 
+                INNER JOIN usuarios u ON p.usuario_id = u.id 
+                WHERE u.id != ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$usuarioId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

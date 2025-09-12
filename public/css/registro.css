@@ -5,6 +5,11 @@ body {
     color: #333;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;   /* Centrado horizontal */
+    align-items: center;       /* Centrado vertical */
+    padding: 20px 0;           /* Espaciado vertical */
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -41,19 +46,75 @@ a:hover {
     box-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
 }
 
+.dark-mode label,
+.dark-mode .registro-container label {
+    color: #f0f0f0 !important;
+}
+
+.dark-mode h2 {
+    color: #69A62D !important;
+}
+
 /* ----------- Contenedor ----------- */
 .registro-container {
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 30px 25px;
+    max-width: 900px;
+    width: 95%;
+    margin: 0 auto;   /* Centrado horizontal sin margen extra arriba */
+    padding: 35px 30px;
     background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    min-height: 100vh;
+    overflow-y: visible;
 }
 
 /* ----------- Formularios ----------- */
 form .form-group {
     margin-bottom: 15px;
+}
+
+/* SISTEMA DE DOS COLUMNAS PARA REGISTRO.PHP */
+.registro-container form .row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+}
+
+.registro-container form .col-md-6 {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 15px !important;
+}
+
+.registro-container form .col-md-6 label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-weight: bold !important;
+    color: #333 !important;
+}
+
+.registro-container form .col-md-6 input,
+.registro-container form .col-md-6 select {
+    width: 100% !important;
+    padding: 10px 12px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 6px !important;
+    font-size: 15px !important;
+    background-color: white !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.2s !important;
+    height: 44px !important;
+}
+
+/* Eliminar cualquier estilo conflictivo */
+.form-row {
+    display: none !important;
+}
+
+.form-group {
+    display: none !important;
 }
 
 label {
@@ -72,6 +133,7 @@ select {
     transition: border-color 0.2s;
     background-color: white;
     appearance: none;
+    box-sizing: border-box;
 }
 
 /* Para Safari */
@@ -121,7 +183,7 @@ button.btn:hover {
     justify-content: flex-end;
 }
 
-/* Estilo visual del switch (puedes ajustarlo más si quieres un diseño más elaborado) */
+/* Estilo visual del switch */
 .switch-mode input[type="checkbox"] {
     width: 20px;
     height: 20px;
@@ -129,7 +191,7 @@ button.btn:hover {
 
 /* ----------- Texto inferior ----------- */
 .text-links {
-    text-align: center;
+    text-align: center;  /* Centrado del texto */
     margin-top: 15px;
     font-size: 14px;
 }
@@ -153,8 +215,8 @@ button.btn:hover {
 .choices[data-type*="select-one"] .choices__inner::after {
     display: none !important;
 }
-/* ----------- Ajustes Finales Globales ----------- */
 
+/* ----------- Ajustes Finales Globales ----------- */
 /* Uniformar altura de inputs, selects y calendario */
 input,
 select,
@@ -190,4 +252,41 @@ input[type="tel"] {
     background-color: #2a2a2a;
     color: #f0f0f0;
     border-color: #555;
+}
+
+/* ----------- Responsive Design ----------- */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: 15px;
+    }
+    
+    .registro-container {
+        margin: 10px auto;
+        padding: 20px 15px;
+        max-height: none;
+        width: 95%;
+        max-width: 500px;
+    }
+    
+    .registro-container form .row {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    .registro-container form .col-md-6 {
+        margin-bottom: 10px !important;
+    }
+}
+
+@media (max-height: 700px) {
+    body {
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+    
+    .registro-container {
+        margin: 10px auto;
+    }
 }

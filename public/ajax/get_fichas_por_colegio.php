@@ -1,5 +1,5 @@
 <?php
-require_once '../../config/db.php';
+require_once '../../models/Ficha.php';
 
 header('Content-Type: application/json');
 
@@ -11,12 +11,13 @@ try {
         exit;
     }
 
-    $pdo = Database::conectar();
-    $stmt = $pdo->prepare("SELECT id, nombre FROM fichas WHERE colegio_id = ?");
-    $stmt->execute([$colegio_id]);
-    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    $fichaModel = new Ficha();
+    $fichas = $fichaModel->obtenerPorColegio($colegio_id);
+    
+    echo json_encode($fichas);
 
 } catch (Exception $e) {
+    error_log("Error en get_fichas_por_colegio.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Error interno']);
+    echo json_encode(['error' => 'Error interno: ' . $e->getMessage()]);
 }

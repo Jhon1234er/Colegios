@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
       setInnerHTMLSafe('.div2', '<p>Cargando aprendices...</p>');
       setInnerHTMLSafe('#chart-container', '<p>Cargando estadísticas...</p>');
 
+      // Get college name from the table
+      const colegioRow = document.querySelector(`[data-id="${colegioId}"]`)?.closest('tr');
+      const nombreColegio = colegioRow?.cells[1]?.textContent?.trim() || 'Colegio';
+
       // Fetch profesores
       const profs = await fetchJson(`/index.php?page=profesores_por_colegio&colegio_id=${encodeURIComponent(colegioId)}`);
       renderProfesores(profs || []);
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Fetch asistencias/estadísticas
       const stats = await fetchJson(`/ajax/asistencias_por_colegio.php?colegio_id=${encodeURIComponent(colegioId)}`);
-      renderAsistencias(stats || { fichas: [], alertas: [] });
+      renderAsistencias(stats?.fichas || [], stats?.alertas || [], nombreColegio);
 
 
 
@@ -108,109 +112,124 @@ document.addEventListener('DOMContentLoaded', () => {
     div2.innerHTML = html;
   }
 
-function renderAsistencias(data) {
-  const dom = document.getElementById('chart-container');
-  if (!dom) return;
+function renderAsistencias(fichasData, alertasData, nombreColegio = '') {
+  const container = document.getElementById('chart-container');
+  if (!container) return;
+  
+  // Agregar clase loading
+  container.classList.add('loading');
+  
   try {
     // Limpiar cualquier instancia previa
     if (window.myChart) {
       window.myChart.dispose();
+      window.myChart = null;
     }
     
-    const myChart = echarts.init(dom, 'white', { 
-      locale: 'ES',
-      devicePixelRatio: window.devicePixelRatio || 1 // Mejora la nitidez
-    });
-    
-    // Guardar referencia global para poder hacer resize
-    window.myChart = myChart;
-    
-    const allFichas = (data.fichas || []).map(f => ({
-      name: `Ficha ${f.numero_ficha}`,
-      total_fallas: Number(f.total_fallas) || 0
-    }));
-    
-    const categorias = allFichas.map(f => f.name);
-    const valores = allFichas.map(f => f.total_fallas);
-    
-    const option = {
-      tooltip: { trigger: 'axis' },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '15%', // Aumenté para las etiquetas rotadas
-        top: '10%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: categorias,
-        axisLabel: { 
-          rotate: 45,
-          fontSize: 12, // Aumenté el tamaño de fuente
-          color: '#4a5568'
-        }
-      },
-      yAxis: {
-        type: 'value',
-        name: 'Total Fallas',
-        nameLocation: 'middle',
-        nameGap: 50,
-        nameTextStyle: {
-          fontSize: 13,
-          color: '#4a5568'
-        }
-      },
-      series: [
-        {
-          name: 'Fallas por ficha',
-          type: 'bar',
-          data: valores,
-          label: { 
-            show: true, 
-            position: 'top',
-            fontSize: 12,
+    // Mostrar gráfico
+    if (fichasData && fichasData.length > 0) {
+      container.innerHTML = '';
+      container.classList.remove('loading');
+      
+      const chart = echarts.init(container, 'white', { 
+        locale: 'ES',
+        devicePixelRatio: window.devicePixelRatio || 1
+      });
+      
+      // Guardar referencia global
+      window.myChart = chart;
+      
+      const option = {
+        title: {
+          text: `Asistencias - ${nombreColegio}`,
+          left: 'center',
+          textStyle: { 
+            fontSize: 18, 
             fontWeight: 'bold',
-            color: '#2d3748'
-          },
-          itemStyle: { 
-            borderRadius: [6, 6, 0, 0],
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#34d399' },
-              { offset: 1, color: '#10b981' }
-            ])
+            color: '#1f2937'
           }
-        }
-      ]
-    };
-
-    myChart.setOption(option);
-    
-    // Resize automático para mejorar la nitidez
-    setTimeout(() => {
-      myChart.resize();
-    }, 100);
-    
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' },
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderColor: '#e5e7eb',
+          borderWidth: 1,
+          textStyle: { color: '#374151' }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: fichasData.map(item => item.numero_ficha || `Ficha ${item.ficha_id}`),
+          axisLabel: { 
+            rotate: 45, 
+            fontSize: 11,
+            color: '#6b7280',
+            margin: 10
+          },
+          axisLine: { lineStyle: { color: '#e5e7eb' } }
+        },
+        yAxis: { 
+          type: 'value',
+          axisLabel: { 
+            fontSize: 11,
+            color: '#6b7280'
+          },
+          axisLine: { lineStyle: { color: '#e5e7eb' } },
+          splitLine: { lineStyle: { color: '#f3f4f6' } }
+        },
+        series: [{
+          name: 'Total de fallas',
+          type: 'bar',
+          data: fichasData.map(item => item.total_fallas),
+          itemStyle: { 
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#3b82f6' },
+              { offset: 1, color: '#1d4ed8' }
+            ]),
+            borderRadius: [4, 4, 0, 0]
+          },
+          emphasis: {
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#60a5fa' },
+                { offset: 1, color: '#3b82f6' }
+              ])
+            }
+          }
+        }]
+      };
+      
+      chart.setOption(option);
+      window.addEventListener('resize', () => chart.resize());
+    } else {
+      container.classList.remove('loading');
+      container.innerHTML = '<div style="text-align:center; color:#6b7280; margin-top:50px; font-size:1.1rem;"><div style="font-size:2rem; margin-bottom:1rem;">📊</div>No hay datos de asistencias para este colegio</div>';
+    }
   } catch (err) {
     console.error('Error inicializando ECharts', err);
-    dom.innerHTML = '<p>No se pudo renderizar el gráfico.</p>';
+    container.classList.remove('loading');
+    container.innerHTML = '<div style="text-align:center; color:#ef4444; margin-top:50px;">❌ Error al cargar el gráfico</div>';
   }
 
-
-    // alertas
-    const div3 = document.querySelector('.div3');
-    if (!div3) return;
-    div3.querySelector('.alertas')?.remove();
-    const alertas = data.alertas || [];
-    if (alertas.length > 0) {
-      let alertHtml = '<div class="alertas"><h4>⚠ Estudiantes con 3+ fallas</h4><ul>';
-      alertas.forEach(a => {
-        alertHtml += `<li><strong>${escapeHtml((a.nombres ?? '') + ' ' + (a.apellidos ?? ''))}</strong> - Ficha ${escapeHtml(a.numero_ficha ?? '')} (${escapeHtml(a.total_fallas ?? '')} fallas)</li>`;
-      });
-      alertHtml += '</ul></div>';
-      div3.insertAdjacentHTML('beforeend', alertHtml);
-    }
+  // alertas
+  const div3 = document.querySelector('.div3');
+  if (!div3) return;
+  div3.querySelector('.alertas')?.remove();
+  if (alertasData && alertasData.length > 0) {
+    let alertHtml = '<div class="alertas"><h4>⚠ Estudiantes con 3+ fallas</h4><ul>';
+    alertasData.forEach(a => {
+      alertHtml += `<li><strong>${escapeHtml((a.nombres ?? '') + ' ' + (a.apellidos ?? ''))}</strong> - Ficha ${escapeHtml(a.numero_ficha ?? '')} (${escapeHtml(a.total_fallas ?? '')} fallas)</li>`;
+    });
+    alertHtml += '</ul></div>';
+    div3.insertAdjacentHTML('beforeend', alertHtml);
   }
+}
 
   // pequeñas utilidades
   function setInnerHTMLSafe(selector, html) {

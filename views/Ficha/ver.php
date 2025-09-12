@@ -13,8 +13,9 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
     <!-- 🔗 Link público -->
     <div class="link-publico">
         <label>Enlace de inscripción pública:</label>
-        <input type="text" readonly class="form-control"
-               value="<?= htmlspecialchars($_SERVER['HTTP_HOST'] . "/registro.php?token=" . $ficha['token']) ?>">
+        <input type="text" id="linkPublico" readonly class="form-control"
+            value="<?= htmlspecialchars('http://' . $_SERVER['HTTP_HOST'] . "/?page=registro_estudiante&token=" . $ficha['token']) ?>">
+        <small id="mensajeCopiado" style="display:none; color:green;">✅ Copiado al portapapeles</small>
     </div>
 
     <!-- ➕ Botón agregar estudiante -->
@@ -65,5 +66,21 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const inputLink = document.getElementById("linkPublico");
+    const mensaje = document.getElementById("mensajeCopiado");
+
+    inputLink.addEventListener("click", function() {
+        inputLink.select();
+        inputLink.setSelectionRange(0, 99999); // para móviles
+        document.execCommand("copy");
+
+        mensaje.style.display = "inline";
+        setTimeout(() => mensaje.style.display = "none", 2000);
+    });
+});
+</script>
 
 <?php require_once __DIR__ . '/../Componentes/footer.php'; ?>

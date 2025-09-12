@@ -4,8 +4,8 @@ require_once __DIR__ . '/../../models/Colegio.php';
 $colegioModel = new Colegio();
 $colegios = $colegioModel->obtenerTodos();
 
-// 📌 Capturamos ficha_id desde la URL
-$ficha_id = $_GET['ficha_id'] ?? null;
+// 📌 Capturamos ficha_id: puede venir de la URL o directamente del controlador (crearConToken)
+$ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
 ?>
 
 <!DOCTYPE html>
@@ -111,35 +111,73 @@ $ficha_id = $_GET['ficha_id'] ?? null;
             <label>Nombre completo del Acudiente</label>
             <input type="text" name="nombre_completo_acudiente" required>
           </div>
+
           <div class="col-md-6">
             <label>Tipo de Documento</label>
             <select name="tipo_documento_acudiente" required>
               <option value="">Seleccione</option>
               <option value="CC">CC</option>
+              <option value="CE">CE</option>
             </select>
           </div>
+
           <div class="col-md-6">
             <label>Número de Documento</label>
             <input type="text" name="numero_documento_acudiente" required>
           </div>
+
           <div class="col-md-6">
             <label>Teléfono</label>
             <input type="text" name="telefono_acudiente" required>
           </div>
+
+          <!-- Parentesco -->
           <div class="col-md-6">
             <label>Parentesco</label>
-            <input type="text" name="parentesco" required>
+            <select name="parentesco" id="parentesco" required>
+              <option value="">Seleccione</option>
+              <option value="Padre">Padre</option>
+              <option value="Madre">Madre</option>
+              <option value="Hermano/a">Hermano/a</option>
+              <option value="Abuelo/a">Abuelo/a</option>
+              <option value="Tío/a">Tío/a</option>
+              <option value="Primo/a">Primo/a</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <input type="text" name="parentesco_otro" id="parentesco_otro"
+                  placeholder="Especifique parentesco" style="display:none;">
           </div>
+
+          <!-- Ocupación -->
           <div class="col-md-6">
             <label>Ocupación</label>
-            <input type="text" name="ocupacion" required>
+            <select name="ocupacion" id="ocupacion" required>
+              <option value="">Seleccione</option>
+              <option value="Empleado">Empleado(a)</option>
+              <option value="Independiente">Independiente</option>
+              <option value="Comerciante">Comerciante</option>
+              <option value="Ama de casa">Ama de casa</option>
+              <option value="Estudiante">Estudiante</option>
+              <option value="Docente">Docente</option>
+              <option value="Profesional">Profesional</option>
+              <option value="Obrero">Obrero(a)</option>
+              <option value="Conductor">Conductor(a)</option>
+              <option value="Agricultor">Agricultor(a)</option>
+              <option value="Pensionado">Pensionado(a)</option>
+              <option value="Desempleado">Desempleado(a)</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <input type="text" name="ocupacion_otro" id="ocupacion_otro"
+                  placeholder="Especifique ocupación" style="display:none;">
           </div>
         </div>
+
         <div class="form-navigation">
           <button type="button" class="prev-btn">Anterior</button>
           <button type="button" class="next-btn">Siguiente</button>
         </div>
       </div>
+
 
       <!-- Paso 3: Colegio -->
       <div class="form-step">
@@ -151,9 +189,9 @@ $ficha_id = $_GET['ficha_id'] ?? null;
               <option value="">Seleccione un colegio</option>
               <?php foreach ($colegios as $colegio): ?>
                 <option value="<?= $colegio['id'] ?>"
-                        data-grados="<?= htmlspecialchars($colegio['grados']) ?>"
-                        data-jornada="<?= htmlspecialchars($colegio['jornada']) ?>">
-                  <?= $colegio['nombre'] ?>
+                        data-grados='<?= json_encode($colegio['grados']) ?>'
+                        data-jornada='<?= json_encode($colegio['jornada']) ?>'>
+                  <?= htmlspecialchars($colegio['nombre']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
@@ -188,7 +226,6 @@ $ficha_id = $_GET['ficha_id'] ?? null;
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script> <!-- Español -->
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script src="/js/crearE.js"></script>
-  <script src="/js/fichas_por_colegio.js"></script>
 </body>
 </html>
 

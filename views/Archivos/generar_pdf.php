@@ -48,89 +48,143 @@ if (!empty($fichas)) {
     }
 }
 
-// 🔹 Generar HTML con estilos modernos
+// 🔹 Generar HTML con formato SENA
+$fichaModel = new Ficha();
+$fichaNumeros = [];
+if (!empty($fichas)) {
+    foreach ($fichas as $fichaId) {
+        $ficha = $fichaModel->obtenerPorId($fichaId);
+        $fichaNumeros[] = $ficha['numero'] ?? $fichaId;
+    }
+    $fichaInfo = implode(', ', $fichaNumeros);
+} else {
+    $fichaInfo = 'Todas';
+}
+
 $html = "
 <style>
     body {
-        font-family: 'Helvetica', 'Arial', sans-serif;
-        font-size: 12px;
-        color: #2c3e50;
+        font-family: 'Arial', sans-serif;
+        font-size: 11px;
+        color: #000;
+        margin: 20px;
     }
-    h2 {
+    .header {
         text-align: center;
-        color: #2c3e50;
+        border: 2px solid #000;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .sena-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .sena-subtitle {
+        font-size: 12px;
+        font-weight: bold;
         margin-bottom: 5px;
     }
-    .meta {
-        margin-bottom: 15px;
-        font-size: 12px;
+    .control-title {
+        font-size: 14px;
+        font-weight: bold;
     }
-    .meta p {
-        margin: 2px 0;
+    .info-section {
+        margin: 15px 0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+    }
+    .info-label {
+        font-weight: bold;
+        display: inline-block;
+        width: 100px;
     }
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
+        margin-top: 15px;
     }
-    thead th {
-        background: #34495e;
-        color: #fff;
-        padding: 8px;
+    th, td {
+        border: 1px solid #000;
+        padding: 8px 4px;
         text-align: center;
-        font-size: 12px;
+        font-size: 10px;
     }
-    tbody td {
-        padding: 6px 8px;
-        border-bottom: 1px solid #ddd;
-    }
-    tbody tr:nth-child(even) {
-        background: #f9f9f9;
-    }
-    tbody tr:hover {
-        background: #f1f7fd;
-    }
-    td, th {
-        font-size: 11px;
-    }
-    .estado {
+    th {
+        background-color: #f0f0f0;
         font-weight: bold;
-        text-align: center;
     }
-    .estado.Activo   { color: #27ae60; }  /* Verde */
-    .estado.Deserto  { color: #c0392b; }  /* Rojo */
+    .num-col { width: 5%; }
+    .name-col { width: 30%; text-align: left; }
+    .ficha-col { width: 8%; }
+    .doc-col { width: 15%; }
+    .day-col { width: 12%; }
+    .jornada-col { width: 10%; }
+    .estado-col { width: 8%; }
 </style>
 
-<h2>Asistencia - ".htmlspecialchars($colegio['nombre'])."</h2>
-<div class='meta'>
-    <p><strong>Facilitador:</strong> ".htmlspecialchars($profesor)."</p>
-    <p><strong>Fecha:</strong> " . date('Y-m-d') . "</p>
+<div class='header'>
+    <div class='sena-title'>SENA</div>
+    <div class='sena-subtitle'>SERVICIO NACIONAL DE APRENDIZAJE - SENA</div>
+    <div class='control-title'>CONTROL DE ASISTENCIA</div>
+</div>
+
+<div class='info-section'>
+    <div class='info-row'>
+        <span><span class='info-label'>INSTITUCIÓN:</span> ".htmlspecialchars($colegio['nombre'])."></span>
+        <span><span class='info-label'>FICHA:</span> ".$fichaInfo."</span>
+    </div>
+    <div class='info-row'>
+        <span><span class='info-label'>INSTRUCTOR:</span> ".htmlspecialchars($profesor)."></span>
+        <span><span class='info-label'>FECHA:</span> " . date('Y-m-d') . "</span>
+    </div>
 </div>
 
 <table>
 <thead>
 <tr>
-<th>Ficha</th>
-<th>Nombres y Apellidos</th>
-<th>Tipo Documento</th>
-<th>Número Documento</th>
-<th>Jornada</th>
-<th>Estado</th>
+<th class='num-col'>#</th>
+<th class='name-col'>APELLIDOS Y NOMBRES</th>
+<th class='ficha-col'>FICHA</th>
+<th class='doc-col'>DOCUMENTO</th>
+<th class='day-col'>Lunes</th>
+<th class='day-col'>Martes</th>
+<th class='jornada-col'>JORNADA</th>
+<th class='estado-col'>ESTADO</th>
 </tr>
 </thead>
 <tbody>";
+$contador = 1;
 foreach ($estudiantes as $e) {
-    $nombreCompleto = $e['nombre_completo'] ?? trim(($e['nombres'] ?? '').' '.($e['apellidos'] ?? ''));
-    $estado = $e['estado'] ?? 'Activo'; // Mantener tal cual viene de la BD (Activo/Deserto)
+    $nombreCompleto = trim(($e['apellidos'] ?? '') . ' ' . ($e['nombres'] ?? ''));
+    $documento = ($e['tipo_documento'] ?? 'CC') . ' ' . ($e['numero_documento'] ?? '');
+    
+    // Obtener número de ficha
+    $numeroFicha = '';
+    if (isset($e['ficha_id'])) {
+        $ficha = $fichaModel->obtenerPorId($e['ficha_id']);
+        $numeroFicha = $ficha['numero'] ?? '';
+    } elseif (isset($e['ficha'])) {
+        $numeroFicha = $e['ficha'];
+    }
+    
     $html .= "<tr>
-        <td>".htmlspecialchars($e['ficha'] ?? '')."</td>
-        <td>".htmlspecialchars($nombreCompleto)."</td>
-        <td>".htmlspecialchars($e['tipo_documento'] ?? '')."</td>
-        <td>".htmlspecialchars($e['numero_documento'] ?? '')."</td>
-        <td>".htmlspecialchars($e['jornada'] ?? '')."</td>
-        <td class='estado {$estado}'>".htmlspecialchars($estado)."</td>
+        <td class='num-col'>".$contador."</td>
+        <td class='name-col'>".htmlspecialchars($nombreCompleto)."</td>
+        <td class='ficha-col'>".htmlspecialchars($numeroFicha)."</td>
+        <td class='doc-col'>".htmlspecialchars($documento)."</td>
+        <td class='day-col'>No hubo clase</td>
+        <td class='day-col'>No hubo clase</td>
+        <td class='jornada-col'>".htmlspecialchars($e['jornada'] ?? '')."</td>
+        <td class='estado-col'>".htmlspecialchars($e['estado'] ?? 'Activo')."</td>
     </tr>";
+    $contador++;
 }
+
+// No agregar filas vacías - tabla dinámica según estudiantes
 $html .= "</tbody></table>";
 
 $options = new Options();

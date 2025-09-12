@@ -21,7 +21,7 @@
 
       if ($tip_contrato === 'contratista') {
           $saludo = "Bienvenid@, Facilitador $nombre_usuario";
-      } elseif ($tip_contrato === 'planta') {
+      } elseif ($tip_contrato === 'instructor') {
           $saludo = "Bienvenid@, Instructor $nombre_usuario";
       } else {
           $saludo = "Bienvenido, $nombre_usuario";
@@ -51,6 +51,36 @@
 
   </div>
 </main>
+
+<!-- Modal Compartir Ficha -->
+<div class="modal fade" id="modalCompartirFicha" tabindex="-1" aria-labelledby="modalCompartirFichaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCompartirFichaLabel">Compartir Ficha</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <h6>Ficha: <span id="fichaCompartirNombre"></span></h6>
+          <p class="text-muted">Selecciona los profesores con los que deseas compartir esta ficha:</p>
+        </div>
+        
+        <div id="profesoresContainer" class="profesores-grid">
+          <!-- Los profesores se cargarán dinámicamente aquí -->
+        </div>
+        
+        <div class="mt-3">
+          <small class="text-muted">Los profesores seleccionados aparecerán con opacidad reducida y un checkmark.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnCompartirFicha" class="btn btn-primary">Compartir Ficha</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <?php require __DIR__ . '/../Componentes/footer.php'; ?>
 <script src="/js/dashboard_profesor.js"></script>

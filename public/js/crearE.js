@@ -1,9 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
   // ────────────────────────────────────────────────────────────
-  // Helpers Choices.js
+  // Helpers / Utils
   // ────────────────────────────────────────────────────────────
   const hasChoices = typeof Choices !== "undefined";
   const choicesInstances = {};
+
+  const cssEscape = (window.CSS && CSS.escape) ? CSS.escape : (v) =>
+    String(v).replace(/[^a-zA-Z0-9_\-]/g, (c) => "\\" + c);
+
+  const toTitle = (s) => (s || "").charAt(0).toUpperCase() + (s || "").slice(1).toLowerCase();
 
   function initChoices(element, id) {
     if (!element || !hasChoices) return;
@@ -19,11 +24,54 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function destroyChoices(id) {
-    if (choicesInstances[id]) {
-      try { choicesInstances[id].destroy(); } catch (_) {}
-      delete choicesInstances[id];
+  function clearAndSetChoices(id, values, placeholder) {
+    const inst = choicesInstances[id];
+    const el = getSelectById(id);
+
+    if (inst) {
+      try { inst.clearChoices(); } catch (_) {}
+      const items = (values || []).map(v => ({ value: v, label: v }));
+      inst.setChoices(
+        [{ value: "", label: placeholder, disabled: true, selected: true }].concat(items),
+        "value",
+        "label",
+        true
+      );
+    } else if (el) {
+      el.innerHTML = "";
+      const optPh = document.createElement("option");
+      optPh.value = "";
+      optPh.textContent = placeholder;
+      el.appendChild(optPh);
+      (values || []).forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        el.appendChild(opt);
+      });
     }
+  }
+
+  function getSelectById(id) {
+    switch (id) {
+      case "colegio": return document.getElementById("colegio_id");
+      case "grado": return document.getElementById("grado");
+      case "jornada": return document.getElementById("jornada");
+      case "parentesco": return document.getElementById("parentesco");
+      case "ocupacion": return document.getElementById("ocupacion");
+      default: return document.getElementById(id);
+    }
+  }
+
+  function safeParseList(str) {
+    if (!str) return [];
+    let txt = String(str).trim();
+    try { const arr = JSON.parse(txt); if (Array.isArray(arr)) return arr; } catch (_) {}
+    if (txt.includes("&quot;")) {
+      try { const arr2 = JSON.parse(txt.replace(/&quot;/g, '"')); if (Array.isArray(arr2)) return arr2; } catch (_) {}
+    }
+    if (txt.includes(",")) return txt.split(",").map(s => s.trim()).filter(Boolean);
+    return txt ? [txt] : [];
   }
 
   // ────────────────────────────────────────────────────────────
@@ -36,7 +84,9 @@ document.addEventListener("DOMContentLoaded", function () {
     { element: document.querySelector('select[name="tipo_documento"]'), id: 'tipo_documento' },
     { element: document.querySelector('select[name="genero"]'), id: 'genero' },
     { element: document.querySelector('select[name="tipo_documento_acudiente"]'), id: 'tipo_documento_acudiente' },
-    { element: document.querySelector('select[name="filtro"]'), id: 'filtro' }
+    { element: document.querySelector('select[name="filtro"]'), id: 'filtro' },
+    { element: document.getElementById('parentesco'), id: 'parentesco' },
+    { element: document.getElementById('ocupacion'), id: 'ocupacion' }
   ];
   selectsCfg.forEach(s => initChoices(s.element, s.id));
 
@@ -44,36 +94,98 @@ document.addEventListener("DOMContentLoaded", function () {
   // Actualizar grados/jornadas según colegio
   // ────────────────────────────────────────────────────────────
   const colegioSelect = document.getElementById('colegio_id');
-  const gradoSelect   = document.getElementById('grado');
-  const jornadaSelect = document.getElementById('jornada');
 
-  if (colegioSelect && gradoSelect && jornadaSelect) {
-    colegioSelect.addEventListener('change', function () {
-      destroyChoices('grado');
-      destroyChoices('jornada');
-      gradoSelect.innerHTML   = '<option value="">Seleccione grado</option>';
-      jornadaSelect.innerHTML = '<option value="">Seleccione jornada</option>';
+  function updateGradosJornadas() {
+    const gradoId = 'grado';
+    const jornadaId = 'jornada';
+    const gradoPlaceholder = 'Seleccione grado';
+    const jornadaPlaceholder = 'Seleccione jornada';
 
-      const selected  = colegioSelect.options[colegioSelect.selectedIndex];
-      const grados    = (selected?.getAttribute('data-grados') || '').split(',').map(g => g.trim()).filter(Boolean);
-      const jornadas  = (selected?.getAttribute('data-jornada') || '').split(',').map(j => j.trim()).filter(Boolean);
+    const value = colegioSelect ? colegioSelect.value : "";
+    console.log("📌 Colegio seleccionado:", value);
 
-      grados.forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g; opt.textContent = g;
-        gradoSelect.appendChild(opt);
-      });
-      jornadas.forEach(j => {
-        const opt = document.createElement('option');
-        opt.value = j;
-        opt.textContent = j.charAt(0).toUpperCase() + j.slice(1).toLowerCase();
-        jornadaSelect.appendChild(opt);
-      });
+    if (!value) {
+      clearAndSetChoices(gradoId, [], gradoPlaceholder);
+      clearAndSetChoices(jornadaId, [], jornadaPlaceholder);
+      return;
+    }
 
-      initChoices(gradoSelect, 'grado');
-      initChoices(jornadaSelect, 'jornada');
-    });
+    let selectedOption = null;
+    try {
+      selectedOption = colegioSelect.querySelector(`option[value="${cssEscape(value)}"]`);
+    } catch (_) {
+      const opts = Array.from(colegioSelect.options || []);
+      selectedOption = opts.find(o => String(o.value) === String(value)) || null;
+    }
+
+    console.log("📌 Opción seleccionada:", selectedOption);
+
+    if (!selectedOption) {
+      clearAndSetChoices(gradoId, [], gradoPlaceholder);
+      clearAndSetChoices(jornadaId, [], jornadaPlaceholder);
+      return;
+    }
+
+    let gradosRaw = selectedOption.getAttribute('data-grados') || '[]';
+    let jornadasRaw = selectedOption.getAttribute('data-jornada') || '[]';
+
+    console.log("📥 Grados raw:", gradosRaw);
+    console.log("📥 Jornadas raw:", jornadasRaw);
+
+    const grados = safeParseList(gradosRaw);
+    const jornadas = safeParseList(jornadasRaw).map(toTitle);
+
+    console.log("✅ Grados parseados:", grados);
+    console.log("✅ Jornadas parseadas:", jornadas);
+
+    clearAndSetChoices(gradoId, grados, gradoPlaceholder);
+    clearAndSetChoices(jornadaId, jornadas, jornadaPlaceholder);
   }
+
+  if (colegioSelect) {
+    colegioSelect.addEventListener('change', updateGradosJornadas);
+    if (hasChoices && choicesInstances['colegio']) {
+      const inst = choicesInstances['colegio'];
+      inst.passedElement.element.addEventListener('change', updateGradosJornadas);
+      if (typeof inst.on === 'function') {
+        try { inst.on('addItem', updateGradosJornadas); } catch (_) {}
+      }
+    }
+  }
+  if (colegioSelect && colegioSelect.value) updateGradosJornadas();
+
+  // ────────────────────────────────────────────────────────────
+  // Manejo de "Otro" en parentesco y ocupación
+  // ────────────────────────────────────────────────────────────
+  function toggleOtro(selectId, inputId) {
+    const selectEl = document.getElementById(selectId);
+    const inputEl = document.getElementById(inputId);
+    if (!selectEl || !inputEl) return;
+
+    const handler = () => {
+      if (selectEl.value === "Otro") {
+        inputEl.style.display = "block";
+        inputEl.required = true;
+      } else {
+        inputEl.style.display = "none";
+        inputEl.required = false;
+        inputEl.value = "";
+      }
+    };
+
+    selectEl.addEventListener("change", handler);
+    if (hasChoices && choicesInstances[selectId]) {
+      const inst = choicesInstances[selectId];
+      inst.passedElement.element.addEventListener("change", handler);
+      if (typeof inst.on === 'function') {
+        try { inst.on('addItem', handler); } catch (_) {}
+      }
+    }
+    handler();
+  }
+
+  toggleOtro("parentesco", "parentesco_otro");
+  toggleOtro("ocupacion", "ocupacion_otro");
 
   // ────────────────────────────────────────────────────────────
   // Flatpickr
@@ -93,15 +205,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const stepIndicators = Array.from(document.querySelectorAll(".stepper .step"));
   let currentStep = 0;
 
-  // Asegurar que los botones no envíen el formulario
   document.querySelectorAll(".next-btn, .prev-btn").forEach(btn => {
     if (!btn.getAttribute("type")) btn.setAttribute("type", "button");
   });
 
   function showStep(index) {
-    steps.forEach((step, i) => {
-      step.classList.toggle("active", i === index);
-    });
+    if (!steps.length) return;
+    steps.forEach((step, i) => step.classList.toggle("active", i === index));
     stepIndicators.forEach((ind, i) => {
       ind.classList.toggle("active", i <= index);
       ind.classList.toggle("current", i === index);
@@ -109,7 +219,6 @@ document.addEventListener("DOMContentLoaded", function () {
     steps[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // Validar campos requeridos del paso actual
   function validateCurrentStep() {
     const active = steps[currentStep];
     if (!active) return true;
@@ -126,7 +235,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return true;
   }
 
-  // Botón siguiente
   document.addEventListener("click", function (e) {
     const nextBtn = e.target.closest(".next-btn");
     if (nextBtn) {
@@ -139,7 +247,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Botón anterior
   document.addEventListener("click", function (e) {
     const prevBtn = e.target.closest(".prev-btn");
     if (prevBtn) {
@@ -151,8 +258,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Evitar que Enter envíe el form antes de tiempo
-  const form = document.querySelector("form");
+  const form = document.getElementById("formEstudiante");
   if (form) {
     form.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
@@ -168,6 +274,5 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Mostrar primer paso
   showStep(currentStep);
 });

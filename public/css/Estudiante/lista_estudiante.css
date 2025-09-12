@@ -1,0 +1,257 @@
+    /* Diseño minimalista y profesional para la tabla de estudiantes */
+    .table-container {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+        border: 1px solid #e5e7eb;
+        margin: 0 auto;
+        max-width: 95%;
+    }
+
+    .table {
+        margin-bottom: 0;
+        border: none;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    /* Ancho específico para cada columna de estudiantes */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 200px; } /* Nombre */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 160px; } /* Documento */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 220px; } /* Correo */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 130px; } /* Teléfono */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 250px; } /* Colegio */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 120px; } /* Grado */
+    .table th:nth-child(7), .table td:nth-child(7) { width: 100px; } /* Jornada */
+    .table th:nth-child(8), .table td:nth-child(8) { width: 130px; } /* Fecha */
+    .table th:nth-child(9), .table td:nth-child(9) { width: 200px; } /* Acudiente */
+    .table th:nth-child(10), .table td:nth-child(10) { width: 160px; } /* Doc Acudiente */
+    .table th:nth-child(11), .table td:nth-child(11) { width: 130px; } /* Tel Acudiente */
+    .table th:nth-child(12), .table td:nth-child(12) { width: 120px; } /* Parentesco */
+
+    .table thead {
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table thead th {
+        padding: 20px 16px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #374151;
+        text-transform: none;
+        letter-spacing: 0.025em;
+        border: none;
+        position: relative;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .table thead th::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: #64748b;
+        border-radius: 2px;
+    }
+
+    .table thead th:first-child::before {
+        background: #3b82f6;
+    }
+
+    .table tbody {
+        background: #ffffff;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .table tbody tr:not(:last-child) {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table tbody tr:hover {
+        background: #f8fafc;
+        box-shadow: inset 0 0 0 1px #e2e8f0;
+    }
+
+    .table tbody td {
+        padding: 16px 12px;
+        font-size: 0.85rem;
+        color: #1f2937;
+        font-weight: 400;
+        border: none;
+        vertical-align: middle;
+        line-height: 1.4;
+        text-align: center;
+    }
+
+    /* Estilos para datos específicos de estudiantes */
+    .estudiante-name {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .documento {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.8rem;
+        color: #6b7280;
+        background: #f9fafb;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .email {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .email:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    .telefono {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.8rem;
+        color: #059669;
+        font-weight: 500;
+    }
+
+    .colegio {
+        font-weight: 500;
+        color: #7c3aed;
+        font-size: 0.8rem;
+    }
+
+    .grado {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    .jornada {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    .fecha-ingreso {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.8rem;
+        color: #4b5563;
+        background: #f3f4f6;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .acudiente-name {
+        font-weight: 500;
+        color: #dc2626;
+        font-size: 0.8rem;
+    }
+
+    .parentesco {
+        background: #f3e8ff;
+        color: #7c3aed;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    /* Título centrado */
+    h2 {
+        color: #111827;
+        font-weight: 700;
+        margin-top: 80px;
+        margin-bottom: 40px;
+        text-align: center;
+        font-size: 2rem;
+        position: relative;
+        padding-bottom: 16px;
+    }
+
+    h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        border-radius: 2px;
+    }
+
+    /* Responsividad */
+    @media (max-width: 1400px) {
+        .table-container {
+            max-width: 98%;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 12px 8px;
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .table thead th,
+        .table tbody td {
+            padding: 10px 6px;
+            font-size: 0.75rem;
+        }
+        
+        .documento, .email, .telefono, .colegio, .acudiente-name {
+            font-size: 0.7rem;
+        }
+        
+        .grado, .jornada, .fecha-ingreso, .parentesco {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .table thead th,
+        .table tbody td {
+            padding: 8px 4px;
+            font-size: 0.7rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+        
+        .table-container {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    }

@@ -21,7 +21,7 @@ button.btn.btn-primary:hover {
 /* Botón Cancelar */
 .btn-cancelar {
   margin-left: 10px;
-  background-color: #dc3545;
+  background-color: #1e7432;
   color: white;
   padding: 10px 20px;
   text-decoration: none;
@@ -58,11 +58,11 @@ button.btn.btn-primary:hover {
 }
 
 .btn-danger {
-  background-color: #dc3545;
+  background-color: #1e7432;
 }
 
 .btn-danger:hover {
-  background-color: #bd2130;
+  background-color: #0f5a1f;
 }
 
 .btn-activar {

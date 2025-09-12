@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     }
 }
 
-// ====== REGISTRO ======
+// ====== REGISTRO USUARIO GENERAL ======
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
     csrf_validate();
     AuthController::registrar($_POST);
@@ -41,6 +41,24 @@ if ($page === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
     $colegioMateriaModel = new ColegioMateria();
     header('Content-Type: application/json');
     echo json_encode($colegioMateriaModel->obtenerMateriasPorColegio($_GET['colegio_id']));
+    exit;
+}
+
+// 📌 NUEVO: Grados y jornadas por colegio
+if ($page === 'info_colegio' && isset($_GET['colegio_id'])) {
+    require_once '../models/Colegio.php';
+    $colegioModel = new Colegio();
+    $colegio = $colegioModel->obtenerPorId($_GET['colegio_id']);
+
+    header('Content-Type: application/json');
+    if ($colegio) {
+        echo json_encode([
+            'grados'   => array_map('trim', explode(',', $colegio['grados'] ?? '')),
+            'jornadas' => array_map('trim', explode(',', $colegio['jornada'] ?? ''))
+        ]);
+    } else {
+        echo json_encode(['grados' => [], 'jornadas' => []]);
+    }
     exit;
 }
 
@@ -68,7 +86,49 @@ if ($page === 'profesorficha') {
     require_role(2);
     require_once '../controllers/ProfesorController.php';
     $controller = new ProfesorController();
-    $controller->obtenerFichasPorProfesor(); // 👈 aquí se ejecuta y devuelve JSON puro
+    $controller->obtenerFichasPorProfesor(); 
+    exit;
+}
+
+// Obtener todos los profesores (para compartir fichas)
+if ($page === 'obtener_profesores') {
+    require_login();
+    require_role(2);
+    require_once '../models/Profesor.php';
+    $profesorModel = new Profesor();
+    $profesorActual = $_SESSION['usuario']['id'];
+    header('Content-Type: application/json');
+    echo json_encode($profesorModel->obtenerTodosExcepto($profesorActual));
+    exit;
+}
+
+// Compartir ficha con otros profesores
+if ($page === 'compartir_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role(2);
+    require_once '../controllers/FichaController.php';
+    $controller = new FichaController();
+    $controller->compartirFicha();
+    exit;
+}
+
+// Verificar estado de compartir ficha
+if ($page === 'verificar_estado_compartir' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role(2);
+    require_once '../controllers/FichaController.php';
+    $controller = new FichaController();
+    $controller->verificarEstadoCompartir();
+    exit;
+}
+
+// Responder a solicitud de compartir ficha
+if ($page === 'responder_solicitud' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role(2);
+    require_once '../controllers/FichaController.php';
+    $controller = new FichaController();
+    $controller->responder_solicitud();
     exit;
 }
 
@@ -83,6 +143,124 @@ if ($page === 'estudiantesporficha') {
     exit;
 }
 
+// ====== ENDPOINTS DE CALENDARIO ======
+// Obtener horarios para calendario
+if ($page === 'calendario_horarios' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->obtenerHorarios();
+    exit;
+}
+
+// Crear nuevo horario
+if ($page === 'calendario_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->crearHorario();
+    exit;
+}
+
+// Actualizar horario existente
+if ($page === 'calendario_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->actualizarHorario();
+    exit;
+}
+
+// Eliminar horario
+if ($page === 'calendario_eliminar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->eliminarHorario();
+    exit;
+}
+
+// Cambiar estado de horario
+if ($page === 'calendario_estado' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->cambiarEstado();
+    exit;
+}
+
+// Obtener fichas disponibles
+if ($page === 'calendario_fichas' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->obtenerFichasDisponibles();
+    exit;
+}
+
+// ====== ENDPOINTS DE SINCRONIZACIÓN ======
+// Solicitar sincronización de calendario
+if ($page === 'sincronizar_calendario' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->solicitarSincronizacion();
+    exit;
+}
+
+// Responder solicitud de sincronización
+if ($page === 'responder_sincronizacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->responderSolicitud();
+    exit;
+}
+
+// Obtener calendarios sincronizados
+if ($page === 'calendarios_sincronizados' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->obtenerSincronizados();
+    exit;
+}
+
+// Obtener profesores disponibles para sincronizar
+if ($page === 'profesores_sincronizar' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->obtenerProfesoresDisponibles();
+    exit;
+}
+
+// Eliminar sincronización
+if ($page === 'eliminar_sincronizacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->eliminarSincronizacion();
+    exit;
+}
+
+// Obtener horarios de calendarios sincronizados
+if ($page === 'horarios_sincronizados' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/SincronizacionController.php';
+    $controller = new SincronizacionController();
+    $controller->obtenerHorariosSincronizados();
+    exit;
+}
+
 // Marcar notificación como leída
 if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_login();
@@ -92,12 +270,12 @@ if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once '../controllers/TareaController.php';
-    TareaController::guardarAsistencias();
-    exit;
-}
-
+// Guardar asistencia - Funcionalidad removida
+// if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+//     require_once '../controllers/TareaController.php';
+//     TareaController::guardarAsistencias();
+//     exit;
+// }
 
 // Vista previa de estudiantes por colegio/ficha
 if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -158,19 +336,42 @@ if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-
-// ===== GENERAR EXCEL/PDF.php ======
-if (isset($_GET['page']) && $_GET['page'] === 'generar_excel') {
+// ===== GENERAR EXCEL/PDF ======
+if ($page === 'generar_excel') {
     require __DIR__ . '/../views/Archivos/generar_excel.php';
     exit;
 }
 
-if (isset($_GET['page']) && $_GET['page'] === 'generar_pdf') {
+if ($page === 'generar_pdf') {
     require __DIR__ . '/../views/Archivos/generar_pdf.php';
     exit;
 }
 
+// ====== REGISTRO (vista pública con token) ======
+if ($page === 'registro_estudiante') {
+    require_once '../controllers/EstudianteController.php';
+    $c = new EstudianteController();
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $c->guardarPublico($_POST);
+        exit;
+    } else {
+        include '../views/Estudiante/registro.php';
+        exit;
+    }
+}
+
+// ====== REGISTRO GENERAL ======
+if ($page === 'registro') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_validate();
+        AuthController::registrar($_POST);
+        exit;
+    } else {
+        include '../views/registro.php';
+        exit;
+    }
+}
 
 
 // ====== RUTAS PROTEGIDAS (VISTAS) ======
@@ -198,7 +399,8 @@ if ($page === 'profesores') {
 }
 
 if ($page === 'estudiantes') {
-    require_login(); require_role([1,2]); // ajusta si estudiantes también pueden ver algo
+    require_login(); 
+    require_role([1,2]);
     require_once '../controllers/EstudianteController.php';
     $c = new EstudianteController();
     $action = $_GET['action'] ?? 'index';
@@ -216,7 +418,6 @@ if ($page === 'crear_materia') {
     $c->crear();
     exit;
 }
-
 
 if ($page === 'fichas') {
     require_login(); 
@@ -242,7 +443,7 @@ if ($page === 'fichas') {
 
 // Perfil
 if ($page === 'ver_perfil')   { require_login(); require_once '../controllers/PerfilController.php'; (new PerfilController())->ver(); exit; }
-if ($page === 'editar_perfil'){ require_login(); require_once '../controllers/PerfilController.php'; $ctl=new PerfilController(); if ($_SERVER['REQUEST_METHOD']==='POST'){ csrf_validate(); $ctl->actualizar(); } else { $ctl->editar(); } exit; }
+if ($page === 'actualizar_perfil'){ require_login(); require_once '../controllers/PerfilController.php'; csrf_validate(); (new PerfilController())->actualizar(); exit; }
 
 // ====== DASHBOARDS O BÚSQUEDA AJAX ======
 if ($page === 'dashboard' && isset($_GET['ajax']) && $_GET['ajax'] == '1') {
@@ -268,24 +469,33 @@ if ($page === 'dashboard' && isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             break;
     }
 
-    // Cargar una vista solo para los resultados
     include '../views/Archivos/resultados_busqueda.php';
     exit;
 }
 
+// ====== ENDPOINT PREVIEW ======
+if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    include '../views/Archivos/preview.php';
+    exit;
+}
+
+// ====== CALENDARIO ======
+if ($page === 'calendario') {
+    require_login();
+    require_role(2);
+    include '../views/Calendario/calendario.php';
+    exit;
+}
+
+// ====== DASHBOARDS SEGÚN ROL ======
 if (!empty($_SESSION['usuario'])) {
     if ((int)$_SESSION['usuario']['rol_id'] === 1) { include '../views/dashboard.php'; exit; }
     if ((int)$_SESSION['usuario']['rol_id'] === 2) { include '../views/Profesor/dashboard.php'; exit; }
 }
 
-// ====== REGISTRO (vista) ======
-if (isset($_GET['registro']) && $_GET['registro'] === 'true') {
-    include '../views/registro.php';
-    exit;
-}
-
 // ====== LOGIN (por defecto) ======
-require_once '../controllers/AuthController.php';
 $c = new AuthController();
 $c->loginForm();
 exit;

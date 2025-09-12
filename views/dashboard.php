@@ -60,7 +60,7 @@ function formatearNombreColegio($nombre) {
             <!-- Gráfico -->
             <div class="div3">
                 <h3>Estadísticas de asistencias por ficha</h3>
-                <div id="chart-container">Selecciona un colegio</div>
+                <div id="chart-container"></div>
             </div>
 
             <!-- Totales -->
@@ -113,10 +113,25 @@ function formatearNombreColegio($nombre) {
 
         </div>
     </div>
-
-    <!-- Panel dinámico -->
-    <div id="dashboard-resultados" class="dashboard-panel" style="display:none;"></div>
-    <div id="dashboard-overlay"></div>
+    
+    <!-- Panel dinámico para resultados de búsqueda -->
+    <div id="dashboard-resultados" style="display: none;"></div>
+    
+    <!-- Contenedor para detalles del estudiante en el espacio blanco -->
+    <div id="student-details-sidebar" class="student-details-sidebar" style="display: none;">
+        <div class="details-header">
+            <h2>Detalles del Aprendiz</h2>
+            <button id="close-details" class="close-details-btn">&times;</button>
+        </div>
+        <div id="student-details-content" class="student-details-empty">
+            <div class="empty-state">
+                <p>Selecciona un aprendiz para ver sus detalles</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overlay para oscurecer el dashboard normal -->
+    <div id="dashboard-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); z-index: 1;"></div>
 
     <?php include 'Componentes/footer.php'; ?> 
 
@@ -160,9 +175,11 @@ function formatearNombreColegio($nombre) {
             <table class="table table-bordered" id="previewTable">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Documento</th>
+                  <th>Apellidos y Nombres</th>
                   <th>Ficha</th>
+                  <th>Documento</th>
+                  <th>Lunes</th>
+                  <th>Martes</th>
                   <th>Jornada</th>
                   <th>Estado</th>
                 </tr>
@@ -174,9 +191,15 @@ function formatearNombreColegio($nombre) {
 
       </div>
       <div class="modal-footer">
-        <button type="button" id="btnPreview" class="btn btn-info">Vista previa</button>
-        <button type="button" id="btnDownloadExcel" class="btn btn-success">Descargar Excel</button>
-        <button type="button" id="btnDownloadPDF" class="btn btn-danger">Descargar PDF</button>
+        <button type="button" id="btnPreview" class="btn btn-preview">
+          <i class="icon-eye"></i> Vista previa
+        </button>
+        <button type="button" id="btnDownloadExcel" class="btn btn-excel">
+          <i class="icon-excel"></i> Descargar Excel
+        </button>
+        <button type="button" id="btnDownloadPDF" class="btn btn-pdf">
+          <i class="icon-pdf"></i> Descargar PDF
+        </button>
       </div>
     </div>
   </div>
@@ -234,6 +257,15 @@ $(document).ready(function(){
     $('.ficha-check').prop('checked', this.checked);
   });
 
+  // Limpiar selección al cerrar modal
+  $('#modalReportes').on('hidden.bs.modal', function () {
+    $('#selectColegio').val('');
+    $('#fichasContainer').empty();
+    $('#checkAllFichas').prop('checked', false);
+    $('#previewContainer').hide();
+    $('#previewTable tbody').empty();
+  });
+
   // 🔹 Helper: obtener fichas seleccionadas
   function getFichasSeleccionadas(){
     let fichas = [];
@@ -253,7 +285,7 @@ $(document).ready(function(){
     }
 
     $.ajax({
-      url: '/Archivos/preview.php',
+      url: '/?page=preview',
       method: 'POST',
       data: { colegio_id: colegioId, fichas: fichas },
       success: function(html){
@@ -291,6 +323,27 @@ $(document).ready(function(){
     let url = `/?page=generar_pdf&colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
     console.log("📥 Descargando PDF:", url);
     window.open(url, "_blank");
+  });
+
+  // Cerrar sidebar de detalles del estudiante
+  $(document).on('click', '#close-details', function() {
+    $('#student-details-sidebar').hide();
+    
+    // Resetear todos los botones "Ver Detalles"
+    $('.btn-ver-detalles').each(function() {
+      $(this).text('Ver Detalles')
+             .removeClass('btn-secondary')
+             .addClass('btn-primary')
+             .prop('disabled', false);
+    });
+    
+    // Deshabilitar todos los botones "Editar"
+    $('.btn-editar').each(function() {
+      $(this).css({
+        'opacity': '0.5',
+        'pointer-events': 'none'
+      }).removeClass('enabled');
+    });
   });
 
 });

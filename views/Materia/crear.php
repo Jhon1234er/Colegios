@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/css/Materia/crear.css">
 
 <div class="container">
-    <h2><?= isset($materia) ? 'Actualizar Materia' : 'Registrar Materia' ?></h2>
+    <h2><?= isset($materia) ? 'Actualizar Curso' : 'Registrar Curso' ?></h2>
 
     <?php if (isset($error)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
@@ -17,7 +17,7 @@
         <?php endif; ?>
         <div class="row">
             <div class="col-md-6">
-                <label for="nombre" class="form-label">Nombre de la Materia</label>
+                <label for="nombre" class="form-label">Nombre del Curso</label>
                 <input type="text" id="nombre" name="nombre" class="form-control" required
                        value="<?= isset($materia) ? htmlspecialchars($materia['nombre']) : '' ?>">
             </div>
@@ -42,10 +42,10 @@ $materias = $materiaModel->obtenerTodas();
 ?>
 
 <div class="container mt-5">
-    <h2 class="mb-4">Listado de Materias</h2>
+    <h2 class="mb-4">Listado de Cursos</h2>
 
     <?php if (count($materias) === 0): ?>
-        <div class="alert alert-info">No hay materias registradas.</div>
+        <div class="alert alert-info">No hay cursos registrados.</div>
     <?php else: ?>
         <div class="table-responsive">
             <table class="tabla-lista">
@@ -69,10 +69,10 @@ $materias = $materiaModel->obtenerTodas();
                             </td>
                             <td>
                                 <?php if (isset($m['activo']) && $m['activo'] == 0): ?>
-                                    <a href="/?page=materias&action=activar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-activar" onclick="return confirm('¿Seguro que deseas activar esta materia?')">Activar</a>
+                                    <a href="/?page=materias&action=activar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-activar" onclick="return confirm('¿Seguro que deseas activar este curso?')">Activar</a>
                                 <?php else: ?>
                                     <a href="/?page=materias&action=editar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-warning">Actualizar</a>
-                                    <a href="/?page=materias&action=desactivar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-danger" onclick="return confirm('¿Seguro que deseas desactivar esta materia?')">Desactivar</a>
+                                    <a href="/?page=materias&action=desactivar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-danger" onclick="return confirm('¿Seguro que deseas desactivar este curso?')">Desactivar</a>
                                 <?php endif; ?>
                             </td>
                         </tr>

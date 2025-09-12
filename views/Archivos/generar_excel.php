@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 $colegioId = $_GET['colegio_id'] ?? null;
 
@@ -75,73 +76,150 @@ usort($estudiantes, function($a, $b) {
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// 🎨 Colores corporativos
-$primaryColor   = '1F4E78'; // azul oscuro
-$headerBgColor  = '2E75B6'; // azul intermedio
-$activeColor    = '00B050'; // verde
-$desertColor    = 'C00000'; // rojo
+// 🎨 Colores SENA
+$senaGreen = '39B54A';
+$senaOrange = 'FF8C00';
+$headerBg = 'E8F5E8';
+$borderColor = '000000';
 
-// 🔹 Título principal
-$sheet->setCellValue('A1', "Reporte de Asistencia - " . $colegio['nombre']);
-$sheet->mergeCells('A1:G1');
-$sheet->getStyle('A1')->getFont()->setSize(16)->setBold(true)->getColor()->setARGB('FFFFFF');
-$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-$sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($primaryColor);
+// 🔹 Logo SENA (si existe el archivo)
+$logoPath = __DIR__ . '/../../public/icons/sena-logo.png';
+if (file_exists($logoPath)) {
+    $drawing = new Drawing();
+    $drawing->setName('Logo SENA');
+    $drawing->setDescription('Logo SENA');
+    $drawing->setPath($logoPath);
+    $drawing->setHeight(80);
+    $drawing->setCoordinates('A1');
+    $drawing->setWorksheet($sheet);
+}
 
-// 🔹 Subtítulos
-$sheet->setCellValue('A2', "Facilitador: " . $profesor);
-$sheet->setCellValue('C2', "Fecha: " . date('Y-m-d'));
-$sheet->getStyle('A2:C2')->getFont()->setBold(true);
+// 🔹 Encabezado SENA
+$sheet->setCellValue('A1', 'SENA');
+$sheet->mergeCells('A1:G3');
+$sheet->getStyle('A1')->getFont()->setSize(24)->setBold(true);
+$sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+$sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF');
+$sheet->getStyle('A1')->getBorders()->getOutline()->setBorderStyle(Border::BORDER_THICK);
 
-// 🔹 Encabezados de tabla
-$headers = ['Ficha', 'Nombres y Apellidos', 'Tipo Documento', 'Número Documento', 'Fecha Asistencia', 'Jornada', 'Estado'];
-$sheet->fromArray($headers, NULL, 'A4');
+// 🔹 Información del colegio
+$sheet->setCellValue('A4', 'SERVICIO NACIONAL DE APRENDIZAJE - SENA');
+$sheet->mergeCells('A4:G4');
+$sheet->getStyle('A4')->getFont()->setSize(12)->setBold(true);
+$sheet->getStyle('A4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+$sheet->setCellValue('A5', 'CONTROL DE ASISTENCIA');
+$sheet->mergeCells('A5:G5');
+$sheet->getStyle('A5')->getFont()->setSize(14)->setBold(true);
+$sheet->getStyle('A5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+// 🔹 Información de la ficha
+$sheet->setCellValue('A7', 'INSTITUCIÓN:');
+$sheet->setCellValue('B7', $colegio['nombre']);
+$sheet->setCellValue('E7', 'FICHA:');
+// Obtener números de ficha en lugar de IDs
+$fichaNumeros = [];
+if (!empty($fichas)) {
+    foreach ($fichas as $fichaId) {
+        $ficha = $fichaModel->obtenerPorId($fichaId);
+        $fichaNumeros[] = $ficha['numero'] ?? $fichaId;
+    }
+    $fichaInfo = implode(', ', $fichaNumeros);
+} else {
+    $fichaInfo = 'Todas';
+}
+$sheet->setCellValue('F7', $fichaInfo);
+
+$sheet->setCellValue('A8', 'INSTRUCTOR:');
+$sheet->setCellValue('B8', $profesor);
+$sheet->setCellValue('E8', 'FECHA:');
+$sheet->setCellValue('F8', date('Y-m-d'));
+
+// Estilos para información
+$sheet->getStyle('A7:A8')->getFont()->setBold(true);
+$sheet->getStyle('E7:E8')->getFont()->setBold(true);
+
+// 🔹 Encabezados de tabla de asistencia
+$headers = ['#', 'APELLIDOS Y NOMBRES', 'FICHA', 'DOCUMENTO', 'Lunes', 'Martes', 'JORNADA', 'ESTADO'];
+$sheet->fromArray($headers, NULL, 'A10');
 
 // Estilos encabezados
-$sheet->getStyle('A4:G4')->applyFromArray([
-    'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFF']],
-    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+$sheet->getStyle('A10:H10')->applyFromArray([
+    'font' => ['bold' => true, 'size' => 11],
+    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
     'fill' => [
         'fillType' => Fill::FILL_SOLID,
-        'startColor' => ['argb' => $headerBgColor]
+        'startColor' => ['argb' => $headerBg]
     ],
     'borders' => [
-        'allBorders' => ['borderStyle' => Border::BORDER_THIN]
+        'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderColor]]
     ]
 ]);
 
-// Activar filtros
-$sheet->setAutoFilter("A4:G4");
+// Ajustar altura de fila de encabezados
+$sheet->getRowDimension(10)->setRowHeight(25);
 
-// 🔹 Llenar datos
-$row = 5;
+// 🔹 Llenar datos de estudiantes
+$row = 11;
+$contador = 1;
 foreach ($estudiantes as $e) {
-    $sheet->setCellValue("A$row", $e['ficha'] ?? 'N/A');
-    $sheet->setCellValue("B$row", $e['nombre_completo'] ?? (($e['nombres'] ?? '') . ' ' . ($e['apellidos'] ?? '')));
-    $sheet->setCellValue("C$row", $e['tipo_documento'] ?? '');
-    $sheet->setCellValue("D$row", $e['numero_documento'] ?? '');
-    $sheet->setCellValue("E$row", date('Y-m-d'));
-    $sheet->setCellValue("F$row", $e['jornada'] ?? '');
-    $sheet->setCellValue("G$row", $e['estado'] ?? 'Activo');
-
-    // Estilos por estado
-    $estado = strtolower($e['estado']);
-    if ($estado === 'activo') {
-        $sheet->getStyle("G$row")->getFont()->getColor()->setARGB($activeColor);
-    } elseif ($estado === 'deserto') {
-        $sheet->getStyle("G$row")->getFont()->getColor()->setARGB($desertColor);
+    $nombreCompleto = trim(($e['apellidos'] ?? '') . ' ' . ($e['nombres'] ?? ''));
+    $documento = ($e['tipo_documento'] ?? 'CC') . ' ' . ($e['numero_documento'] ?? '');
+    
+    // Obtener número de ficha
+    $numeroFicha = '';
+    if (isset($e['ficha_id'])) {
+        $ficha = $fichaModel->obtenerPorId($e['ficha_id']);
+        $numeroFicha = $ficha['numero'] ?? '';
+    } elseif (isset($e['ficha'])) {
+        // Si ya viene el nombre/número de ficha
+        $numeroFicha = $e['ficha'];
     }
+    
+    $sheet->setCellValue("A$row", $contador);
+    $sheet->setCellValue("B$row", $nombreCompleto);
+    $sheet->setCellValue("C$row", $numeroFicha);
+    $sheet->setCellValue("D$row", $documento);
+    
+    // Celdas para marcar asistencia (Lunes y Martes en el medio)
+    $sheet->setCellValue("E$row", 'No hubo clase'); // Lunes
+    $sheet->setCellValue("F$row", 'No hubo clase'); // Martes
+    
+    // Jornada y Estado al final
+    $sheet->setCellValue("G$row", $e['jornada'] ?? '');
+    $sheet->setCellValue("H$row", $e['estado'] ?? 'Activo');
 
-    // Bordes de la fila
-    $sheet->getStyle("A$row:G$row")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_HAIR);
+    // Estilos para las filas de datos
+    $sheet->getStyle("A$row:H$row")->applyFromArray([
+        'borders' => [
+            'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => $borderColor]]
+        ],
+        'alignment' => ['vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+    
+    // Centrar el número, ficha y estado
+    $sheet->getStyle("A$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle("C$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle("H$row")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    
+    // Ajustar altura de fila
+    $sheet->getRowDimension($row)->setRowHeight(20);
 
     $row++;
+    $contador++;
 }
 
-// Ajustar ancho automático
-foreach (range('A', 'G') as $col) {
-    $sheet->getColumnDimension($col)->setAutoSize(true);
-}
+// No agregar filas vacías - tabla dinámica según estudiantes
+
+// Ajustar ancho de columnas
+$sheet->getColumnDimension('A')->setWidth(5);   // #
+$sheet->getColumnDimension('B')->setWidth(35);  // Apellidos y Nombres
+$sheet->getColumnDimension('C')->setWidth(10);  // Ficha
+$sheet->getColumnDimension('D')->setWidth(20);  // Documento
+$sheet->getColumnDimension('E')->setWidth(12);  // Lunes
+$sheet->getColumnDimension('F')->setWidth(12);  // Martes
+$sheet->getColumnDimension('G')->setWidth(12);  // Jornada
+$sheet->getColumnDimension('H')->setWidth(10);  // Estado
 
 // =======================
 // 📌 Descargar archivo

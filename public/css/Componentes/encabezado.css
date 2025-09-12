@@ -32,6 +32,273 @@
   --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Estilos para botones de notificaciones */
+.notification-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-aceptar, .btn-rechazar {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-aceptar {
+  background: #28a745;
+  color: white;
+}
+
+.btn-aceptar:hover {
+  background: #218838;
+}
+
+.btn-rechazar {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-rechazar:hover {
+  background: #c82333;
+}
+
+/* Estilos para botones deshabilitados */
+.notification-buttons-disabled {
+  margin-top: 8px;
+}
+
+.btn-disabled {
+  padding: 4px 12px;
+  background: #6c757d;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   BUSCADOR PARA ADMINISTRADORES
+   ============================================ */
+.search-section {
+  display: flex;
+  align-items: center;
+  margin: 0 10px;
+  flex: 1;
+  max-width: 500px;
+  min-width: 300px;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 6px;
+  backdrop-filter: blur(15px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.search-form:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.search-form:focus-within {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 0 0 3px rgba(255, 255, 255, 0.1),
+    0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Wrapper para el select con flecha personalizada */
+.select-wrapper {
+  position: relative;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.search-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 13px;
+  padding: 10px 30px 10px 14px;
+  border-radius: 25px;
+  width: 120px;
+  cursor: pointer;
+  font-weight: 500;
+  outline: none;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+}
+
+/* Flecha personalizada como elemento separado */
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Eliminar todas las flechas nativas */
+.search-select::-ms-expand {
+  display: none;
+}
+
+.search-select::-webkit-outer-spin-button,
+.search-select::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.search-select:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-select:focus {
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.search-select option {
+  background: #4a5568;
+  color: white;
+  padding: 10px;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  padding: 10px 16px;
+  flex: 1;
+  border-radius: 25px;
+  outline: none;
+  font-weight: 400;
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.search-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.search-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+}
+
+.search-btn:hover::before {
+  opacity: 1;
+}
+
+.search-btn:active {
+  transform: scale(0.95);
+}
+
+.search-btn .icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: white;
+  stroke-width: 2;
+  z-index: 1;
+  position: relative;
+}
+
+/* Spinner para indicador de carga */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Botón para volver al dashboard */
+.back-to-dashboard-btn {
+  background: var(--button-gradient);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 20px;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+}
+
+.back-to-dashboard-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
 /* ============================================
    BASE Y LAYOUT
    ============================================ */
@@ -91,15 +358,16 @@ body::before {
 #dashboard-resultados {
   position: relative;
   max-width: 90vw;
-  max-height: 90vh;
-  width: 900px;
+  /* max-height: 90vh; */
+  width: 1200px;
   background: white;
   border-radius: 20px;
   box-shadow: var(--modal-shadow);
   overflow: hidden;
-  transform: scale(0.9) translateY(30px);
+  transform: scale(0.9) translateY(10px);
   transition: var(--transition-slow);
   display: none;
+  top: 10px;
 }
 
 #dashboard-resultados.anim-in {
@@ -362,18 +630,6 @@ body::before {
   transform: translateX(-100%);
   transition: transform 0.6s ease;
 }
-
-.dropbtn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(97, 153, 159, 0.4);
-}
-
-.dropbtn:hover::before {
-  transform: translateX(100%);
-}
-
-/* DROPDOWN CONTENT CON MEJOR COMPORTAMIENTO */
 .dropdown-content {
   display: block;
   position: absolute;

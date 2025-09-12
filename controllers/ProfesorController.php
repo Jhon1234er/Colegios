@@ -64,17 +64,52 @@ class ProfesorController {
             session_start();
         }
 
-        if (!isset($_SESSION['usuario']['profesor_id'])) {
+        $usuario_id = $_SESSION['usuario']['id'] ?? null;
+        if (!$usuario_id) {
             header('Content-Type: application/json');
             echo json_encode([]);
             exit;
         }
 
-        $profesor_id = $_SESSION['usuario']['profesor_id'];
-        $fichas = $this->profesorModel->obtenerFichasPorProfesor($profesor_id);
+        // Obtener profesor_id del usuario actual
+        require_once __DIR__ . '/../config/db.php';
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
+        $stmt->execute([$usuario_id]);
+        $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$profesor) {
+            header('Content-Type: application/json');
+            echo json_encode([]);
+            exit;
+        }
+
+        $profesor_id = $profesor['id'];
+
+        // Obtener fichas propias
+        $fichasPropias = $this->profesorModel->obtenerFichasPorProfesor($profesor_id);
+
+        // Obtener fichas compartidas (solo las aceptadas)
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT f.id, f.numero AS numero_ficha, f.nombre, 'compartida' as tipo
+            FROM fichas f
+            INNER JOIN fichas_compartidas fc ON f.id = fc.ficha_id
+            WHERE fc.profesor_compartido_id = ? AND fc.estado = 'aceptada'
+            ORDER BY f.numero
+        ");
+        $stmt->execute([$profesor_id]);
+        $fichasCompartidas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Marcar fichas propias
+        foreach ($fichasPropias as &$ficha) {
+            $ficha['tipo'] = 'propia';
+        }
+
+        // Combinar ambas listas
+        $todasLasFichas = array_merge($fichasPropias, $fichasCompartidas);
 
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($fichas, JSON_UNESCAPED_UNICODE);
-        exit; // 👈 asegúrate que no siga cargando vistas
+        echo json_encode($todasLasFichas, JSON_UNESCAPED_UNICODE);
+        exit;
     }
 }

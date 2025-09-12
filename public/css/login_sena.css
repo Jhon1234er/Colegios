@@ -1,0 +1,912 @@
+   /* ========================================
+      VARIABLES CSS - COLORES Y TEMAS
+      ======================================== */
+   :root {
+       /* Colores SENA oficiales */
+       --sena-green: #69A62D;
+       --sena-green-dark: #077368;
+       --sena-green-light: #69A62D;
+       
+       /* Tema claro */
+       --bg-color: #ffffff;
+       --form-bg: #ffffff;
+       --text-color: #2c3e50;
+       --text-secondary: #7f8c8d;
+       --input-bg: #ffffff;
+       --input-border: #e1e8ed;
+       --input-focus: #6FB22D;
+       --shadow-light: rgba(0, 0, 0, 0.08);
+       --shadow-medium: rgba(0, 0, 0, 0.12);
+       --shadow-strong: rgba(111, 178, 45, 0.25);
+   }
+
+   /* Tema oscuro */
+   body.dark-mode {
+       --bg-color: #595959;
+       --sena-green: #69A62D;
+       --sena-green-dark: #077368;
+       --sena-green-light: #69A62D;
+       --form-bg: #000000;
+       --text-color: #ffffff;
+       --text-secondary: #ffffff;
+       --input-bg: #333333;
+       --input-border: #ffffff;
+       --input-focus: #ffffff;
+       --shadow-light: rgba(0, 0, 0, 0.3);
+       --shadow-medium: rgba(0, 0, 0, 0.4);
+       --shadow-strong: rgba(105, 166, 45, 0.3);
+   }
+
+   /* ========================================
+      RESET Y CONFIGURACIÓN BASE
+      ======================================== */
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+   }
+   
+   body {
+       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+       height: 100vh;
+       overflow: hidden;
+       display: flex;
+       background: var(--bg-color);
+   }
+   
+   /* ========================================
+      LAYOUT PRINCIPAL - PANTALLA DIVIDIDA
+      ======================================== */
+   .login-container {
+       display: flex;
+       width: 100%;
+       height: 100vh;
+   }
+   
+   /* ========================================
+      PANEL IZQUIERDO - BIENVENIDA SENA
+      ======================================== */
+   .welcome-panel {
+       flex: 1;
+       background: linear-gradient(135deg, #077368 0%, #168C6B 25%, #358C4B 50%, #69A62D 75%, #F2F2F2 100%);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       position: relative;
+       overflow: hidden;
+       transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+       z-index: 2;
+   }
+   
+   /* Logo SENA */
+   .sena-logo {
+       position: absolute;
+       top: 2.5rem;
+       left: 3rem;
+       width: 100px;
+       height: auto;
+       filter: brightness(0) invert(1);
+   }
+   
+   /* Texto de bienvenida */
+   .welcome-text {
+       color: #FFFFFF;
+       z-index: 2;
+       width: 100%;
+       max-width: 600px;
+       text-align: center;
+       margin: 0 auto;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+   }
+   
+   .welcome-text h1 {
+       font-size: 4.5rem;
+       font-weight: 700;
+       line-height: 1.1;
+       margin: 0 auto;
+       letter-spacing: -0.01em;
+       text-align: center;
+       width: 100%;
+       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   }
+   
+   .welcome-text .highlight {
+       color: #FFFFFF;
+       font-weight: 700;
+   }
+   
+   .welcome-text .subtitle {
+       font-size: 4.5rem;
+       font-weight: 700;
+       opacity: 1;
+       margin-top: -0.5rem;
+       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+   }
+   
+   /* Elementos decorativos de fondo */
+   .welcome-panel::before {
+       content: '';
+       position: absolute;
+       top: -50%;
+       right: -20%;
+       width: 200%;
+       height: 200%;
+       background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+       animation: float 20s ease-in-out infinite;
+   }
+   
+   @keyframes float {
+       0%, 100% { transform: translateY(0px) rotate(0deg); }
+       50% { transform: translateY(-20px) rotate(180deg); }
+   }
+   
+   /* ========================================
+      PANEL DERECHO - FORMULARIO LOGIN
+      ======================================== */
+   .login-panel {
+       flex: 1;
+       background: #ffffff;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       padding: 2rem;
+       position: relative;
+       transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+   }
+   
+   /* Elemento decorativo superior derecho */
+   .login-panel::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       right: 0;
+       width: 120px;
+       height: 120px;
+       background: linear-gradient(135deg, var(--sena-green-light) 0%, var(--sena-green) 100%);
+       border-radius: 0 0 0 100%;
+   }
+   
+   /* ========================================
+      CONTENEDOR DE FORMULARIOS MEJORADO
+      ======================================== */
+   .form-container {
+       width: 100%;
+       max-width: 700px;
+       position: relative;
+       min-height: 800px;
+       overflow: visible;
+       margin-top: -3rem;
+   }
+
+   .login-form-container,
+   .register-form-container {
+       width: 100%;
+       padding: 3rem 4rem;
+       background: #ffffff;
+       border-radius: 24px;
+       box-shadow: 
+           0 4px 6px rgba(0, 0, 0, 0.1),
+           0 10px 15px rgba(0, 0, 0, 0.08),
+           0 20px 25px rgba(0, 0, 0, 0.05);
+       transition: opacity 0.5s ease, transform 0.5s ease;
+       position: absolute;
+       top: 0;
+       left: 0;
+       border: 1px solid #e1e8ed;
+       backdrop-filter: blur(10px);
+   }
+
+   .login-form-container {
+       animation: slideInRight 0.8s ease-out;
+       opacity: 1;
+       transform: translateX(0);
+       z-index: 2;
+   }
+
+   .register-form-container {
+       opacity: 0;
+       transform: translateX(100%);
+       z-index: 1;
+   }
+
+   .register-form-container.active {
+       opacity: 1;
+       transform: translateX(0);
+       z-index: 2;
+   }
+
+   .login-form-container.inactive {
+       opacity: 0;
+       transform: translateX(-100%);
+       z-index: 1;
+   }
+
+   /* CSS para layout de dos columnas en el formulario de registro cargado dinámicamente */
+   .register-form-container .row {
+       display: grid !important;
+       grid-template-columns: 1fr 1fr !important;
+       gap: 25px !important;
+       margin-bottom: 25px !important;
+   }
+
+   .register-form-container .col-md-6 {
+       display: flex !important;
+       flex-direction: column !important;
+       margin-bottom: 20px !important;
+   }
+
+   .register-form-container .col-md-6 label {
+       margin-bottom: 10px !important;
+       font-weight: bold !important;
+       color: #333 !important;
+       font-size: 16px !important;
+   }
+
+   .register-form-container .col-md-6 input,
+   .register-form-container .col-md-6 select {
+       width: 100% !important;
+       padding: 15px 18px !important;
+       border: 1px solid #ccc !important;
+       border-radius: 8px !important;
+       font-size: 16px !important;
+       box-sizing: border-box !important;
+       height: 50px !important;
+       background-color: white !important;
+   }
+
+   /* Estilos específicos para selects */
+   .register-form-container .col-md-6 select {
+       -webkit-appearance: none;
+       -moz-appearance: none;
+       appearance: none;
+       background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
+       background-repeat: no-repeat;
+       background-position: right 15px center;
+       background-size: 12px;
+       padding-right: 45px !important;
+   }
+
+   /* Ajustar el contenedor del formulario de registro */
+   .register-form-container {
+       padding: 3rem 4rem !important;
+       max-height: none !important;
+       overflow-y: visible !important;
+   }
+
+   .register-form-container h2 {
+       margin-bottom: 2rem !important;
+       font-size: 2.2rem !important;
+   }
+   
+   /* ========================================
+      TÍTULO DEL FORMULARIO MEJORADO
+      ======================================== */
+   .form-title {
+       text-align: center;
+       color: #69A62D;
+       font-size: 2.2rem;
+       font-weight: 600;
+       margin-bottom: 1.5rem;
+       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+       letter-spacing: -0.5px;
+   }
+   
+   /* ========================================
+      GRUPOS DE CAMPOS MEJORADOS
+      ======================================== */
+   .input-group {
+       margin-bottom: 1rem;
+       position: relative;
+   }
+
+   .input-group label {
+       display: block;
+       font-size: 0.9rem;
+       color: #69A62D;
+       margin-bottom: 0.5rem;
+       font-weight: 500;
+       letter-spacing: 0.3px;
+   }
+   
+   .input-group input,
+   .input-group select,
+   .form-group input,
+   .form-group select {
+       width: 100%;
+       padding: 1rem 1.2rem;
+       border: 2px solid #69A62D !important;
+       border-radius: 50px;
+       font-size: 1rem;
+       background: #ffffff;
+       color: #2c3e50 !important;
+       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+       box-shadow: 0 2px 4px var(--shadow-light);
+       outline: none;
+   }
+
+   .input-group input:focus,
+   .input-group select:focus {
+       border-color: var(--sena-green);
+       box-shadow: 
+           0 0 0 3px rgba(111, 178, 45, 0.1),
+           0 2px 4px var(--shadow-light);
+       transform: translateY(-1px);
+   }
+
+   .input-group input:hover,
+   .input-group select:hover {
+       border-color: var(--sena-green-light);
+       box-shadow: 0 2px 8px var(--shadow-light);
+   }
+
+   .input-group input::placeholder {
+       color: var(--text-secondary);
+       opacity: 0.7;
+   }
+   
+   /* ========================================
+      WRAPPER PARA CONTRASEÑA MEJORADO
+      ======================================== */
+   .password-wrapper {
+       position: relative;
+   }
+   
+   .password-wrapper input {
+       padding-right: 3rem;
+   }
+   
+   .toggle-password {
+       position: absolute;
+       right: 1rem;
+       top: 50%;
+       transform: translateY(-50%);
+       width: 24px;
+       height: 24px;
+       cursor: pointer;
+       opacity: 0.5;
+       transition: all 0.3s ease;
+       background: none;
+       border: none;
+       color: var(--text-secondary);
+   }
+   
+   .toggle-password:hover {
+       opacity: 0.8;
+       transform: translateY(-50%) scale(1.1);
+   }
+   
+   /* ========================================
+      ENLACE OLVIDASTE CONTRASEÑA MEJORADO
+      ======================================== */
+   .forgot-password {
+       text-align: right;
+       margin-bottom: 2rem;
+   }
+   
+   .forgot-password a {
+       color: #69A62D;
+       text-decoration: none;
+       font-size: 0.9rem;
+       font-weight: 500;
+       transition: all 0.3s ease;
+       border-bottom: 1px solid transparent;
+   }
+   
+   .forgot-password a:hover {
+       color: var(--sena-green-dark);
+       border-bottom-color: var(--sena-green-dark);
+   }
+   
+   /* ========================================
+      BOTONES MEJORADOS
+      ======================================== */
+   .form-button,
+   .login-btn,
+   .register-btn {
+       width: 100%;
+       padding: 1.2rem;
+       background: linear-gradient(135deg, var(--sena-green) 0%, var(--sena-green-dark) 100%);
+       color: white;
+       border: none;
+       border-radius: 50px;
+       font-size: 1.1rem;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+       margin-top: 1rem;
+       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+       text-transform: none;
+       letter-spacing: 0.5px;
+       box-shadow: 0 4px 12px var(--shadow-strong);
+       position: relative;
+       overflow: hidden;
+   }
+
+   .form-button::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: -100%;
+       width: 100%;
+       height: 100%;
+       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+       transition: left 0.5s;
+   }
+
+   .form-button:hover::before {
+       left: 100%;
+   }
+
+   .form-button:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 8px 25px var(--shadow-strong);
+   }
+
+   .form-button:active {
+       transform: translateY(0);
+       box-shadow: 0 4px 12px var(--shadow-strong);
+   }
+   
+   /* ========================================
+      ENLACES INFERIORES MEJORADOS
+      ======================================== */
+   .form-links {
+       text-align: center;
+       color: #2c3e50;
+       font-size: 0.95rem;
+       margin-top: 1.5rem;
+       line-height: 1.5;
+   }
+   
+   .form-links a {
+       color: #69A62D;
+       text-decoration: none;
+       font-weight: 600;
+       transition: all 0.3s ease;
+       cursor: pointer;
+       border-bottom: 1px solid transparent;
+   }
+   
+   .form-links a:hover {
+       color: #69A62D;
+       border-bottom-color: #69A62D;
+   }
+   
+   .login-links {
+       text-align: center;
+       color: var(--text-secondary);
+       font-size: 0.95rem;
+       margin-top: 1.5rem;
+   }
+   
+   .login-links a {
+       color: var(--sena-green);
+       text-decoration: none;
+       font-weight: 600;
+       transition: all 0.3s ease;
+       border-bottom: 1px solid transparent;
+   }
+   
+   .login-links a:hover {
+       color: var(--sena-green-dark);
+       border-bottom-color: var(--sena-green-dark);
+   }
+   
+   /* ========================================
+      SWITCH TEMA OSCURO/CLARO
+      ======================================== */
+   .theme-switch {
+       position: fixed;
+       top: 2rem;
+       right: 2rem;
+       z-index: 100;
+       transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+   }
+   
+   .switch {
+       font-size: 17px;
+       position: relative;
+       display: inline-block;
+       width: 3.5em;
+       height: 2em;
+       cursor: pointer;
+   }
+   
+   .switch input {
+       opacity: 0;
+       width: 0;
+       height: 0;
+   }
+   
+   .slider {
+       --background: #20262c;
+       position: absolute;
+       cursor: pointer;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background-color: var(--background);
+       transition: 0.5s;
+       border-radius: 30px;
+   }
+   
+   .slider:before {
+       position: absolute;
+       content: "";
+       height: 1.4em;
+       width: 1.4em;
+       border-radius: 50%;
+       left: 10%;
+       bottom: 15%;
+       box-shadow: inset 8px -4px 0px 0px #ececd9, -4px 1px 4px 0px #dadada;
+       background: var(--background);
+       transition: 0.5s;
+   }
+   
+   .decoration {
+       position: absolute;
+       content: "";
+       height: 2px;
+       width: 2px;
+       border-radius: 50%;
+       right: 20%;
+       top: 15%;
+       background: #e5f041e6;
+       backdrop-filter: blur(10px);
+       transition: all 0.5s;
+       box-shadow: -7px 10px 0 #e5f041e6, 8px 15px 0 #e5f041e6,
+           -17px 1px 0 #e5f041e6, -20px 10px 0 #e5f041e6,
+           -7px 23px 0 #e5f041e6, -15px 25px 0 #e5f041e6;
+   }
+   
+   input:checked ~ .decoration {
+       transform: translateX(-20px);
+       width: 10px;
+       height: 10px;
+       background: white;
+       box-shadow: -12px 0 0 white, -6px 0 0 1.6px white,
+           5px 15px 0 1px white, 1px 17px 0 white,
+           10px 17px 0 white;
+   }
+   
+   input:checked + .slider {
+       background-color: #5494de;
+   }
+   
+   input:checked + .slider:before {
+       transform: translateX(100%);
+       box-shadow: inset 15px -4px 0px 15px #efdf2b, 0 0 10px 0px #efdf2b;
+   }
+   
+   /* ========================================
+      TEMA OSCURO MEJORADO
+      ======================================== */
+   body.dark-mode .login-panel {
+       background: #595959;
+       color: #FFFFFF;
+   }
+   
+   body.dark-mode .login-panel::before {
+       background: linear-gradient(135deg, var(--sena-green) 0%, var(--sena-green-light) 100%);
+       opacity: 0.1;
+   }
+   
+   body.dark-mode .form-title {
+       color: #FFFFFF;
+   }
+   
+   body.dark-mode .input-group label,
+   body.dark-mode .form-group label {
+       color: #FFFFFF !important;
+   }
+   
+   body.dark-mode .input-group input,
+   body.dark-mode .input-group select,
+   body.dark-mode .form-group input,
+   body.dark-mode .form-group select {
+       background: #333333 !important;
+       border-color: #FFFFFF !important;
+       color: #FFFFFF !important;
+   }
+   
+   body.dark-mode .input-group input:focus,
+   body.dark-mode .input-group select:focus,
+   body.dark-mode .form-group input:focus,
+   body.dark-mode .form-group select:focus {
+       border-color: #FFFFFF !important;
+       box-shadow: 
+           0 0 0 3px rgba(255, 255, 255, 0.2),
+           0 2px 4px rgba(0, 0, 0, 0.3) !important;
+   }
+
+   body.dark-mode .input-group input:hover,
+   body.dark-mode .input-group select:hover,
+   body.dark-mode .form-group input:hover,
+   body.dark-mode .form-group select:hover {
+       border-color: #FFFFFF !important;
+   }
+
+   body.dark-mode .input-group input::placeholder,
+   body.dark-mode .form-group input::placeholder {
+       color: #CCCCCC;
+       opacity: 0.7;
+   }
+   
+   body.dark-mode .forgot-password a {
+       color: #FFFFFF;
+   }
+
+   body.dark-mode .forgot-password a:hover {
+       color: #69A62D;
+   }
+   
+   body.dark-mode .login-links {
+       color: #FFFFFF;
+   }
+   
+   body.dark-mode .login-links a {
+       color: #69A62D;
+   }
+
+   body.dark-mode .login-links a:hover {
+       color: #69A62D;
+   }
+
+   body.dark-mode .form-links {
+       color: #FFFFFF;
+   }
+   
+   body.dark-mode .form-links a {
+       color: #69A62D;
+   }
+
+   body.dark-mode .form-links a:hover {
+       color: #69A62D;
+   }
+
+   body.dark-mode .login-form-container,
+   body.dark-mode .register-form-container {
+       background: 
+       #595959;
+       border-color: #ffffff;
+       box-shadow: 
+           0 4px 6px rgba(255, 255, 255, 0.05),
+           0 10px 15px rgba(255, 255, 255, 0.03),
+           0 20px 25px rgba(255, 255, 255, 0.02);
+   }
+
+   /* Texto visible en modo oscuro para formulario de registro */
+   body.dark-mode .register-form-container .col-md-6 label {
+       color: #ffffff !important;
+   }
+
+   body.dark-mode .register-form-container h2 {
+       color: #69A62D !important;
+   }
+
+   body.dark-mode .register-form-container .col-md-6 input,
+   body.dark-mode .register-form-container .col-md-6 select {
+       background-color: #2a2a2a !important;
+       color: #ffffff !important;
+       border-color: #555555 !important;
+   }
+
+   body.dark-mode .register-form-container .form-links a {
+       color: #69A62D !important;
+   }
+
+   /* Arreglar Choices.js en modo oscuro */
+   body.dark-mode .register-form-container .choices {
+       background-color: #2a2a2a !important;
+       border-color: #555555 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__inner {
+       background-color: #ffffff !important;
+       color: #000000 !important;
+       border-color: #555555 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__item {
+       color: #000000 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__item--selectable {
+       color: #000000 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__item--selectable.is-highlighted {
+       color: #000000 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__placeholder {
+       color: #666666 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__list--dropdown {
+       background-color: #2a2a2a !important;
+       border-color: #555555 !important;
+   }
+
+   body.dark-mode .register-form-container .choices__list--dropdown .choices__item {
+       color: #ffffff !important;
+   }
+
+   body.dark-mode .register-form-container .choices__list--dropdown .choices__item--highlighted {
+       background-color: #69A62D !important;
+       color: #000000 !important;
+   }
+   
+   /* ========================================
+      RESPONSIVE DESIGN
+      ======================================== */
+   @media (max-width: 768px) {
+       .login-container {
+           flex-direction: column;
+       }
+       
+       .welcome-panel {
+           flex: 0 0 40%;
+           padding: 2rem;
+           align-items: center;
+           text-align: center;
+       }
+       
+       .welcome-text h1 {
+           font-size: 2.8rem;
+       }
+       
+       .welcome-text .subtitle {
+           font-size: 2.8rem;
+       }
+       
+       .login-panel {
+           flex: 1;
+           padding: 1.5rem;
+           background: var(--bg-color);
+       }
+       
+       .form-title {
+           font-size: 2rem;
+           text-align: center;
+       }
+       
+       .sena-logo {
+           width: 80px;
+           top: 1rem;
+           left: 1rem;
+       }
+       
+       .theme-switch {
+           top: 1rem;
+           right: 1rem;
+       }
+
+       .form-container {
+           max-width: 100%;
+       }
+
+       .login-form-container {
+           padding: 2rem 1.5rem;
+       }
+   }
+   
+   @media (max-width: 480px) {
+       .welcome-panel {
+           flex: 0 0 35%;
+           padding: 1.5rem;
+       }
+       
+       .welcome-text h1 {
+           font-size: 2.2rem;
+       }
+       
+       .welcome-text .subtitle {
+           font-size: 2.2rem;
+       }
+       
+       .form-container {
+           max-width: 100%;
+       }
+       
+       .form-title {
+           font-size: 1.8rem;
+       }
+       
+       .sena-logo {
+           width: 60px;
+       }
+
+       .login-form-container {
+           padding: 2rem 1.2rem;
+           border-radius: 16px;
+       }
+   }
+   
+   /* ========================================
+      ANIMACIONES Y EFECTOS MEJORADOS
+      ======================================== */
+   .login-form-container {
+       animation: slideInRight 0.6s ease-out;
+   }
+   
+   .welcome-text {
+       animation: slideInLeft 0.6s ease-out;
+   }
+   
+   @keyframes slideInLeft {
+       from {
+           opacity: 0;
+           transform: translateX(-50px);
+       }
+       to {
+           opacity: 1;
+           transform: translateX(0);
+       }
+   }
+   
+   @keyframes slideInRight {
+       from {
+           opacity: 0;
+           transform: translateX(50px);
+       }
+       to {
+           opacity: 1;
+           transform: translateX(0);
+       }
+   }
+   
+   /* ========================================
+      ESTADOS DE CARGA MEJORADOS
+      ======================================== */
+   .login-button.loading {
+       position: relative;
+       color: transparent;
+       cursor: not-allowed;
+   }
+   
+   .login-button.loading::after {
+       content: '';
+       position: absolute;
+       width: 20px;
+       height: 20px;
+       top: 50%;
+       left: 50%;
+       margin-left: -10px;
+       margin-top: -10px;
+       border: 2px solid #ffffff;
+       border-radius: 50%;
+       border-top-color: transparent;
+       animation: spin 1s ease-in-out infinite;
+   }
+   
+   @keyframes spin {
+       to { transform: rotate(360deg); }
+   }
+
+   /* ========================================
+      EFECTOS ADICIONALES
+      ======================================== */
+   .form-container::before {
+       content: '';
+       position: absolute;
+       top: -2px;
+       left: -2px;
+       right: -2px;
+       bottom: -2px;
+       background: linear-gradient(45deg, var(--sena-green), var(--sena-green-light), var(--sena-green));
+       border-radius: 26px;
+       z-index: -1;
+       opacity: 0;
+       transition: opacity 0.3s ease;
+   }
+
+   .form-container:hover::before {
+       opacity: 0.1;
+   }

@@ -78,16 +78,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!fichaSeleccionada) return;
     const baseMonday = getMonday(hoy());
     const monday = addDays(baseMonday, semanaOffset * 7);
-    const days = [0,1,2,3,4].map(i => addDays(monday, i));
-    const friday = days[4];
-    await cargarRegistrosAsistencia(fichaSeleccionada.id, monday, friday);
+    
+    // Obtener días de la semana de la ficha seleccionada
+    const diasSemana = fichaSeleccionada.dias_semana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+    const mapaDias = {
+      'lunes': 0, 'martes': 1, 'miercoles': 2, 'jueves': 3, 'viernes': 4, 'sabado': 5
+    };
+    
+    // Generar solo los días que tiene la ficha
+    const days = diasSemana.map(dia => addDays(monday, mapaDias[dia])).filter(Boolean);
+    const ultimoDia = days[days.length - 1];
+    await cargarRegistrosAsistencia(fichaSeleccionada.id, monday, ultimoDia);
 
     const weekOfMonth = Math.ceil((monday.getDate() + 1) / 7);
     const monthName = monday.toLocaleString('default', { month: 'long' });
     const semanaLabel = `Semana ${weekOfMonth} de ${monthName}`;
     const esSemanaActual = (semanaOffset === 0);
     const fechaHoy = hoy();
-    const indiceHoy = esSemanaActual ? Math.min(4, Math.max(0, fechaHoy.getDay()-1)) : -1;
+    // Calcular índice del día actual basado en los días de la ficha
+    let indiceHoy = -1;
+    if (esSemanaActual) {
+      const diaActual = fechaHoy.getDay(); // 0=domingo, 1=lunes, etc.
+      const diasNumeros = diasSemana.map(dia => mapaDias[dia] + 1); // convertir a números de día de semana
+      indiceHoy = diasNumeros.indexOf(diaActual);
+    }
 
     const header = `
       <div class="cal-topbar">
@@ -103,8 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     const thDias = days.map((d, idx) => {
-      const nombres = ['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES'];
-      return `<th>${nombres[idx]}<div>${formatDM(d)}</div></th>`;
+      const nombresDias = ['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
+      const diaSemana = d.getDay(); // 0=domingo, 1=lunes, 2=martes, etc.
+      const nombreDia = diaSemana === 0 ? 'DOMINGO' : nombresDias[diaSemana - 1];
+      return `<th>${nombreDia}<div>${formatDM(d)}</div></th>`;
     }).join('');
 
     const filas = estudiantesCache.map(e => {
@@ -187,47 +203,71 @@ async function cargarFichas() {
     }
 
     fichasGlobal = fichas;
-    tarjetasFichas.innerHTML = ""; // 🔥 limpiar tarjetas anteriores
+    tarjetasFichas.innerHTML = '';
 
     fichas.forEach(ficha => {
       const card = document.createElement('div');
-      card.classList.add('card-ficha');
+      card.className = 'card-ficha';
+      
+      // Badge para fichas compartidas
+      const badgeCompartida = ficha.tipo === 'compartida' ? 
+        '<div class="ficha-compartida-badge">Compartido</div>' : '';
+      
       card.innerHTML = `
         <div class="banner"></div>
         <div class="contenido">
-          <h4>${ficha.numero || ficha.numero_ficha}</h4>
-          <p>${ficha.nombre || 'Formación Titulada Virtual y a Distancia'}</p>
+          <h4>${ficha.nombre}</h4>
+          <p>Ficha: ${ficha.numero_ficha || ficha.numero}</p>
         </div>
+        ${badgeCompartida}
         <div class="menu-container">
-          <div class="menu">⋮</div>
+          <button class="menu" type="button"></button>
           <div class="menu-dropdown">
-            <a href="index.php?page=fichas&action=ver&id=${ficha.id}">Ingresar a ficha</a>
+            <a href="/?page=fichas&action=ver&id=${ficha.id}" class="ver-ficha" data-ficha-id="${ficha.id}" data-ficha-nombre="${ficha.nombre}">Ver Ficha</a>
+            ${ficha.tipo !== 'compartida' ? '<a href="#" class="compartir-ficha" data-ficha-id="' + ficha.id + '" data-ficha-nombre="' + ficha.nombre + '">Compartir</a>' : ''}
           </div>
         </div>
       `;
 
-      // click en la tarjeta (para calendario)
-      card.querySelector('.contenido').addEventListener('click', () => {
-        fichaSeleccionada = { id: ficha.id, nombre: ficha.numero || ficha.numero_ficha };
-        semanaOffset = 0;
-        calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
-        fetch(`index.php?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
-          credentials: 'include'
-        })
-          .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
-          .then(estudiantes => {
-            console.log("📌 Estudiantes cargados:", estudiantes);
-            estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
-            if (estudiantesCache.length === 0) {
-              calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
-              return;
+      // Click en la tarjeta para seleccionar ficha
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-container')) {
+          let diasSemana;
+          if (ficha.dias_semana) {
+            try {
+              diasSemana = JSON.parse(ficha.dias_semana);
+            } catch (e) {
+              diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
             }
-            renderCalendario();
+          } else {
+            diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+          }
+        
+          fichaSeleccionada = { 
+            id: ficha.id, 
+            nombre: ficha.numero || ficha.numero_ficha,
+            dias_semana: diasSemana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']
+          };
+          semanaOffset = 0;
+          calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
+          fetch(`index.php?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
+            credentials: 'include'
           })
-          .catch(err => {
-            console.error('Error estudiantes:', err);
-            calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
-          });
+            .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
+            .then(estudiantes => {
+              console.log("📌 Estudiantes cargados:", estudiantes);
+              estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
+              if (estudiantesCache.length === 0) {
+                calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
+                return;
+              }
+              renderCalendario();
+            })
+            .catch(err => {
+              console.error('Error estudiantes:', err);
+              calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
+            });
+        }
       });
 
       // menú desplegable
@@ -238,6 +278,27 @@ async function cargarFichas() {
         e.stopPropagation();
         menuDropdown.classList.toggle('show');
       });
+
+      // Event listener para ver ficha
+      const verBtn = card.querySelector('.ver-ficha');
+      verBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menuDropdown.classList.remove('show');
+        // El enlace href ya maneja la redirección
+      });
+
+      // Event listener para compartir ficha (solo si existe el botón)
+      const compartirBtn = card.querySelector('.compartir-ficha');
+      if (compartirBtn) {
+        compartirBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const fichaId = e.target.getAttribute('data-ficha-id');
+          const fichaNombre = e.target.getAttribute('data-ficha-nombre');
+          abrirModalCompartir(fichaId, fichaNombre);
+          menuDropdown.classList.remove('show');
+        });
+      }
 
       document.addEventListener('click', () => {
         menuDropdown.classList.remove('show');
@@ -252,10 +313,153 @@ async function cargarFichas() {
 }
 
 
+
   // Ejecuta al inicio
   cargarFichas();
 
   // 🔥 Disponible globalmente
   window.cargarFichas = cargarFichas;
 
+});
+
+// ===== FUNCIONES PARA COMPARTIR FICHAS =====
+let profesoresSeleccionados = [];
+let fichaActualCompartir = null;
+
+async function abrirModalCompartir(fichaId, fichaNombre) {
+  fichaActualCompartir = fichaId;
+  document.getElementById('fichaCompartirNombre').textContent = fichaNombre;
+  
+  // Cargar profesores
+  await cargarProfesores();
+  
+  // Mostrar modal
+  const modal = new bootstrap.Modal(document.getElementById('modalCompartirFicha'));
+  modal.show();
+}
+
+async function cargarProfesores() {
+  try {
+    const response = await fetch('index.php?page=obtener_profesores', {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) throw new Error('Error al cargar profesores');
+    
+    const profesores = await response.json();
+    
+    // Verificar estado de compartir para cada profesor
+    const responseEstado = await fetch('index.php?page=verificar_estado_compartir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        ficha_id: fichaActualCompartir,
+        profesores: profesores.map(p => p.id)
+      })
+    });
+    
+    const estadosCompartir = await responseEstado.json();
+    
+    const container = document.getElementById('profesoresContainer');
+    
+    container.innerHTML = '';
+    profesoresSeleccionados = [];
+    
+    profesores.forEach(profesor => {
+      const card = document.createElement('div');
+      card.classList.add('profesor-card');
+      card.dataset.profesorId = profesor.id;
+      
+      const tipoContrato = profesor.tip_contrato?.toLowerCase();
+      const etiquetaProfesor = tipoContrato === 'instructor' ? 'Instructor' : 'Facilitador';
+      
+      const estadoProfesor = estadosCompartir[profesor.id];
+      let etiquetaEstado = '';
+      let claseEstado = '';
+      let deshabilitado = false;
+      
+      if (estadoProfesor === 'aceptada') {
+        etiquetaEstado = '<div class="estado-ficha ya-tiene">Ya tiene la ficha</div>';
+        claseEstado = 'ya-tiene-ficha';
+        deshabilitado = true;
+      } else if (estadoProfesor === 'pendiente') {
+        etiquetaEstado = '<div class="estado-ficha pendiente">Solicitud pendiente</div>';
+        claseEstado = 'solicitud-pendiente';
+        deshabilitado = true;
+      }
+      
+      card.innerHTML = `
+        <div class="checkmark">✓</div>
+        <h6>${profesor.nombres} ${profesor.apellidos}</h6>
+        <p>${etiquetaProfesor}</p>
+        ${etiquetaEstado}
+      `;
+      
+      if (deshabilitado) {
+        card.classList.add('deshabilitado', claseEstado);
+      } else {
+        card.addEventListener('click', () => toggleProfesorSeleccion(profesor.id, card));
+      }
+      container.appendChild(card);
+    });
+    
+  } catch (error) {
+    console.error('Error cargando profesores:', error);
+    document.getElementById('profesoresContainer').innerHTML = 
+      '<p class="text-danger">Error al cargar profesores</p>';
+  }
+}
+
+function toggleProfesorSeleccion(profesorId, cardElement) {
+  const index = profesoresSeleccionados.indexOf(profesorId);
+  
+  if (index > -1) {
+    // Deseleccionar
+    profesoresSeleccionados.splice(index, 1);
+    cardElement.classList.remove('selected');
+  } else {
+    // Seleccionar
+    profesoresSeleccionados.push(profesorId);
+    cardElement.classList.add('selected');
+  }
+}
+
+// Event listener para el botón compartir
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnCompartirFicha').addEventListener('click', async () => {
+    if (profesoresSeleccionados.length === 0) {
+      alert('Selecciona al menos un profesor para compartir la ficha');
+      return;
+    }
+    
+    try {
+      const response = await fetch('index.php?page=compartir_ficha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ficha_id: fichaActualCompartir,
+          profesores: profesoresSeleccionados
+        })
+      });
+      
+      if (!response.ok) throw new Error('Error al compartir ficha');
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Ficha compartida exitosamente');
+        bootstrap.Modal.getInstance(document.getElementById('modalCompartirFicha')).hide();
+      } else {
+        alert('Error: ' + result.message);
+      }
+      
+    } catch (error) {
+      console.error('Error compartiendo ficha:', error);
+      alert('Error al compartir la ficha');
+    }
+  });
 });
