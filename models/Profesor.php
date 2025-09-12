@@ -82,6 +82,7 @@ class Profesor {
         $stmt = $this->pdo->prepare("
             SELECT u.nombres, u.apellidos, u.tipo_documento, u.numero_documento,
                    u.correo_electronico, u.telefono,
+                   p.id AS id,
                    p.titulo_academico, p.especialidad, p.fecha_ingreso,
                    p.tip_contrato, p.rh, p.correo_institucional
             FROM profesores p

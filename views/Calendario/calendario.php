@@ -1,9 +1,16 @@
 <?php
 require_once __DIR__ . '/../../helpers/auth.php';
 start_secure_session();
-require_role(2);
+require_role([1,2]);
 
 $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
+// Si viene ?profesor_id y el usuario es admin, usar ese para filtrar
+if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
+    $isAdmin = (int)($_SESSION['usuario']['rol_id'] ?? 0) === 1;
+    if ($isAdmin) {
+        $profesor_id = $_GET['profesor_id'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -13,27 +20,221 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario Colaborativo - Sistema Escolar SENA</title>
     
-    <!-- Bootstrap 5.3.2 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- FullCalendar CSS -->
+    <!-- Estilos personalizados para el calendario -->
     <style>
-        /* FullCalendar base styles */
-        .fc { direction: ltr; text-align: left; }
-        .fc table { border-collapse: collapse; border-spacing: 0; }
-        .fc th, .fc td { padding: 0; vertical-align: top; }
-        .fc .fc-button { background: #007bff; border: 1px solid #007bff; color: white; padding: 0.375rem 0.75rem; border-radius: 0.25rem; }
-        .fc .fc-button:hover { background: #0056b3; border-color: #0056b3; }
-        .fc-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .fc-toolbar-title { font-size: 1.5rem; font-weight: bold; }
-        .fc-daygrid-day { min-height: 100px; }
-        .fc-event { padding: 2px 4px; margin: 1px; border-radius: 3px; font-size: 0.85rem; }
-        .fc-timegrid-slot { height: 2em; }
-        .fc-col-header-cell { padding: 0.5rem; font-weight: bold; }
+        /* Reset básico */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        #calendario {
+            margin: 20px auto;
+            max-width: 1100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .fc { 
+            direction: ltr; 
+            text-align: left;
+            width: 100%;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+        
+        /* Estilos para los botones */
+        .fc .fc-button {
+            background:rgb(3, 16, 47);
+            border: 1px solid rgb(26, 32, 57);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .fc .fc-button:hover {
+            background: #3a5bd9;
+        }
+        
+        .fc .fc-button-active {
+            background: #2c4ec9;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Estilos para la cabecera */
+        .fc-header-toolbar {
+            margin-bottom: 1.5em;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .fc-toolbar-title {
+            font-size: 1.5em;
+            margin: 0 10px;
+            font-weight: 600;
+        }
+        
+        /* Estilos para los días */
+        .fc-daygrid-day {
+            border: 1px solid #e0e0e0;
+        }
+        
+        .fc-day-today {
+            background-color: #f0f7ff !important;
+        }
+        
+        .fc-daygrid-day-number {
+            padding: 4px;
+            color: #333;
+        }
+        
+        /* Estilos para los eventos */
+        .fc-event {
+            padding: 2px 4px;
+            margin: 1px 2px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: none;
+        }
+        .fc table { 
+            border-collapse: collapse; 
+            border-spacing: 0; 
+            width: 100%;
+        }
+        .fc th, .fc td { 
+            padding: 8px; 
+            vertical-align: top; 
+            border: 1px solid #ddd;
+        }
+        .fc .fc-button { 
+            background: rgb(3, 16, 47) !important; 
+            border: 1px solid rgb(26, 32, 57) !important; 
+            color: white !important; 
+            padding: 0.375rem 0.75rem; 
+            border-radius: 0.25rem; 
+            margin: 0 2px;
+        }
+        .fc .fc-button:hover { 
+            background: #0056b3 !important; 
+            border-color: #0056b3 !important; 
+        }
+        .fc-button-primary:not(:disabled):active, .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #010101 !important;
+            border-color: #0b0d0b !important;
+        }
+        .fc .fc-toolbar.fc-header-toolbar { 
+            background: repeating-radial-gradient(#17a11d, #078800) !important;
+            color: white !important;
+            padding: 1rem !important;
+            border-radius: 10px !important;
+            margin-bottom: 1rem !important;
+            display: flex !important; 
+            flex-wrap: wrap !important;
+            justify-content: space-between !important; 
+            align-items: center !important; 
+            gap: 10px !important;
+        }
+        
+        .fc .fc-toolbar-title {
+            color: white !important;
+        }
+        
+        .fc .fc-button-group .fc-button {
+            background: rgb(3, 16, 47) !important;
+            border: 1px solid rgb(26, 32, 57) !important;
+            color: white !important;
+        }
+        .fc-toolbar-title { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            margin: 0 10px;
+        }
+        .fc-daygrid-day { 
+            min-height: 100px; 
+        }
+        .fc-event { 
+            padding: 2px 4px; 
+            margin: 1px; 
+            border-radius: 3px; 
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .fc-timegrid-slot { 
+            height: 2em; 
+        }
+        .fc-col-header-cell { 
+            padding: 0.5rem; 
+            font-weight: bold; 
+            text-align: center;
+        }
+        #calendario {
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .fc-view-harness {
+            min-height: 600px;
+        }
+    
+        
+        /* Estilos adicionales para forzar cambios */
+        #calendario .fc-toolbar.fc-header-toolbar {
+            background: repeating-radial-gradient(#17a11d, #078800) !important;
+            color: white !important;
+            padding: 1rem !important;
+            border-radius: 10px !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        #calendario .fc-toolbar-title {
+            color: white !important;
+            font-weight: bold !important;
+        }
+        
+        #calendario .fc-button {
+            background: rgb(3, 16, 47) !important;
+            border: 1px solid rgb(26, 32, 57) !important;
+            color: white !important;
+        }
+        
+        #calendario .fc-button:hover {
+            background: #0056b3 !important;
+            border-color: #0056b3 !important;
+        }
+        
+        #calendario .fc-button-primary:not(:disabled):active,
+        #calendario .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #010101 !important;
+            border-color: #0b0d0b !important;
+        }
+    
     </style>
     
     <!-- CSS personalizado -->
-    <link rel="stylesheet" href="/css/Calendario/calendario.css">
+    <link rel="stylesheet" href="/css/Calendario/calendario.css?v=<?php echo time(); ?>">
     
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -51,7 +252,7 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
                             <div class="col-md-2">
                                 <button type="button" class="btn btn-success btn-sm w-100" id="btnCrearHorario">
                                     <i class="fas fa-plus me-1"></i>
-                                    Nuevo Horario
+                                    Nuevo Bloque
                                 </button>
                             </div>
                             <div class="col-md-2">
@@ -122,8 +323,8 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
                             Calendario Colaborativo
                         </h4>
                     </div>
-                    <div class="card-body">
-                        <div id="calendario"></div>
+                    <div class="card-body p-0">
+                        <div id="calendario" style="min-height: 70vh; padding: 1rem;"></div>
                     </div>
                 </div>
             </div>
@@ -158,6 +359,24 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
                                 <div class="col-md-6">
                                     <small class="text-muted">Día:</small><br>
                                     <span id="infoDia" class="fw-bold">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Editor manual de fecha y hora (solo para 'Nuevo Bloque') -->
+                        <div id="editorManualTiempo" class="mb-4" style="display:none;">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="inputFecha" class="form-label">Fecha</label>
+                                    <input type="date" class="form-control" id="inputFecha" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="inputHoraInicio" class="form-label">Hora inicio</label>
+                                    <input type="time" class="form-control" id="inputHoraInicio" step="3600" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="inputHoraFin" class="form-label">Hora fin</label>
+                                    <input type="time" class="form-control" id="inputHoraFin" step="3600" />
                                 </div>
                             </div>
                         </div>
@@ -268,6 +487,12 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="fichaCompartir" class="form-label">Seleccionar Ficha a Compartir</label>
+                            <select class="form-select" id="fichaCompartir" name="ficha_id" required>
+                                <option value="">Seleccionar ficha...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="permisosSincronizar" class="form-label">Permisos</label>
                             <select class="form-select" id="permisosSincronizar" name="permisos" required>
                                 <option value="solo_lectura">Solo Lectura</option>
@@ -292,12 +517,20 @@ $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- FullCalendar 6.1.8 -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    
+    <!-- SweetAlert2 para notificaciones -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Script personalizado -->
-    <script src="/js/calendario.js"></script>
+    <!-- Script del calendario -->
+    <script>
+        // Pasar datos del profesor desde PHP a JavaScript
+        window.nombreProfesor = '<?php echo htmlspecialchars($_SESSION['usuario']['nombres'] . ' ' . $_SESSION['usuario']['apellidos'], ENT_QUOTES, 'UTF-8'); ?>';
+        window.profesorFiltro = '<?php echo htmlspecialchars((string)($profesor_id ?? ''), ENT_QUOTES, 'UTF-8'); ?>';
+    </script>
+    <script src="/js/calendario_nuevo.js"></script>
 </body>
 </html>

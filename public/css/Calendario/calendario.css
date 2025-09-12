@@ -5,6 +5,42 @@
     padding: 0 15px;
 }
 
+/* ===== Mejora de los "resize handles" ===== */
+/* Hacer visibles y más grandes las zonas de agarre (arriba y abajo) */
+.fc-timegrid-event .fc-event-resizer {
+    background: rgba(255,255,255,0.6);
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    opacity: 1 !important;
+}
+
+.fc-timegrid-event .fc-event-resizer-bottom {
+    height: 8px !important;
+    bottom: -2px !important;
+    cursor: ns-resize !important;
+    border-top: 2px solid rgba(255,255,255,0.9);
+}
+
+.fc-timegrid-event .fc-event-resizer-top {
+    height: 8px !important;
+    top: -2px !important;
+    cursor: ns-resize !important;
+    border-bottom: 2px solid rgba(255,255,255,0.9);
+}
+
+/* Aumentar el área de "hit" para facilitar el arrastre/resize */
+.fc-timegrid-event:hover .fc-event-resizer-bottom,
+.fc-timegrid-event:hover .fc-event-resizer-top {
+    height: 10px !important;
+}
+
+/* Asegurar que el bloque ocupe todo el alto calculado */
+.fc-timegrid-event-harness-inset .fc-timegrid-event,
+.fc-timegrid-event-harness .fc-timegrid-event {
+    height: 100% !important;
+}
+
 /* Tarjetas */
 .card {
     border: none;
@@ -44,6 +80,132 @@
 #calendario {
     min-height: 700px;
     width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/* Ajustes para las celdas del calendario */
+.fc .fc-daygrid-day-frame {
+    min-height: 100px;
+}
+
+.fc .fc-col-header-cell-cushion {
+    white-space: nowrap;
+    padding: 4px 6px;
+}
+
+.fc .fc-daygrid-day-number {
+    padding: 4px 6px;
+}
+
+/* Ajuste para los eventos en la vista de día/semana */
+.fc-timegrid-slot-minor {
+    border-top-style: none;
+}
+
+.fc-timegrid-slot-label-cushion {
+    font-size: 0.8em;
+}
+
+/* Ajuste para la barra de herramientas */
+.fc-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.fc-toolbar-title {
+    font-size: 1.2em !important;
+    margin: 0 10px 0 0 !important;
+}
+
+/* Ajuste para botones de navegación */
+.fc-button {
+    padding: 0.3em 0.6em !important;
+}
+
+/* Estilo para los eventos */
+.fc-event {
+    border-radius: 4px !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    margin: 1px !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Forzar que los eventos se mantengan en sus celdas */
+.fc-timegrid-event {
+    max-width: 95% !important;
+    width: 95% !important;
+    left: 2.5% !important;
+    right: 2.5% !important;
+}
+
+.fc-event-main {
+    padding: 2px 4px !important;
+}
+
+.fc-event-title {
+    white-space: normal !important;
+    word-break: break-word !important;
+    font-size: 0.8em !important;
+    line-height: 1.2 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+}
+
+/* Ajustar celdas de tiempo */
+.fc-timegrid-slot {
+    height: 50px !important;
+    min-height: 50px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Mejorar las etiquetas de tiempo */
+.fc-timegrid-slot-label {
+    font-weight: 600 !important;
+    color: #495057 !important;
+    font-size: 0.85em !important;
+}
+
+/* Ajustar el ancho de la columna de tiempo */
+.fc-timegrid-axis {
+    width: 80px !important;
+    min-width: 80px !important;
+}
+
+.fc-timegrid-col-events {
+    margin: 0 1px 0 2px !important;
+}
+
+/* Controlar el posicionamiento de eventos */
+.fc-timegrid-event-harness {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 2px !important;
+}
+
+/* Ajustar el contenedor de eventos */
+.fc-timegrid-event {
+    position: absolute !important;
+    top: 1px !important;
+    bottom: 1px !important;
+    left: 3px !important;
+    right: 3px !important;
+    margin: 0 !important;
+    border-radius: 4px !important;
+    width: auto !important;
+    max-width: calc(100% - 6px) !important;
+}
+
+/* Controlar el ancho de las columnas de eventos */
+.fc-timegrid-col-events {
+    position: relative !important;
+    z-index: 2 !important;
 }
 
 .fc-toolbar {
@@ -87,6 +249,23 @@
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important;
     min-height: 22px !important;
     font-size: 11px !important;
+}
+
+/* Estilo para eventos cancelados - Solo texto tachado */
+.fc-event-cancelado {
+    text-decoration: line-through !important;
+}
+
+/* Desactivar todos los efectos en eventos cancelados */
+.fc-event-cancelado,
+.fc-event-cancelado:hover {
+    background-color: inherit !important;
+    border-color: inherit !important;
+    color: inherit !important;
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    cursor: default !important;
 }
 
 .fc-event:hover {
@@ -622,8 +801,8 @@
 
 /* Slots de tiempo con más altura */
 .fc-timegrid-slot {
-    height: 60px !important;
-    min-height: 60px !important;
+    height: 70px !important; /* un poco más alto para facilitar el "agarre" */
+    min-height: 70px !important;
 }
 
 .fc-timegrid-slot-minor {

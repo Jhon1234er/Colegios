@@ -62,8 +62,8 @@ $filtroTexto = [
                         </div>
                         <div class="result-details">
                             <p><strong>Documento:</strong> <?= htmlspecialchars($resultado['numero_documento'] ?? '') ?></p>
-                            <?php if (!empty($resultado['email'])): ?>
-                                <p><strong>Email:</strong> <?= htmlspecialchars($resultado['email']) ?></p>
+                            <?php if (!empty($resultado['correo_electronico'])): ?>
+                                <p><strong>Email:</strong> <?= htmlspecialchars($resultado['correo_electronico']) ?></p>
                             <?php endif; ?>
                             <?php if (!empty($resultado['telefono'])): ?>
                                 <p><strong>Teléfono:</strong> <?= htmlspecialchars($resultado['telefono']) ?></p>
@@ -73,8 +73,7 @@ $filtroTexto = [
                             <?php endif; ?>
                         </div>
                         <div class="result-actions">
-                            <a href="/?page=profesores&action=ver&id=<?= htmlspecialchars($resultado['id'] ?? '') ?>" class="btn btn-primary">Ver Perfil</a>
-                            <a href="/?page=profesores&action=editar&id=<?= htmlspecialchars($resultado['id'] ?? '') ?>" class="btn btn-secondary">Editar</a>
+                            <button type="button" class="btn btn-primary btn-ver-detalles-profesor" data-id="<?= htmlspecialchars($resultado['id'] ?? '') ?>">Ver Detalles</button>
                         </div>
 
                     <?php elseif ($filtro === 'estudiante'): ?>

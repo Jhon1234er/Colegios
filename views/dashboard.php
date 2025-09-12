@@ -130,6 +130,19 @@ function formatearNombreColegio($nombre) {
         </div>
     </div>
     
+    <!-- Contenedor para detalles del facilitador/instructor -->
+    <div id="professor-details-sidebar" class="student-details-sidebar" style="display: none;">
+        <div class="details-header">
+            <h2>Detalles del Facilitador</h2>
+            <button id="close-prof-details" class="close-details-btn">&times;</button>
+        </div>
+        <div id="professor-details-content" class="student-details-empty">
+            <div class="empty-state">
+                <p>Selecciona un facilitador para ver sus detalles</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Overlay para oscurecer el dashboard normal -->
     <div id="dashboard-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); z-index: 1;"></div>
 
@@ -243,6 +256,18 @@ $(document).ready(function(){
               </div>
             `);
           });
+
+  // Cerrar sidebar de detalles del facilitador
+  $(document).on('click', '#close-prof-details', function() {
+    $('#professor-details-sidebar').hide();
+    // Resetear todos los botones "Ver Detalles" de profesor
+    $('.btn-ver-detalles-profesor').each(function() {
+      $(this).text('Ver Detalles')
+             .removeClass('btn-secondary')
+             .addClass('btn-primary')
+             .prop('disabled', false);
+    });
+  });
         }
       },
       error: function(xhr, status, err){

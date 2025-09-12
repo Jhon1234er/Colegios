@@ -506,7 +506,8 @@ document.addEventListener('DOMContentLoaded', function () {
             dashboardResultados.insertBefore(backBtn, dashboardResultados.firstChild);
             
             // INICIALIZAR FUNCIONALIDAD DE BOTONES "VER DETALLES" DESPUÉS DE CARGAR AJAX
-            initializeStudentDetailsButtons();
+            try { initializeStudentDetailsButtons(); } catch(e) { console.warn(e); }
+            try { initializeProfessorDetailsButtons(); } catch(e) { console.warn(e); }
           }
         })
         .catch(error => {
@@ -849,5 +850,162 @@ function loadStudentCompleteData(studentId, container) {
             <div class="data-value">Error al cargar información</div>
           </div>`;
       });
+    });
+}
+
+// ============================================
+// FUNCIONALIDAD DE BOTONES "VER DETALLES" PARA FACILITADORES/PROFESORES
+// ============================================
+
+function initializeProfessorDetailsButtons() {
+  const buttons = document.querySelectorAll('.btn-ver-detalles-profesor');
+  if (!buttons || buttons.length === 0) return;
+
+  buttons.forEach((button, index) => {
+    // Limpiar listeners previos
+    button.replaceWith(button.cloneNode(true));
+    const newButton = document.querySelectorAll('.btn-ver-detalles-profesor')[index];
+
+    newButton.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // Reset de todos los botones de profesor
+      document.querySelectorAll('.btn-ver-detalles-profesor').forEach(b => {
+        if (!b || !b.parentNode) return;
+        b.textContent = 'Ver Detalles';
+        b.classList.remove('btn-secondary');
+        b.classList.add('btn-primary');
+        b.disabled = false;
+      });
+
+      const sidebar = document.getElementById('professor-details-sidebar');
+      const detailsContainer = document.getElementById('professor-details-content');
+      if (!sidebar || !detailsContainer) {
+        console.error('No se encontró el sidebar de Facilitador');
+        return;
+      }
+
+      // Esqueleto inicial del panel
+      detailsContainer.innerHTML = `
+        <div class="student-details-content">
+          <div class="data-container">
+            <div class="section-title">Nombre del Instructor/Facilitador</div>
+            <div class="names-container" style="text-align: center; padding: 20px;">
+              <div class="prof-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">Cargando...</div>
+            </div>
+            <div class="actions-bar" style="display:flex; gap:8px; justify-content:flex-end; padding: 0 10px 10px 10px;">
+              <button class="btn btn-sm btn-primary" id="btnVerCalendarioProf">Ver Calendario</button>
+              <button class="btn btn-sm btn-secondary" id="btnExportarCSVProf">Exportar CSV</button>
+            </div>
+          </div>
+          <div class="data-container">
+            <div class="section-title">Datos del Instructor/Facilitador</div>
+            <div class="data-grid" id="professor-data-grid">
+              <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+            </div>
+          </div>
+          <div class="data-container">
+            <div class="section-title">Fichas y Próximas Clases</div>
+            <div class="data-grid" id="professor-fichas-grid">
+              <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+            </div>
+          </div>
+          <div class="data-container">
+            <div class="section-title">Materias u Otros Datos</div>
+            <div class="data-grid" id="professor-otros-grid">
+              <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+            </div>
+          </div>
+        </div>`;
+
+      // Mostrar panel
+      sidebar.style.display = 'block';
+
+      const id = this.getAttribute('data-id');
+      if (!id) return;
+      loadProfessorCompleteData(id, detailsContainer);
+
+      // Marcar botón activo
+      this.textContent = 'Detalles Mostrados';
+      this.classList.remove('btn-primary');
+      this.classList.add('btn-secondary');
+      this.disabled = true;
+    });
+  });
+}
+
+function loadProfessorCompleteData(profId, container) {
+  fetch(`./ajax/get_profesor_details.php?id=${encodeURIComponent(profId)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) throw new Error(data.message || 'Error');
+      const prof = data.profesor || {};
+      const fichas = data.fichas || [];
+      const materias = data.materias || [];
+      const clases = data.clases || [];
+
+      // Wire acciones
+      const btnCal = container.querySelector('#btnVerCalendarioProf');
+      if (btnCal) {
+        btnCal.addEventListener('click', () => {
+          // Navegar al calendario filtrado por profesor (el backend soporta filtro por profesor)
+          window.location.href = `/?page=calendario&profesor_id=${encodeURIComponent(profId)}`;
+        });
+      }
+      const btnCSV = container.querySelector('#btnExportarCSVProf');
+      if (btnCSV) {
+        btnCSV.addEventListener('click', () => exportarCSVClasesProfesor(prof, clases));
+      }
+
+      // Nombre
+      const nameEl = container.querySelector('.prof-name');
+      if (nameEl) nameEl.textContent = (prof.nombres && prof.apellidos) ? `${prof.nombres} ${prof.apellidos}` : 'Sin nombre';
+
+      // Datos principales
+      const grid = container.querySelector('#professor-data-grid');
+      if (grid) {
+        grid.innerHTML = '';
+        const rows = [];
+        const push = (l,v)=>{ if (v && String(v).trim() !== '') rows.push(`<div class=\"data-item\"><div class=\"data-label\">${l}</div><div class=\"data-value\">${v}</div></div>`); };
+        push('Documento', `${prof.tipo_documento || ''} ${prof.numero_documento || ''}`.trim());
+        push('Email', prof.correo_electronico);
+        push('Email Institucional', prof.correo_institucional);
+        push('Teléfono', prof.telefono);
+        push('Especialidad', prof.especialidad);
+        push('Tipo de Contrato', prof.tip_contrato);
+        push('Fecha Ingreso', prof.fecha_ingreso);
+        push('Colegio', prof.colegio_nombre);
+        grid.innerHTML = rows.join('') || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin datos</div></div>';
+      }
+
+      // Fichas y próximas clases
+      const fichasGrid = container.querySelector('#professor-fichas-grid');
+      if (fichasGrid) {
+        let html = '';
+        if (fichas.length) {
+          html += fichas.map(f=>`<div class=\"data-item\"><div class=\"data-label\">Ficha</div><div class=\"data-value\">${(f.numero_ficha||f.numero||f.id)} - ${f.nombre||''}</div></div>`).join('');
+        }
+        if (clases.length) {
+          html += clases.map(c=>`<div class=\"data-item\"><div class=\"data-label\">Clase</div><div class=\"data-value\">${c.fecha_inicio} → ${c.fecha_fin} | ${c.aula||''} | ${c.estado||''}</div></div>`).join('');
+        }
+        fichasGrid.innerHTML = html || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin fichas/clases próximas</div></div>';
+      }
+
+      // Materias / otros
+      const otros = container.querySelector('#professor-otros-grid');
+      if (otros) {
+        let html = '';
+        // Contadores
+        html += `<div class="data-item"><div class="data-label">Resumen</div><div class="data-value">Fichas: ${fichas.length} • Materias: ${materias.length} • Clases semana: ${clases.length}</div></div>`;
+        if (materias.length) {
+          html += `<div class=\"data-item\"><div class=\"data-label\">Materias</div><div class=\"data-value\">${materias.join(', ')}</div></div>`;
+        }
+        otros.innerHTML = html || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin datos adicionales</div></div>';
+      }
+    })
+    .catch(err => {
+      console.error('Error cargando facilitador:', err);
+      const grids = container.querySelectorAll('.data-grid');
+      grids.forEach(g=> g.innerHTML = '<div class="data-item"><div class="data-label">Error</div><div class="data-value">No se pudieron cargar los datos</div></div>');
     });
 }

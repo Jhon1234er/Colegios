@@ -35,6 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 // ====== ENDPOINTS PÚBLICOS (AJAX lean) ======
 $page = $_GET['page'] ?? null;
 
+
+
 // Materias por colegio
 if ($page === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
     require_once '../models/ColegioMateria.php';
@@ -145,15 +147,27 @@ if ($page === 'estudiantesporficha') {
 
 // ====== ENDPOINTS DE CALENDARIO ======
 // Obtener horarios para calendario
-if ($page === 'calendario_horarios' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+if ($page === 'calendario_obtener') {
+    start_secure_session();
+    require_role(2);
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->obtenerHorarios();
     exit;
 }
 
+// Obtener fichas disponibles
+if ($page === 'calendario_obtener_fichas') {
+    start_secure_session();
+    require_role(2);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->obtenerFichasDisponibles();
+    exit;
+}
+
 // Crear nuevo horario
-if ($page === 'calendario_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($page === 'calendario_crear') {
     start_secure_session();
     require_role(2);
     require_once '../controllers/CalendarioController.php';
@@ -187,16 +201,6 @@ if ($page === 'calendario_estado' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->cambiarEstado();
-    exit;
-}
-
-// Obtener fichas disponibles
-if ($page === 'calendario_fichas' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    start_secure_session();
-    require_role(2);
-    require_once '../controllers/CalendarioController.php';
-    $controller = new CalendarioController();
-    $controller->obtenerFichasDisponibles();
     exit;
 }
 

@@ -7,6 +7,14 @@ class CalendarioController {
     
     public function __construct() {
         $this->pdo = Database::conectar();
+        
+        // Manejar acciones AJAX
+        $action = $_GET['action'] ?? '';
+        
+        if ($action === 'obtenerFichas') {
+            $this->obtenerFichas();
+            exit;
+        }
     }
     
     // Obtener horarios para el calendario
@@ -14,19 +22,76 @@ class CalendarioController {
         header('Content-Type: application/json');
         
         try {
-            // Primero actualizar estados automáticamente
-            $this->actualizarEstadosAutomaticos();
+            // Verificar sesión primero
+            if (!isset($_SESSION['usuario'])) {
+                http_response_code(401); // No autorizado
+                echo json_encode(['error' => 'No autorizado. Por favor inicie sesión.']);
+                return;
+            }
             
             // Obtener parámetros de vista del frontend
             $start = $_GET['start'] ?? null;
             $end = $_GET['end'] ?? null;
             $view = $_GET['view'] ?? 'dayGridMonth';
+            $profesorFiltro = $_GET['profesor_id'] ?? null;
+            $esAdmin = (int)($_SESSION['usuario']['rol_id'] ?? 0) === 1;
             
             error_log("Parámetros recibidos - Start: $start, End: $end, View: $view");
             
-            // Verificar si hay sesión de usuario
-            if (!isset($_SESSION['usuario']) || !isset($_SESSION['usuario']['profesor_id'])) {
-                // Mostrar todos los horarios si no hay sesión (modo público)
+            // Si es Admin y se solicita profesor específico, devolver solo ese calendario
+            if ($esAdmin && $profesorFiltro) {
+                $sql = "
+                    SELECT 
+                        hf.*,
+                        f.numero as ficha_codigo,
+                        f.nombre as ficha_nombre,
+                        u.nombres as profesor_nombre,
+                        hf.color as color_actual
+                    FROM horarios_fichas hf
+                    JOIN fichas f ON hf.ficha_id = f.id
+                    JOIN profesores p ON hf.profesor_id = p.id
+                    JOIN usuarios u ON p.usuario_id = u.id
+                    WHERE hf.profesor_id = ?";
+                $params = [$profesorFiltro];
+                if ($start && $end) { $sql .= " AND hf.fecha_inicio >= ? AND hf.fecha_fin <= ?"; $params[] = $start; $params[] = $end; }
+                $sql .= " ORDER BY hf.fecha_inicio";
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute($params);
+                $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $eventos = [];
+                foreach ($horarios as $horario) {
+                    $ahora = new DateTime();
+                    $fechaInicio = new DateTime($horario['fecha_inicio']);
+                    $fechaFin = new DateTime($horario['fecha_fin']);
+                    $color = ($fechaFin < $ahora) ? '#6c757d' : $horario['color_actual'];
+                    $eventos[] = [
+                        'id' => $horario['id'],
+                        'title' => $horario['titulo'],
+                        'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
+                        'end' => $fechaFin->format('Y-m-d\TH:i:s'),
+                        'backgroundColor' => $color,
+                        'borderColor' => $color,
+                        'className' => 'evento-' . $horario['estado'],
+                        'extendedProps' => [
+                            'ficha_id' => $horario['ficha_id'],
+                            'ficha_codigo' => $horario['ficha_codigo'],
+                            'ficha_nombre' => $horario['ficha_nombre'],
+                            'profesor_nombre' => $horario['profesor_nombre'],
+                            'aula' => $horario['aula'],
+                            'estado' => $horario['estado'],
+                            'tipo' => 'admin_vista',
+                            'asistencia_habilitada' => $horario['asistencia_habilitada']
+                        ]
+                    ];
+                }
+                echo json_encode($eventos);
+                return;
+            }
+
+            // Verificar si el usuario es profesor
+            if (!isset($_SESSION['usuario']['profesor_id'])) {
+                // Mostrar todos los horarios si no es profesor (modo público)
                 $sql = "
                     SELECT 
                         hf.*,
@@ -63,11 +128,17 @@ class CalendarioController {
                     $color = $esPasado ? '#6c757d' : $horario['color_actual']; // Gris si ya pasó
                     $claseEstado = $esPasado ? 'evento-pasado' : 'evento-' . $horario['estado'];
                     
+                    $fechaInicio = new DateTime($horario['fecha_inicio']);
+                    $fechaFin = new DateTime($horario['fecha_fin']);
+                    
+                    // Reemplazar "Profesor" con el nombre real del profesor en el título
+                    $tituloModificado = str_replace('Profesor', $horario['profesor_nombre'], $horario['titulo']);
+                    
                     $eventos[] = [
                         'id' => $horario['id'],
-                        'title' => $horario['titulo'],
-                        'start' => date('c', strtotime($horario['fecha_inicio'])),
-                        'end' => date('c', strtotime($horario['fecha_fin'])),
+                        'title' => $tituloModificado,
+                        'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
+                        'end' => $fechaFin->format('Y-m-d\TH:i:s'),
                         'backgroundColor' => $color,
                         'borderColor' => $color,
                         'className' => $claseEstado,
@@ -123,11 +194,19 @@ class CalendarioController {
                     $color = $esPasado ? '#6c757d' : $horario['color_actual']; // Gris si ya pasó
                     $claseEstado = $esPasado ? 'evento-pasado' : 'evento-' . $horario['estado'];
                     
+                    $fechaInicio = new DateTime($horario['fecha_inicio']);
+                    $fechaFin = new DateTime($horario['fecha_fin']);
+                    
+                    // Usar las fechas reales almacenadas para que el bloque ocupe toda la duración
+                    
+                    // Reemplazar "Profesor" con el nombre real del profesor en el título
+                    $tituloModificado = str_replace('Profesor', $horario['profesor_nombre'], $horario['titulo']);
+                    
                     $eventos[] = [
                         'id' => $horario['id'],
-                        'title' => $horario['titulo'],
-                        'start' => date('c', strtotime($horario['fecha_inicio'])),
-                        'end' => date('c', strtotime($horario['fecha_fin'])),
+                        'title' => $tituloModificado,
+                        'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
+                        'end' => $fechaFin->format('Y-m-d\TH:i:s'),
                         'backgroundColor' => $color,
                         'borderColor' => $color,
                         'className' => $claseEstado,
@@ -197,15 +276,15 @@ class CalendarioController {
             
             // Formatear horarios propios
             foreach ($horarios_propios as $horario) {
-                // Convertir fechas a formato ISO para FullCalendar
-                $fechaInicio = date('c', strtotime($horario['fecha_inicio']));
-                $fechaFin = date('c', strtotime($horario['fecha_fin']));
+                // Convertir fechas a objetos DateTime para formateo consistente
+                $fechaInicio = new DateTime($horario['fecha_inicio']);
+                $fechaFin = new DateTime($horario['fecha_fin']);
                 
                 $eventos[] = [
                     'id' => $horario['id'],
                     'title' => $horario['titulo'],
-                    'start' => $fechaInicio,
-                    'end' => $fechaFin,
+                    'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
+                    'end' => $fechaFin->format('Y-m-d\TH:i:s'),
                     'backgroundColor' => $horario['color_actual'],
                     'borderColor' => $horario['color_actual'],
                     'className' => 'evento-' . $horario['estado'],
@@ -244,16 +323,19 @@ class CalendarioController {
             ";
             
             $stmt = $this->pdo->prepare($sql_sincronizados);
-            $stmt->execute([$profesor_id, $profesor_id, $profesor_id]);
+            $result = $stmt->execute([$profesor_id, $profesor_id, $profesor_id]);
             $horarios_sincronizados = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Formatear horarios sincronizados
             foreach ($horarios_sincronizados as $horario) {
+                $fechaInicio = new DateTime($horario['fecha_inicio']);
+                $fechaFin = new DateTime($horario['fecha_fin']);
+                
                 $eventos[] = [
                     'id' => 'sync_' . $horario['id'],
                     'title' => $horario['titulo'] . ' (' . $horario['profesor_nombre'] . ')',
-                    'start' => $horario['fecha_inicio'],
-                    'end' => $horario['fecha_fin'],
+                    'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
+                    'end' => $fechaFin->format('Y-m-d\TH:i:s'),
                     'backgroundColor' => $horario['color_actual'],
                     'borderColor' => $horario['color_actual'],
                     'className' => 'evento-sincronizado evento-' . $horario['estado'],
@@ -284,75 +366,89 @@ class CalendarioController {
     
     // Crear nuevo horario
     public function crearHorario() {
-        start_secure_session();
-        require_role(2);
-        $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
-        
         try {
-            $data = json_decode(file_get_contents('php://input'), true);
-            // Debug logs
-            error_log("=== CREANDO HORARIO ===");
-            error_log("Datos recibidos: " . json_encode($data));
-            error_log("Profesor ID: " . $profesor_id);
-            error_log("Color a guardar: " . ($data['color'] ?? '#007bff'));
+            start_secure_session();
+            header('Content-Type: application/json');
             
-            if (!$profesor_id) {
-                throw new Exception("ID de profesor no encontrado en la sesión");
-            }
-            
-            if (!$data) {
-                throw new Exception("No se recibieron datos JSON válidos");
-            }
-            
-            // Validar datos requeridos
-            $campos_requeridos = ['ficha_id', 'titulo', 'fecha_inicio', 'fecha_fin', 'dia_semana', 'hora_inicio', 'hora_fin'];
-            foreach ($campos_requeridos as $campo) {
-                if (!isset($data[$campo]) || empty($data[$campo])) {
-                    error_log("Campo faltante o vacío: $campo");
-                    throw new Exception("Campo requerido faltante o vacío: $campo");
-                }
-            }
-            
-            // Verificar conflictos de horarios
-            $conflictos = $this->verificarConflictos($data, $profesor_id);
-            if (!empty($conflictos)) {
-                http_response_code(409);
-                echo json_encode(['error' => 'Conflicto de horarios detectado', 'conflictos' => $conflictos]);
+            if (!isset($_SESSION['usuario'])) {
+                http_response_code(401);
+                echo json_encode(['error' => 'No autorizado']);
                 return;
             }
             
-            $sql = "
-                INSERT INTO horarios_fichas 
-                (ficha_id, profesor_id, titulo, fecha_inicio, fecha_fin, dia_semana, 
-                 hora_inicio, hora_fin, aula, color, creado_por) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ";
+            require_role(2);
+            $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
+            
+            if (!$profesor_id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de profesor no encontrado']);
+                return;
+            }
+            
+            // Obtener datos del POST (FormData)
+            $ficha_id = $_POST['ficha_id'] ?? null;
+            $titulo = $_POST['titulo'] ?? null;
+            $fecha_inicio = $_POST['fecha_inicio'] ?? null;
+            $fecha_fin = $_POST['fecha_fin'] ?? null;
+            $aula = $_POST['aula'] ?? null;
+            $color = $_POST['color'] ?? '#007bff';
+            $estado = $_POST['estado'] ?? 'programado';
+
+            // Derivar hora_inicio, hora_fin y dia_semana si la tabla los requiere
+            $hora_inicio = null; $hora_fin = null; $dia_semana = null;
+            if ($fecha_inicio) {
+                $hora_inicio = substr($fecha_inicio, 11, 5); // HH:MM
+                $dia_semana = date('N', strtotime($fecha_inicio)); // 1 (Lunes) - 7 (Domingo)
+            }
+            if ($fecha_fin) {
+                $hora_fin = substr($fecha_fin, 11, 5); // HH:MM
+            }
+            
+            error_log("=== CREANDO HORARIO ===");
+            error_log("Ficha ID: " . $ficha_id);
+            error_log("Título: " . $titulo);
+            error_log("Fecha inicio: " . $fecha_inicio);
+            error_log("Fecha fin: " . $fecha_fin);
+            error_log("Aula: " . $aula);
+            
+            if (!$ficha_id || !$titulo || !$fecha_inicio || !$fecha_fin || !$aula) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Faltan datos requeridos']);
+                return;
+            }
+            
+            // Insertar en la base de datos, incluyendo hora_inicio, hora_fin y dia_semana si existen y son NOT NULL
+            $sql = "INSERT INTO horarios_fichas 
+                    (profesor_id, ficha_id, titulo, fecha_inicio, fecha_fin, hora_inicio, hora_fin, dia_semana, aula, color, estado, creado_por) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                $data['ficha_id'],
+            $result = $stmt->execute([
                 $profesor_id,
-                $data['titulo'],
-                $data['fecha_inicio'],
-                $data['fecha_fin'],
-                $data['dia_semana'],
-                $data['hora_inicio'],
-                $data['hora_fin'],
-                $data['aula'] ?? null,
-                $data['color'] ?? '#007bff',
+                $ficha_id,
+                $titulo,
+                $fecha_inicio,
+                $fecha_fin,
+                $hora_inicio,
+                $hora_fin,
+                $dia_semana,
+                $aula,
+                $color,
+                $estado,
                 $profesor_id
             ]);
             
-            $horario_id = $this->pdo->lastInsertId();
-            
-            // Registrar en historial
-            $this->registrarHistorial($horario_id, $profesor_id, 'crear', null, $data);
-            
-            echo json_encode(['success' => true, 'horario_id' => $horario_id]);
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Horario creado correctamente']);
+            } else {
+                http_response_code(500);
+                echo json_encode(['error' => 'Error al guardar en la base de datos']);
+            }
             
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            error_log('Error en crearHorario: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al crear el horario: ' . $e->getMessage()]);
         }
     }
     
@@ -566,90 +662,60 @@ class CalendarioController {
         ]);
     }
     
-    // Obtener fichas disponibles para el profesor
+    /**
+     * Obtener fichas disponibles para el profesor
+     */
     public function obtenerFichasDisponibles() {
-        start_secure_session();
-        require_role(2);
-        $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
-        
-        if (!$profesor_id) {
-            http_response_code(400);
-            echo json_encode(['error' => 'ID de profesor no encontrado en la sesión']);
-            return;
-        }
-        
         try {
-            $sql = "
-                SELECT DISTINCT f.id, f.numero as codigo, f.nombre, 'Programa General' as programa
-                FROM fichas f
-                WHERE f.id IN (
-                    SELECT pf.ficha_id 
-                    FROM profesor_ficha pf 
-                    WHERE pf.profesor_id = ?
-                )
-                OR f.id IN (
-                    SELECT fc.ficha_id 
-                    FROM fichas_compartidas fc 
-                    WHERE fc.profesor_compartido_id = ? 
-                      AND fc.estado = 'aceptada'
-                )
-                ORDER BY f.numero
-            ";
+            start_secure_session();
             
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([$profesor_id, $profesor_id]);
-            $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+            if (!isset($_SESSION['usuario'])) {
+                http_response_code(401);
+                echo json_encode(['error' => 'No autorizado. Por favor inicie sesión.']);
+                return;
+            }
+            // Permitir a roles 1 (Admin) y 2 (Profesor)
+            $rol = (int)($_SESSION['usuario']['rol_id'] ?? 0);
+            if (!in_array($rol, [1,2], true)) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Acceso denegado']);
+                return;
+            }
+
             header('Content-Type: application/json');
+            $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
+            if ($rol === 1 && isset($_GET['profesor_id']) && $_GET['profesor_id'] !== '') {
+                $profesor_id = $_GET['profesor_id'];
+            }
+            
+            if (!$profesor_id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de profesor no encontrado en la sesión']);
+                return;
+            }
+            // Traer fichas vinculadas al profesor (propias o asignadas)
+            $sql = "
+                SELECT DISTINCT f.id, f.numero AS codigo, f.nombre
+                FROM fichas f
+                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+                WHERE pf.profesor_id = ?
+                ORDER BY f.numero, f.nombre
+            ";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$profesor_id]);
+            $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
             echo json_encode($fichas);
             
         } catch (Exception $e) {
+            $errorMessage = 'Error en obtenerFichasDisponibles: ' . $e->getMessage();
+            error_log($errorMessage);
+            error_log('Trace: ' . $e->getTraceAsString());
             http_response_code(500);
-            echo json_encode(['error' => 'Error al obtener fichas: ' . $e->getMessage()]);
-        }
-    }
-    
-    // Actualizar estados automáticamente según la hora actual
-    private function actualizarEstadosAutomaticos() {
-        try {
-            $ahora = new DateTime();
-            
-            // Actualizar eventos que ya terminaron a 'finalizado'
-            $sql_finalizar = "
-                UPDATE horarios_fichas 
-                SET estado = 'finalizado' 
-                WHERE fecha_fin < ? 
-                AND estado IN ('programado', 'en_curso')
-            ";
-            
-            $stmt = $this->pdo->prepare($sql_finalizar);
-            $finalizados = $stmt->execute([$ahora->format('Y-m-d H:i:s')]);
-            $countFinalizado = $stmt->rowCount();
-            
-            // Actualizar eventos que están en curso
-            $sql_en_curso = "
-                UPDATE horarios_fichas 
-                SET estado = 'en_curso' 
-                WHERE fecha_inicio <= ? 
-                AND fecha_fin > ? 
-                AND estado = 'programado'
-            ";
-            
-            $stmt = $this->pdo->prepare($sql_en_curso);
-            $stmt->execute([
-                $ahora->format('Y-m-d H:i:s'),
-                $ahora->format('Y-m-d H:i:s')
+            echo json_encode([
+                'error' => 'Error al cargar las fichas disponibles',
+                'debug' => $errorMessage
             ]);
-            $countEnCurso = $stmt->rowCount();
-            
-            // Log para debug
-            if ($countFinalizado > 0 || $countEnCurso > 0) {
-                error_log("Estados actualizados: {$countFinalizado} finalizados, {$countEnCurso} en curso - " . $ahora->format('Y-m-d H:i:s'));
-            }
-            
-        } catch (Exception $e) {
-            error_log("Error actualizando estados automáticos: " . $e->getMessage());
         }
     }
 }
-?>
