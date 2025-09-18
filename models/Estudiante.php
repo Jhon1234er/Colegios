@@ -86,23 +86,16 @@ class Estudiante {
         try {
             $this->pdo->beginTransaction();
 
-            // 📌 Obtener colegio desde la ficha a través del profesor
-            $stmtFicha = $this->pdo->prepare("
-                SELECT p.colegio_id 
-                FROM fichas f
-                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
-                INNER JOIN profesores p ON pf.profesor_id = p.id
-                WHERE f.id = ?
-                LIMIT 1
-            ");
-            $stmtFicha->execute([$datos['ficha_id']]);
-            $ficha = $stmtFicha->fetch(PDO::FETCH_ASSOC);
-
-            if (!$ficha) {
-                throw new Exception("Ficha no encontrada o sin profesor asignado para registro público.");
+            // ✅ Usar colegio seleccionado por el aprendiz y validar que exista
+            $colegio_id = $datos['colegio_id'] ?? null;
+            if (!$colegio_id) {
+                throw new Exception("Debe seleccionar un colegio.");
             }
-
-            $colegio_id = $ficha['colegio_id'];
+            $stmtCol = $this->pdo->prepare("SELECT id FROM colegios WHERE id = ?");
+            $stmtCol->execute([$colegio_id]);
+            if (!$stmtCol->fetchColumn()) {
+                throw new Exception("Colegio no válido.");
+            }
 
             // Generar contraseña automática = número de documento
             $passwordPlano = $datos['numero_documento'];
@@ -140,7 +133,7 @@ class Estudiante {
             ");
             $stmtEstudiante->execute([
                 $usuario_id,
-                $colegio_id, // 🔹 se obtiene de la ficha
+                $colegio_id, // 🔹 proviene del formulario público
                 $datos['ficha_id'],
                 $datos['grado'],
                 $datos['grupo'],
@@ -251,6 +244,15 @@ class Estudiante {
     public function contarEstudiantes() {
         $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM estudiantes");
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    // -------------------------
+    // VALIDAR DUPLICADOS POR DOCUMENTO
+    // -------------------------
+    public function existeDocumento($numero_documento) {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE numero_documento = ? LIMIT 1");
+        $stmt->execute([$numero_documento]);
+        return (bool)$stmt->fetchColumn();
     }
 
     // -------------------------

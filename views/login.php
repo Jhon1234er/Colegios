@@ -33,7 +33,7 @@
             <div class="login-form-container" id="loginForm">
                 <h2 class="form-title">Inicia Sesión</h2>
 
-                <form method="POST" action="/index.php">
+                <form method="POST" action="index.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                     
                     <div class="form-group">

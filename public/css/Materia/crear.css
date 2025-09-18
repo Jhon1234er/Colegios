@@ -1,3 +1,16 @@
+/* Paleta configurable */
+:root {
+  --primary: #0ea5a4;        /* teal */
+  --primary-hover: #0b8b8a;
+  --success: #22c55e;        /* green */
+  --success-hover: #16a34a;
+  --danger: #ef4444;         /* red */
+  --danger-hover: #dc2626;
+  --warning: #f59e0b;        /* amber */
+  --warning-hover: #d97706;
+  --text-dark: #1f2937;
+  --muted-border: #e5e7eb;
+}
 /* Botón principal: Registrar / Actualizar */
 button.btn.btn-primary {
   background-color: #007bff;
@@ -32,73 +45,216 @@ button.btn.btn-primary:hover {
 }
 
 .btn-cancelar:hover {
-  background-color: #a71d2a;
+  background-color: #0f5a1f;
   transform: translateY(-1px);
 }
 
 /* Estilo para botones de acciones en la tabla */
-.btn-accion {
+.btn-accion, .btn {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 999px; /* pill */
   font-size: 14px;
   text-decoration: none;
-  color: white;
+  color: #fff;
   margin-right: 5px;
   display: inline-block;
   transition: background 0.3s ease;
 }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: black;
+.btn-size { min-width: 120px; text-align: center; }
+
+.btn-warning { background-color: var(--primary); color: #fff; }
+
+.btn-warning:hover { background-color: var(--primary-hover); }
+
+.btn-danger { background-color: var(--danger); color: #fff; }
+.btn-light { background-color: #e9ecef; color: #212529; }
+/* Activar en verde moderno */
+.btn-activar { background-color: var(--success); color: #fff; }
+
+/* Mantener colores en estados focus/active para evitar cambios a negro */
+.btn-accion:focus, .btn-accion:active,
+.btn:focus, .btn:active {
+  color: #fff;
+  filter: brightness(0.95);
+  outline: none;
 }
 
-.btn-warning:hover {
-  background-color: #e0a800;
+.btn-danger:hover { background-color: var(--danger-hover); }
+
+.btn-activar:hover { background-color: var(--success-hover); }
+
+/* Contenedor tarjeta */
+.card-widget {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  margin: 24px auto;
+  max-width: 1100px;
 }
 
-.btn-danger {
-  background-color: #1e7432;
-}
-
-.btn-danger:hover {
-  background-color: #0f5a1f;
-}
-
-.btn-activar {
-  background-color: #28a745;
-}
-
-.btn-activar:hover {
-  background-color: #1e7e34;
+.section-title {
+  text-align: center;
+  margin-bottom: 18px;
+  font-weight: 700;
+  color: #2c3e50;
 }
 
 /* Tabla de materias */
 .tabla-lista {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin-top: 10px;
+  background: #fff;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
 }
 
 .tabla-lista th,
 .tabla-lista td {
-  padding: 12px;
-  border: 1px solid #ddd;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef2f4;
 }
 
+.tabla-lista thead th {
+  position: sticky; top: 0; z-index: 2;
+}
+.tabla-lista tbody tr:nth-child(odd) { background: #fafcfd; }
+.tabla-lista tbody tr:hover { background: #f0f7f3; transition: background 0.2s ease; }
+
 .tabla-lista th {   
-  background-color: #6da5de;
+  background-color: #00a859; /* verde SENA */
   text-align: left;
+  color: #fff;
+  letter-spacing: .2px;
+  font-weight: 700;
 }
 
 .fila-inactiva {
-  background-color: #e1868c;
-  color: #531117;
+  background-color: #fde2e2;
+  color: #7a1a1a;
 }
+
+/* Fila de acciones generales */
 .row {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 30px;
-  gap: 20px; /* espacio entre botones */
+  margin-top: 20px;
+  gap: 16px;
 }
+
+/* Inputs del formulario */
+.table input.form-control,
+.table select.form-control,
+#tabla-cursos input.form-control,
+#tabla-cursos select.form-control {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+#tabla-cursos .btn-success,
+#tabla-cursos .btn-danger {
+  border-radius: 6px;
+}
+
+/* Nuevo layout por tarjetas para registro múltiple */
+.courses-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.course-card {
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fafcff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.field { display: flex; flex-direction: column; }
+.field label { font-weight: 600; margin-bottom: 6px; color: #495057; }
+.field-wide { grid-column: span 2; }
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Badges de estado */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-success { background: #e6f4ea; color: #1e7e34; border: 1px solid #b7e1c0; }
+.badge-danger { background: #fdecea; color: #b21a23; border: 1px solid #f5c2c7; }
+
+/* Celda de acciones en listado */
+.tabla-lista td:last-child {
+  white-space: nowrap;
+}
+.tabla-lista td:last-child .btn-accion { margin-bottom: 6px; }
+
+/* Asegurar color consistente en todos los estados */
+.btn-accion:visited, .btn:visited { color: #fff; }
+.btn-warning:visited { color: #212529; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-widget { padding: 16px; }
+  .tabla-lista th, .tabla-lista td { font-size: 13px; }
+  .card-row { grid-template-columns: 1fr; }
+  .field-wide { grid-column: span 1; }
+}
+
+/* ===== Modal de confirmación ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none; /* se cambia a flex en JS */
+  align-items: center;
+  justify-content: center;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none; /* evitar bloquear si está oculto */
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0; 
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(1px);
+  z-index: 1000;
+}
+.modal-card {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: min(560px, 92%);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  z-index: 1001;
+}
+.modal-title { margin: 0 0 8px; font-weight: 700; color: #2c3e50; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }

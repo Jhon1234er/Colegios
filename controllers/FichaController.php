@@ -48,10 +48,18 @@ class FichaController {
     // 📌 Guardar nueva ficha
     public function guardar() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // nombre proviene de la denominación del curso seleccionado (campo oculto)
             $nombre = trim($_POST['nombre'] ?? '');
-            $numero = trim($_POST['numero'] ?? '');
+            $numero = trim($_POST['numero'] ?? ''); // código del curso autocompletado
             $cupo_total = (int) ($_POST['cupo_total'] ?? 0);
-            $dias_semana = $_POST['dias_semana'] ?? [];
+            $dias_checked = $_POST['dias_semana'] ?? [];
+            $jornadas = $_POST['jornadas'] ?? [];
+            // Construir estructura dia=>jornada para guardar en JSON
+            $dias_semana = [];
+            foreach ($dias_checked as $dia) {
+                $dias_semana[$dia] = $jornadas[$dia] ?? null;
+            }
+            $jornada = null; // jornada general ya no se usa, se maneja por día
 
             if (!empty($nombre) && !empty($numero) && $cupo_total > 0 && !empty($dias_semana)) {
                 if (session_status() === PHP_SESSION_NONE) {
@@ -69,10 +77,10 @@ class FichaController {
                     if ($profesor) {
                         $profesor_id = $profesor['id'];
 
-                        $ficha_id = $this->fichaModel->guardar($nombre, $numero, $cupo_total, $profesor_id, $dias_semana);
+                        $ficha_id = $this->fichaModel->guardar($nombre, $numero, $cupo_total, $profesor_id, $dias_semana, $jornada);
 
                         if ($ficha_id) {
-                            header("Location: /?page=fichas&action=index");
+                            header("Location: ?page=fichas&action=index");
                             exit;
                         } else {
                             die("⚠️ Error: no se pudo guardar la ficha en la BD.");
@@ -88,7 +96,7 @@ class FichaController {
             }
         }
 
-        header("Location: /?page=fichas&action=crear");
+        header("Location: ?page=fichas&action=crear");
         exit;
     }
 

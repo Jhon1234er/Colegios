@@ -96,7 +96,7 @@ class AuthController {
             }
 
             $pdo->commit();
-            header('Location: /?page=login');
+            header('Location: ?page=login');
             exit;
 
         } catch (Exception $e) {

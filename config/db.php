@@ -4,7 +4,7 @@ class Database {
         $host = getenv('DB_HOST') ?: 'localhost';
         $db   = getenv('DB_NAME') ?: 'sistema_escolar';
         $user = getenv('DB_USER') ?: 'root';
-        $pass = getenv('DB_PASS') ?: '1234';
+        $pass = getenv('DB_PASS') ?: '';
 
         $dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
         $opt = [

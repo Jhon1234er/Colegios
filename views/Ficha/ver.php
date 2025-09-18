@@ -10,6 +10,31 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
     <p><strong>Cupo total:</strong> <?= (int)($ficha['cupo_total'] ?? 0) ?></p>
     <p><strong>Cupo usado:</strong> <?= (int)($ficha['cupo_usado'] ?? 0) ?></p>
 
+    <?php if (isset($_GET['import_ok'])): ?>
+        <?php 
+          if (session_status() === PHP_SESSION_NONE) { session_start(); }
+          $creados = (int)($_GET['creados'] ?? 0);
+          $saltados = (int)($_GET['saltados'] ?? 0);
+          $duplicados = (int)($_GET['duplicados'] ?? 0);
+          $errores = $_SESSION['import_errores'] ?? [];
+          unset($_SESSION['import_errores']);
+        ?>
+        <div class="alert alert-warning" style="margin:12px 0;">
+            <strong>Resumen de importación:</strong>
+            <div>✓ Creados: <strong><?= $creados ?></strong> · ⚠️ Saltados: <strong><?= $saltados ?></strong> · ⛔ Duplicados: <strong><?= $duplicados ?></strong></div>
+            <?php if (!empty($errores)): ?>
+                <details style="margin-top:8px;">
+                    <summary style="cursor:pointer;">Ver detalles de errores (<?= count($errores) ?>)</summary>
+                    <ul style="margin-top:6px;">
+                        <?php foreach ($errores as $err): ?>
+                            <li><?= htmlspecialchars($err) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </details>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
     <!-- 🔗 Link público -->
     <div class="link-publico">
         <label>Enlace de inscripción pública:</label>
@@ -22,6 +47,8 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
     <div class="acciones">
         <a href="/?page=estudiantes&action=crear&ficha_id=<?= urlencode($ficha['id']) ?>"
            class="btn btn-primary">+ Agregar Estudiante</a>
+        <a href="/?page=estudiantes&action=importar&ficha_id=<?= urlencode($ficha['id']) ?>"
+           class="btn btn-light" style="margin-left:8px;">Importar desde Excel</a>
     </div>
 
     <hr>

@@ -68,7 +68,7 @@
       ======================================== */
    .welcome-panel {
        flex: 1;
-       background: linear-gradient(135deg, #077368 0%, #168C6B 25%, #358C4B 50%, #69A62D 75%, #F2F2F2 100%);
+       background:green;
        display: flex;
        align-items: center;
        justify-content: center;

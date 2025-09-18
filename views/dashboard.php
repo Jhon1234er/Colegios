@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-if (!isset($_SESSION['usuario'])) { header('Location: /'); exit; }
+if (!isset($_SESSION['usuario'])) { header('Location: ?page=login'); exit; }
 
 $usuario = $_SESSION['usuario'];
 $isAdmin = ($usuario['rol_id'] == 1);
@@ -98,12 +98,12 @@ function formatearNombreColegio($nombre) {
                     <tbody>
                         <?php foreach ($colegios as $c): ?>
                         <tr>
-                            <td><?= htmlspecialchars($c['codigo_dane']) ?></td>
-                            <td><?= formatearNombreColegio(htmlspecialchars($c['nombre'])) ?></td>
-                            <td><?= htmlspecialchars($c['tipo_institucion']) ?></td>
-                            <td><?= formatearNombreColegio(htmlspecialchars($c['departamento'])) ?></td>
-                            <td><?= formatearNombreColegio(htmlspecialchars($c['municipio'])) ?></td>
-                            <td><button class="btn-ver-colegio" data-id="<?= $c['id'] ?>">Ver</button></td>
+                            <td><?= htmlspecialchars($c['codigo_dane'] ?? '') ?></td>
+                            <td><?= formatearNombreColegio(htmlspecialchars($c['nombre'] ?? '')) ?></td>
+                            <td><?= htmlspecialchars($c['tipo_institucion'] ?? '') ?></td>
+                            <td><?= formatearNombreColegio(htmlspecialchars($c['departamento'] ?? '')) ?></td>
+                            <td><?= formatearNombreColegio(htmlspecialchars($c['municipio'] ?? '')) ?></td>
+                            <td><button class="btn-ver-colegio" data-id="<?= $c['id'] ?? '' ?>">Ver</button></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

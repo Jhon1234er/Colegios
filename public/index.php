@@ -1,8 +1,12 @@
 <?php
 require_once '../helpers/auth.php';
 require_once '../controllers/AuthController.php';
+// Autoload de Composer (PhpSpreadsheet, Dompdf, etc.)
+require_once __DIR__ . '/../vendor/autoload.php';
 
 start_secure_session();
+
+$page = $_GET['page'] ?? null; // ensure $page is defined before any use
 
 $error = null;
 
@@ -15,14 +19,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     } else {
         $rol = (int)$_SESSION['usuario']['rol_id'];
         if ($rol === 1) {
-            header('Location: /?page=dashboard');
+            header('Location: ?page=dashboard');
         } elseif ($rol === 2) {
-            header('Location: /?page=dashboard_profesor');
+            header('Location: ?page=dashboard_profesor');
         } else {
-            header('Location: /');
+            header('Location: ?');
         }
         exit;
     }
+}
+
+// Gestión de materias (cursos)
+if ($page === 'materias') {
+    require_login(); require_role(1);
+    require_once '../controllers/MateriaController.php';
+    $c = new MateriaController();
+    $action = $_GET['action'] ?? 'index';
+    if ($action === 'crear') {
+        $c->crear();
+    } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_validate();
+        $c->guardar();
+    } elseif ($action === 'editar') {
+        $c->editar();
+    } elseif ($action === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_validate();
+        $c->actualizar();
+    } elseif ($action === 'suspender') {
+        $c->suspender();
+    } elseif ($action === 'activar') {
+        $c->activar();
+    } elseif ($action === 'eliminar') {
+        $c->eliminar();
+    } else {
+        $c->index();
+    }
+    exit;
 }
 
 // ====== REGISTRO USUARIO GENERAL ======
@@ -33,9 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 }
 
 // ====== ENDPOINTS PÚBLICOS (AJAX lean) ======
-$page = $_GET['page'] ?? null;
-
-
 
 // Materias por colegio
 if ($page === 'materias_por_colegio' && isset($_GET['colegio_id'])) {
@@ -351,6 +380,12 @@ if ($page === 'generar_pdf') {
     exit;
 }
 
+// ===== PLANTILLA IMPORT ESTUDIANTES =====
+if ($page === 'plantilla_import_estudiantes') {
+    require __DIR__ . '/../views/Archivos/plantilla_import_estudiantes.php';
+    exit;
+}
+
 // ====== REGISTRO (vista pública con token) ======
 if ($page === 'registro_estudiante') {
     require_once '../controllers/EstudianteController.php';
@@ -408,9 +443,11 @@ if ($page === 'estudiantes') {
     require_once '../controllers/EstudianteController.php';
     $c = new EstudianteController();
     $action = $_GET['action'] ?? 'index';
-    if ($action === 'crear')          $c->crear();
+    if ($action === 'crear')          { $c->crear(); }
     elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') { csrf_validate(); $c->guardar(); }
-    else $c->index();
+    elseif ($action === 'importar')   { $c->importar(); }
+    elseif ($action === 'importar_excel' && $_SERVER['REQUEST_METHOD'] === 'POST') { $c->importarExcel(); }
+    else { $c->index(); }
     exit;
 }
 

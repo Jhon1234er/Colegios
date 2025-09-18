@@ -9,7 +9,7 @@ class Ficha {
     }
 
     // Crear ficha y relacionarla con el profesor que la creó
-    public function guardar($nombre, $numero, $cupo_total, $profesor_id, $dias_semana = []) {
+    public function guardar($nombre, $numero, $cupo_total, $profesor_id, $dias_semana = [], $jornada = null) {
         try {
             $this->pdo->beginTransaction();
 
@@ -19,12 +19,12 @@ class Ficha {
             // Convertir días de semana a JSON
             $dias_json = !empty($dias_semana) ? json_encode($dias_semana) : json_encode(['lunes', 'martes', 'miercoles', 'jueves', 'viernes']);
 
-            // 1️⃣ Insertar ficha
+            // 1️⃣ Insertar ficha (con jornada opcional)
             $stmt = $this->pdo->prepare("
-                INSERT INTO fichas (nombre, numero, cupo_total, cupo_usado, token, estado, dias_semana) 
-                VALUES (?, ?, ?, 0, ?, 'activa', ?)
+                INSERT INTO fichas (nombre, numero, jornada, cupo_total, cupo_usado, token, estado, dias_semana) 
+                VALUES (?, ?, ?, ?, 0, ?, 'activa', ?)
             ");
-            $stmt->execute([$nombre, $numero, $cupo_total, $token, $dias_json]);
+            $stmt->execute([$nombre, $numero, $jornada, $cupo_total, $token, $dias_json]);
 
             // Obtener el ID de la ficha creada
             $ficha_id = $this->pdo->lastInsertId();

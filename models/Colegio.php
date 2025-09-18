@@ -21,8 +21,9 @@ class Colegio {
             // 🔹 Normalizar grados
             $colegio['grados'] = $this->normalizarCampo($colegio['grados']);
 
-            // 🔹 Calendario siempre en JSON
-            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
+            // 🔹 Calendario siempre en JSON (evitar pasar null a json_decode)
+            $cal = $colegio['calendario'] ?? '';
+            $colegio['calendario'] = ($cal !== '' && $cal !== null) ? (json_decode($cal, true) ?? []) : [];
         }
 
         return $colegios;

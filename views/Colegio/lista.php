@@ -54,7 +54,7 @@
                                         <?php endforeach; ?>
                                     </ul>
                                 <?php else: ?>
-                                    <span class="sin-materias">Sin materias</span>
+                                    <span class="sin-materias">Sin Cursos</span>
                                 <?php endif; ?>
                             </td>
                             <td>

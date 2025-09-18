@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../models/Estudiante.php';
 require_once __DIR__ . '/../models/Colegio.php';
 require_once __DIR__ . '/../models/Ficha.php';
+// Librería para leer Excel
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class EstudianteController {
 
@@ -66,7 +68,7 @@ class EstudianteController {
             die("⚠️ Token no válido.");
         }
 
-        // ✅ Buscar ficha asociada
+        // ✅ Buscar ficha asociada (validar token y obtener ID de ficha)
         $fichaModel = new Ficha();
         $ficha = $fichaModel->buscarPorToken($token);
 
@@ -75,6 +77,7 @@ class EstudianteController {
         }
 
         // ✅ Siempre se fuerza ficha_id con la ficha encontrada
+        //    El colegio será el que seleccione el aprendiz en el formulario público
         $datos = [
             'nombres'                     => trim($_POST['nombres'] ?? ''),
             'apellidos'                   => trim($_POST['apellidos'] ?? ''),
@@ -129,6 +132,156 @@ class EstudianteController {
         }
 
         require_once __DIR__ . '/../views/Estudiante/lista.php';
+    }
+
+    /* 📥 Formulario de importación desde Excel */
+    public function importar() {
+        start_secure_session();
+        require_login();
+        require_role([1,2]);
+
+        $colegioModel = new Colegio();
+        $fichaModel   = new Ficha();
+
+        $colegios = $colegioModel->obtenerTodos();
+        $fichas   = $fichaModel->obtenerTodas();
+
+        // Preseleccionar si viene por GET
+        $ficha_id_pre  = $_GET['ficha_id'] ?? '';
+        $colegio_pre   = $_GET['colegio_id'] ?? '';
+
+        require __DIR__ . '/../views/Estudiante/importar.php';
+    }
+
+    /* 📥 Procesar Excel y crear estudiantes en lote */
+    public function importarExcel() {
+        start_secure_session();
+        require_login();
+        require_role([1,2]);
+        csrf_validate();
+
+        if (!isset($_FILES['archivo_excel']) || $_FILES['archivo_excel']['error'] !== UPLOAD_ERR_OK) {
+            die('❌ Archivo no recibido.');
+        }
+
+        $ficha_id   = $_POST['ficha_id'] ?? null;
+        $colegio_id = $_POST['colegio_id'] ?? null;
+
+        if (!$ficha_id || !$colegio_id) {
+            die('⚠️ Debe seleccionar ficha y colegio para la importación.');
+        }
+
+        $tmpPath = $_FILES['archivo_excel']['tmp_name'];
+        try {
+            $spreadsheet = IOFactory::load($tmpPath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, true);
+
+            // Cabeceras esperadas
+            // A:N por ejemplo
+            $headers = array_map('strtolower', $rows[1] ?? []);
+            $map = [
+                'nombres' => null,
+                'apellidos' => null,
+                'tipo_documento' => null,
+                'numero_documento' => null,
+                'correo_electronico' => null,
+                'telefono' => null,
+                'fecha_nacimiento' => null,
+                'genero' => null,
+                'grado' => null,
+                'grupo' => null,
+                'jornada' => null,
+                'nombre_completo_acudiente' => null,
+                'tipo_documento_acudiente' => null,
+                'numero_documento_acudiente' => null,
+                'telefono_acudiente' => null,
+                'parentesco' => null,
+                'ocupacion' => null,
+            ];
+
+            // Construir mapeo columna -> campo
+            foreach ($headers as $col => $name) {
+                $name = trim($name);
+                if (isset($map[$name])) {
+                    $map[$name] = $col; // p.ej. 'A','B'
+                }
+            }
+
+            // Validar mínimos
+            $requeridos = ['nombres','apellidos','tipo_documento','numero_documento','genero','grado','jornada'];
+            foreach ($requeridos as $rk) {
+                if (empty($map[$rk])) {
+                    die('⚠️ Falta columna requerida en el Excel: ' . $rk);
+                }
+            }
+
+            $estudianteModel = new Estudiante();
+
+            $creados = 0; $saltados = 0; $duplicados = 0; $errores = [];
+
+            $totalRows = count($rows);
+            for ($i = 2; $i <= $totalRows; $i++) { // desde fila 2
+                $row = $rows[$i];
+                if (!is_array($row)) { continue; }
+
+                $datos = [
+                    'nombres' => trim((string)($row[$map['nombres']] ?? '')),
+                    'apellidos' => trim((string)($row[$map['apellidos']] ?? '')),
+                    'tipo_documento' => trim((string)($row[$map['tipo_documento']] ?? '')),
+                    'numero_documento' => trim((string)($row[$map['numero_documento']] ?? '')),
+                    'correo_electronico' => trim((string)($row[$map['correo_electronico']] ?? '')),
+                    'telefono' => trim((string)($row[$map['telefono']] ?? '')),
+                    'fecha_nacimiento' => trim((string)($row[$map['fecha_nacimiento']] ?? '')),
+                    'genero' => trim((string)($row[$map['genero']] ?? '')),
+                    'colegio_id' => $colegio_id,
+                    'grado' => trim((string)($row[$map['grado']] ?? '')),
+                    'grupo' => trim((string)($row[$map['grupo']] ?? '')),
+                    'jornada' => trim((string)($row[$map['jornada']] ?? '')),
+                    'fecha_ingreso' => date('Y-m-d'),
+                    'nombre_completo_acudiente' => trim((string)($row[$map['nombre_completo_acudiente']] ?? '')),
+                    'tipo_documento_acudiente' => trim((string)($row[$map['tipo_documento_acudiente']] ?? '')),
+                    'numero_documento_acudiente' => trim((string)($row[$map['numero_documento_acudiente']] ?? '')),
+                    'telefono_acudiente' => trim((string)($row[$map['telefono_acudiente']] ?? '')),
+                    'parentesco' => trim((string)($row[$map['parentesco']] ?? '')),
+                    'ocupacion' => trim((string)($row[$map['ocupacion']] ?? '')),
+                    'ficha_id' => $ficha_id,
+                ];
+
+                // Validación simple por fila
+                if ($datos['nombres'] === '' || $datos['apellidos'] === '' || $datos['numero_documento'] === '') {
+                    $saltados++; $errores[] = "Fila $i: Faltan campos obligatorios"; continue;
+                }
+
+                // Duplicados por número de documento
+                if ($estudianteModel->existeDocumento($datos['numero_documento'])) {
+                    $duplicados++; $errores[] = "Fila $i: Documento ya registrado (" . $datos['numero_documento'] . ")"; continue;
+                }
+
+                try {
+                    // Reutilizamos la lógica pública para generar password y actualizar cupos
+                    $ok = $estudianteModel->guardarPublico($datos);
+                    if ($ok) { $creados++; } else { $saltados++; }
+                } catch (\Throwable $e) {
+                    $errores[] = "Fila $i: " . $e->getMessage();
+                    $saltados++;
+                }
+            }
+
+            // Redirigir a la ficha con resumen
+            $_SESSION['import_errores'] = $errores; // almacenar errores para mostrar una vez
+            $msg = http_build_query([
+                'import_ok' => 1,
+                'creados' => $creados,
+                'saltados' => $saltados,
+                'duplicados' => $duplicados,
+            ]);
+            header('Location: /?page=fichas&action=ver&id=' . urlencode($ficha_id) . '&' . $msg);
+            exit;
+
+        } catch (\Throwable $e) {
+            die('❌ Error al procesar Excel: ' . $e->getMessage());
+        }
     }
 
     /* 📌 Contar estudiantes */

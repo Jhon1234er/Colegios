@@ -25,7 +25,7 @@ function start_secure_session(): void {
 
 function require_login(): void {
     if (empty($_SESSION['usuario'])) {
-        header('Location: /');
+        header('Location: ?page=login');
         exit;
     }
 }
@@ -36,7 +36,7 @@ function require_login(): void {
  */
 function require_role(int|array $roles): void {
     if (empty($_SESSION['usuario'])) {
-        header('Location: /');
+        header('Location: ?page=login');
         exit;
     }
 

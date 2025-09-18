@@ -120,6 +120,7 @@ if ($usuario_id && $tipo_usuario) {
             <a href="/?page=profesores">Facilitadores</a>
             <a href="/?page=estudiantes">Aprendices</a>
             <a href="/?page=colegios">Colegios</a>
+            <a href="/?page=materias">Cursos</a>
           </div>
         </div>
 
