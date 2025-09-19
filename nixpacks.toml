@@ -1,0 +1,20 @@
+[phases.setup]
+nixPkgs = [
+  'php80',
+  'php80Extensions.gd',
+  'php80Extensions.mbstring',
+  'php80Extensions.xml',
+  'php80Extensions.zip',
+  'php80Extensions.dom',
+  'php80Extensions.simplexml',
+  'php80Extensions.fileinfo',
+  'php80Extensions.pdo_mysql'
+]
+
+[phases.install]
+cmds = [
+  'composer install --no-dev --ignore-platform-reqs --optimize-autoloader'
+]
+
+[start]
+cmd = "php -S 0.0.0.0:${PORT} -t public"
