@@ -869,11 +869,204 @@ function actualizarEventoEnServidor(evento) {
     });
 }
 
+// Variables globales para el manejo de asistencias
+let estudiantesAsistencia = [];
+let eventoActualAsistencia = null;
+
+// Cargar lista de estudiantes para la asistencia
+async function cargarEstudiantesAsistencia(fichaId, fecha) {
+    try {
+        const response = await fetch(`?page=asistencia_obtener_estudiantes&ficha_id=${fichaId}&fecha=${fecha}`);
+        if (!response.ok) throw new Error('Error al cargar estudiantes');
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarError('No se pudieron cargar los estudiantes');
+        return [];
+    }
+}
+
+// Actualizar la interfaz de asistencias
+function actualizarInterfazAsistencias(estudiantes) {
+    const tbody = document.getElementById('listaAsistencias');
+    if (!tbody) return;
+    
+    if (!estudiantes || estudiantes.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center py-4">
+                    <i class="fas fa-exclamation-circle text-muted me-2"></i>
+                    No hay estudiantes registrados en esta ficha.
+                </td>
+            </tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = estudiantes.map(est => {
+        const estadoClase = est.estado ? `estado-${est.estado}` : 'estado-pendiente';
+        const estadoTexto = est.estado ? est.estado.charAt(0).toUpperCase() + est.estado.slice(1) : 'Pendiente';
+        
+        return `
+        <tr data-estudiante-id="${est.id}">
+            <td class="align-middle">
+                <div class="d-flex align-items-center">
+                    <div class="ms-2">
+                        <div class="fw-medium">${est.nombres} ${est.apellidos}</div>
+                        <div class="small text-muted">${est.documento || ''}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="align-middle text-center">
+                <select class="form-select form-select-sm estado-asistencia" data-estado="${est.estado || ''}">
+                    <option value="" ${!est.estado ? 'selected' : ''}>Seleccionar</option>
+                    <option value="presente" ${est.estado === 'presente' ? 'selected' : ''}>Presente</option>
+                    <option value="tardanza" ${est.estado === 'tardanza' ? 'selected' : ''}>Tardanza</option>
+                    <option value="falla" ${est.estado === 'falla' ? 'selected' : ''}>Falla</option>
+                    <option value="justificada" ${est.estado === 'justificada' ? 'selected' : ''}>Justificada</option>
+                </select>
+            </td>
+            <td class="align-middle text-center">
+                <div class="badge-container">
+                    <span class="estado-badge ${estadoClase}">${estadoTexto}</span>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+    
+    // Agregar eventos a los selectores de estado
+    document.querySelectorAll('.estado-asistencia').forEach(select => {
+        select.addEventListener('change', function() {
+            const fila = this.closest('tr');
+            const estado = this.value;
+            const badge = fila.querySelector('.estado-badge');
+            
+            // Actualizar clases y texto del badge
+            badge.className = 'estado-badge';
+            if (estado) {
+                badge.classList.add(`estado-${estado}`);
+                badge.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
+            } else {
+                badge.classList.add('estado-pendiente');
+                badge.textContent = 'Pendiente';
+            }
+            
+            // Actualizar el atributo data-estado
+            this.setAttribute('data-estado', estado);
+        });
+    });
+}
+
+// Guardar las asistencias en el servidor
+async function guardarAsistencias() {
+    if (!eventoActualAsistencia) return;
+    
+    const fichaId = eventoActualAsistencia.extendedProps?.ficha_id;
+    const fecha = eventoActualAsistencia.startStr.split('T')[0];
+    
+    if (!fichaId) {
+        mostrarError('No se pudo identificar la ficha del evento');
+        return;
+    }
+    
+    const asistencias = [];
+    document.querySelectorAll('#listaAsistencias tr[data-estudiante-id]').forEach(row => {
+        const estudianteId = row.getAttribute('data-estudiante-id');
+        const select = row.querySelector('.estado-asistencia');
+        const estado = select ? select.value : '';
+        
+        if (estado) {
+            asistencias.push({
+                estudiante_id: estudianteId,
+                estado: estado
+            });
+        }
+    });
+    
+    try {
+        const response = await fetch('?page=asistencia_registrar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ficha_id: fichaId,
+                fecha: fecha,
+                asistencias: asistencias
+            })
+        });
+        
+        if (!response.ok) throw new Error('Error al guardar asistencias');
+        
+        const result = await response.json();
+        if (result.success) {
+            mostrarExito('Asistencias guardadas correctamente');
+            // Actualizar el estado del evento en el calendario
+            const evento = calendario.getEventById(eventoActualAsistencia.id);
+            if (evento) {
+                evento.setProp('title', evento.title.replace(' 📝', '') + ' 📝');
+            }
+        } else {
+            throw new Error(result.message || 'Error al guardar asistencias');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarError('Error al guardar las asistencias: ' + error.message);
+    }
+}
+
+// Inicializar la pestaña de asistencias
+function inicializarPestanaAsistencias(evento) {
+    const fichaId = evento.extendedProps?.ficha_id;
+    const fecha = evento.startStr.split('T')[0];
+    
+    if (!fichaId) {
+        document.getElementById('listaAsistencias').innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center py-4 text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se pudo cargar la información de la ficha.
+                </td>
+            </tr>`;
+        return;
+    }
+    
+    // Mostrar loading
+    document.getElementById('listaAsistencias').innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 mb-0">Cargando lista de estudiantes...</p>
+            </td>
+        </tr>`;
+    
+    // Cargar estudiantes y actualizar interfaz
+    cargarEstudiantesAsistencia(fichaId, fecha)
+        .then(estudiantes => {
+            estudiantesAsistencia = estudiantes;
+            actualizarInterfazAsistencias(estudiantes);
+        })
+        .catch(error => {
+            console.error('Error al cargar estudiantes:', error);
+            document.getElementById('listaAsistencias').innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar la lista de estudiantes.
+                    </td>
+                </tr>`;
+        });
+}
+
 // Mostrar detalles de evento
 function mostrarDetallesEvento(evento) {
     const modal = document.getElementById('modalDetalles');
     const body = document.getElementById('detallesContent');
     if (!modal || !body) { alert(`${evento.title}\n${evento.start} - ${evento.end}`); return; }
+    
+    // Guardar referencia al evento actual para las asistencias
+    eventoActualAsistencia = evento;
 
     const pad = (n) => String(n).padStart(2, '0');
     const fmtFecha = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
@@ -1050,10 +1243,38 @@ function recargarEventos() {
     }
 }
 
+// Configurar eventos de la interfaz de asistencias
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar botón de guardar asistencias
+    const btnGuardarAsistencias = document.getElementById('btnGuardarAsistencias');
+    if (btnGuardarAsistencias) {
+        btnGuardarAsistencias.addEventListener('click', guardarAsistencias);
+    }
+    
+    // Configurar botón de actualizar asistencias
+    const btnActualizarAsistencias = document.getElementById('btnActualizarAsistencias');
+    if (btnActualizarAsistencias && eventoActualAsistencia) {
+        btnActualizarAsistencias.addEventListener('click', () => {
+            inicializarPestanaAsistencias(eventoActualAsistencia);
+        });
+    }
+    
+    // Configurar evento para cuando se muestre la pestaña de asistencias
+    const asistenciasTab = document.getElementById('asistencias-tab');
+    if (asistenciasTab) {
+        asistenciasTab.addEventListener('shown.bs.tab', function() {
+            if (eventoActualAsistencia) {
+                inicializarPestanaAsistencias(eventoActualAsistencia);
+            }
+        });
+    }
+});
+
 // Exponer funciones globalmente para debugging
 window.calendario = calendario;
 window.recargarEventos = recargarEventos;
 window.abrirModalHorario = abrirModalHorario;
+window.guardarAsistencias = guardarAsistencias;
 window.cerrarModal = cerrarModal;
 window.guardarHorario = guardarHorario;
 
@@ -1109,6 +1330,12 @@ function configurarBotonesUI() {
         filtroFicha.addEventListener('change', () => {
             if (window.calendario) window.calendario.refetchEvents();
         });
+    }
+    
+    // Botón de exportar reporte
+    const btnExportar = document.getElementById('btnExportarReporte');
+    if (btnExportar) {
+        btnExportar.addEventListener('click', exportarReporte);
     }
 }
 
@@ -1211,4 +1438,53 @@ const restantesHoy = (eventos || []).filter(e => {
     hoyEl.textContent = String(restantesHoy);
 }
 
-// ... (rest of the code remains the same)
+// Función para exportar el reporte de clases a CSV
+function exportarReporte() {
+    try {
+        // Obtener fechas actuales del calendario
+        const view = calendario.view;
+        let fechaInicio, fechaFin;
+        
+        if (view && view.currentStart && view.currentEnd) {
+            // Usar el rango de fechas actual del calendario
+            fechaInicio = view.currentStart.toISOString().split('T')[0];
+            fechaFin = view.currentEnd.toISOString().split('T')[0];
+        } else {
+            // Usar el mes actual si no hay vista disponible
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            
+            fechaInicio = firstDay.toISOString().split('T')[0];
+            fechaFin = lastDay.toISOString().split('T')[0];
+        }
+        
+        // Obtener filtros actuales
+        const filtroEstado = document.getElementById('filtroEstado')?.value || '';
+        const filtroFicha = document.getElementById('filtroFicha')?.value || '';
+        
+        // Construir URL con parámetros
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', 'calendario_exportar');
+        url.searchParams.set('action', 'exportarReporte');
+        url.searchParams.set('fecha_inicio', fechaInicio);
+        url.searchParams.set('fecha_fin', fechaFin);
+        
+        if (filtroEstado) url.searchParams.set('estado', filtroEstado);
+        if (filtroFicha) url.searchParams.set('ficha_id', filtroFicha);
+        
+        // Agregar timestamp para evitar caché
+        url.searchParams.set('_', Date.now());
+        
+        // Abrir en nueva pestaña para iniciar la descarga
+        window.open(url.toString(), '_blank');
+        
+        mostrarExito('Generando reporte...');
+    } catch (error) {
+        console.error('Error al exportar reporte:', error);
+        mostrarError('Error al generar el reporte: ' + error.message);
+    }
+}
+
+// Exponer función globalmente para debugging
+window.exportarReporte = exportarReporte;

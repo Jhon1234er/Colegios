@@ -104,12 +104,18 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
                     <span class="badge badge-success">Activa</span>
                   <?php endif; ?>
                 </td>
-                <td>
-                  <a href="/?page=materias&action=editar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-warning btn-size">Actualizar</a>
+                <td class="acciones-celda">
+                  <a href="/?page=materias&action=editar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-warning" style="padding: 6px 10px;">
+                    <i class="fas fa-edit"></i> Editar
+                  </a>
                   <?php if (($m['estado'] ?? 'activa') === 'suspendida'): ?>
-                    <a href="/?page=materias&action=activar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-activar btn-size btn-confirm" data-action="activar">Activar</a>
+                    <a href="/?page=materias&action=activar&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-activar btn-confirm" style="padding: 6px 10px;" data-action="activar">
+                      <i class="fas fa-check"></i> Activar
+                    </a>
                   <?php else: ?>
-                    <a href="/?page=materias&action=suspender&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-danger btn-size btn-confirm" data-action="suspender">Suspender</a>
+                    <a href="/?page=materias&action=suspender&id=<?= urlencode($m['id']) ?>" class="btn-accion btn-danger btn-confirm" style="padding: 6px 10px;" data-action="suspender">
+                      <i class="fas fa-pause"></i> Suspender
+                    </a>
                   <?php endif; ?>
                 </td>
               </tr>

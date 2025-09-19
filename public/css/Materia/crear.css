@@ -91,7 +91,7 @@ button.btn.btn-primary:hover {
   padding: 24px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   margin: 24px auto;
-  max-width: 1100px;
+  max-width: 2100px;
 }
 
 .section-title {
@@ -102,34 +102,84 @@ button.btn.btn-primary:hover {
 }
 
 /* Tabla de materias */
-.tabla-lista {
+.table-responsive {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  background: #fff;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 12px;
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  background: #fff;
+}
+
+.tabla-lista {
+  width: 100%;
+  min-width: 1000px; /* Minimum width before horizontal scroll */
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  table-layout: auto;
 }
 
 .tabla-lista th,
 .tabla-lista td {
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid #eef2f4;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .tabla-lista thead th {
-  position: sticky; top: 0; z-index: 2;
-}
-.tabla-lista tbody tr:nth-child(odd) { background: #fafcfd; }
-.tabla-lista tbody tr:hover { background: #f0f7f3; transition: background 0.2s ease; }
-
-.tabla-lista th {   
-  background-color: #00a859; /* verde SENA */
-  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #00a859;
   color: #fff;
-  letter-spacing: .2px;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 15px;
+}
+
+.tabla-lista tbody tr:nth-child(odd) { background: #fafcfd; }
+.tabla-lista tbody tr:hover { 
+  background: #f0f7f3; 
+  transition: background 0.2s ease; 
+}
+
+/* Make specific columns more compact */
+.tabla-lista td:first-child,
+.tabla-lista th:first-child {
+  padding-left: 20px; /* Extra padding on first column */
+}
+
+.tabla-lista td:last-child,
+.tabla-lista th:last-child {
+  padding-right: 20px; /* Extra padding on last column */
+  text-align: right;
+}
+
+/* Action buttons container */
+.acciones-celda {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  min-width: 180px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 1600px) {
+  .tabla-lista {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .tabla-lista th,
+  .tabla-lista td {
+    white-space: normal;
+    padding: 12px 15px;
+  }
 }
 
 .fila-inactiva {

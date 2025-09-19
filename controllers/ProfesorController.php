@@ -60,56 +60,84 @@ class ProfesorController {
     }
 
     public function obtenerFichasPorProfesor() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        try {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
 
-        $usuario_id = $_SESSION['usuario']['id'] ?? null;
-        if (!$usuario_id) {
+            $usuario_id = $_SESSION['usuario']['id'] ?? null;
+            if (!$usuario_id) {
+                throw new Exception('No se pudo identificar el usuario');
+            }
+
+            // Obtener profesor_id del usuario actual
+            require_once __DIR__ . '/../config/db.php';
+            $pdo = Database::conectar();
+            $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
+            $stmt->execute([$usuario_id]);
+            $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$profesor) {
+                throw new Exception('No se encontró el perfil de profesor');
+            }
+
+            $profesor_id = $profesor['id'];
+
+            // Obtener fichas propias
+            $fichasPropias = $this->profesorModel->obtenerFichasPorProfesor($profesor_id);
+
+            // Obtener fichas compartidas (solo las aceptadas)
+            $stmt = $pdo->prepare("
+                SELECT DISTINCT f.id, f.numero AS numero_ficha, f.nombre, 'compartida' as tipo
+                FROM fichas f
+                INNER JOIN fichas_compartidas fc ON f.id = fc.ficha_id
+                WHERE fc.profesor_compartido_id = ? AND fc.estado = 'aceptada'
+                ORDER BY f.numero
+            ");
+            $stmt->execute([$profesor_id]);
+            $fichasCompartidas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Marcar fichas propias
+            foreach ($fichasPropias as &$ficha) {
+                $ficha['tipo'] = 'propia';
+            }
+
+            // Combinar ambas listas
+            $todasLasFichas = array_merge($fichasPropias, $fichasCompartidas);
+
+            // Asegurar que todos los elementos tengan la misma estructura
+            foreach ($todasLasFichas as &$ficha) {
+                // Asegurar que existan los campos requeridos
+                $ficha['id'] = $ficha['id'] ?? 0;
+                $ficha['numero_ficha'] = $ficha['numero_ficha'] ?? '';
+                $ficha['nombre'] = $ficha['nombre'] ?? 'Sin nombre';
+                $ficha['tipo'] = $ficha['tipo'] ?? 'desconocido';
+                $ficha['dias_semana'] = $ficha['dias_semana'] ?? ['lunes', 'miércoles', 'viernes'];
+                $ficha['hora_inicio'] = $ficha['hora_inicio'] ?? '07:00:00';
+                $ficha['hora_fin'] = $ficha['hora_fin'] ?? '17:00:00';
+            }
+
+            // Enviar respuesta JSON
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($todasLasFichas, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
+            
+        } catch (Exception $e) {
+            // En caso de error, devolver un array vacío con código de error 500
+            http_response_code(500);
             header('Content-Type: application/json');
-            echo json_encode([]);
+            echo json_encode([
+                'error' => true,
+                'message' => 'Error al cargar las fichas: ' . $e->getMessage()
+            ]);
             exit;
         }
-
-        // Obtener profesor_id del usuario actual
-        require_once __DIR__ . '/../config/db.php';
-        $pdo = Database::conectar();
-        $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
-        $stmt->execute([$usuario_id]);
-        $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$profesor) {
-            header('Content-Type: application/json');
-            echo json_encode([]);
-            exit;
-        }
-
-        $profesor_id = $profesor['id'];
-
-        // Obtener fichas propias
-        $fichasPropias = $this->profesorModel->obtenerFichasPorProfesor($profesor_id);
-
-        // Obtener fichas compartidas (solo las aceptadas)
-        $stmt = $pdo->prepare("
-            SELECT DISTINCT f.id, f.numero AS numero_ficha, f.nombre, 'compartida' as tipo
-            FROM fichas f
-            INNER JOIN fichas_compartidas fc ON f.id = fc.ficha_id
-            WHERE fc.profesor_compartido_id = ? AND fc.estado = 'aceptada'
-            ORDER BY f.numero
-        ");
-        $stmt->execute([$profesor_id]);
-        $fichasCompartidas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Marcar fichas propias
-        foreach ($fichasPropias as &$ficha) {
-            $ficha['tipo'] = 'propia';
-        }
-
-        // Combinar ambas listas
-        $todasLasFichas = array_merge($fichasPropias, $fichasCompartidas);
-
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($todasLasFichas, JSON_UNESCAPED_UNICODE);
-        exit;
+    }
+    
+    /**
+     * Método para manejar la ruta profesorficha
+     */
+    public function profesorficha() {
+        $this->obtenerFichasPorProfesor();
     }
 }

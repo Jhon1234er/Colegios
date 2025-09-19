@@ -198,6 +198,56 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
         .fc-view-harness {
             min-height: 600px;
         }
+        
+        /* Estilos para la pestaña de asistencias */
+        #tablaAsistencias .form-select {
+            min-width: 120px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        #tablaAsistencias .btn-sm {
+            padding: 0.15rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        .estado-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .estado-presente {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .estado-falla {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .estado-justificada {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        
+        .estado-tardanza {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+        
+        .estado-pendiente {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+        
+        .badge-container {
+            min-width: 100px;
+            display: inline-block;
+            text-align: center;
+        }
     
         
         /* Estilos adicionales para forzar cambios */
@@ -287,11 +337,15 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <div class="d-flex gap-2">
+                            <div class="col-md-3">
+                                <div class="d-flex gap-2 align-items-center">
                                     <button type="button" class="btn btn-outline-primary btn-sm" id="btnSincronizar" title="Sincronizar">
                                         <i class="fas fa-share-alt"></i>
                                     </button>
+                                    <button type="button" class="btn btn-info btn-sm text-white" id="btnExportarReporte" title="Exportar reporte">
+                                        <i class="fas fa-file-export me-1"></i> Exportar
+                                    </button>
+                                    <div class="vr mx-1"></div>
                                     <div class="text-center">
                                         <div class="stat-number small" id="totalHorarios">0</div>
                                         <small class="text-muted">Total</small>
@@ -439,14 +493,80 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
 
     <!-- Modal de detalles del evento -->
     <div class="modal fade" id="modalDetalles" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detalles del Horario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="detallesContent">
-                    <!-- Contenido dinámico -->
+                <div class="modal-body">
+                    <!-- Pestañas -->
+                    <ul class="nav nav-tabs mb-3" id="detallesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="detalles-tab" data-bs-toggle="tab" data-bs-target="#detalles" type="button" role="tab">
+                                <i class="fas fa-info-circle me-1"></i> Detalles
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="asistencias-tab" data-bs-toggle="tab" data-bs-target="#asistencias" type="button" role="tab">
+                                <i class="fas fa-clipboard-check me-1"></i> Asistencias
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Contenido de las pestañas -->
+                    <div class="tab-content" id="detallesTabsContent">
+                        <!-- Pestaña de detalles -->
+                        <div class="tab-pane fade show active" id="detalles" role="tabpanel">
+                            <div id="detallesContent">
+                                <!-- Contenido dinámico -->
+                            </div>
+                        </div>
+                        
+                        <!-- Pestaña de asistencias -->
+                        <div class="tab-pane fade" id="asistencias" role="tabpanel">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Registro de Asistencias</h6>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnActualizarAsistencias">
+                                            <i class="fas fa-sync-alt me-1"></i> Actualizar
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-success" id="btnGuardarAsistencias">
+                                            <i class="fas fa-save me-1"></i> Guardar Cambios
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover" id="tablaAsistencias">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Estudiante</th>
+                                                <th class="text-center" style="width: 120px;">Asistencia</th>
+                                                <th class="text-center" style="width: 100px;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="listaAsistencias">
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2 mb-0">Cargando lista de estudiantes...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3 mb-0" id="infoAsistencia">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Seleccione el estado de asistencia para cada estudiante.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-warning" id="btnEditarEvento">

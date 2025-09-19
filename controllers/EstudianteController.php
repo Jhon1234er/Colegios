@@ -176,36 +176,66 @@ class EstudianteController {
             $spreadsheet = IOFactory::load($tmpPath);
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
-
-            // Cabeceras esperadas
-            // A:N por ejemplo
-            $headers = array_map('strtolower', $rows[1] ?? []);
+            
+            // Obtener la primera fila como encabezados
+            $headers = $rows[1]; // La primera fila (índice 1) contiene los encabezados
+            
+            // Mapeo de nombres de columna exactos como están en el Excel (con guiones bajos)
             $map = [
-                'nombres' => null,
-                'apellidos' => null,
-                'tipo_documento' => null,
-                'numero_documento' => null,
-                'correo_electronico' => null,
-                'telefono' => null,
-                'fecha_nacimiento' => null,
-                'genero' => null,
-                'grado' => null,
-                'grupo' => null,
-                'jornada' => null,
-                'nombre_completo_acudiente' => null,
-                'tipo_documento_acudiente' => null,
-                'numero_documento_acudiente' => null,
-                'telefono_acudiente' => null,
-                'parentesco' => null,
-                'ocupacion' => null,
+                'nombres' => 'nombres',
+                'apellidos' => 'apellidos',
+                'tipo_documento' => 'tipo_documento',
+                'numero_documento' => 'numero_documento',
+                'correo_electronico' => 'correo_electronico',
+                'telefono' => 'telefono',
+                'fecha_nacimiento' => 'fecha_nacimiento',
+                'genero' => 'genero',
+                'grado' => 'grado',
+                'grupo' => 'grupo',
+                'jornada' => 'jornada',
+                'nombre_completo_acudiente' => 'nombre_completo_acudiente',
+                'tipo_documento_acudiente' => 'tipo_documento_acudiente',
+                'numero_documento_acudiente' => 'numero_documento_acudiente',
+                'telefono_acudiente' => 'telefono_acudiente',
+                'parentesco' => 'parentesco',
+                'ocupacion' => 'ocupacion',
             ];
 
-            // Construir mapeo columna -> campo
+            // Invertir el mapeo para buscar por nombre de columna (todo en minúsculas)
+            $columnMap = [];
             foreach ($headers as $col => $name) {
-                $name = trim($name);
-                if (isset($map[$name])) {
-                    $map[$name] = $col; // p.ej. 'A','B'
+                $columnMap[strtolower(trim($name))] = $col;
+            }
+            
+            // Mostrar los encabezados encontrados para depuración
+            echo "<div style='background:#f8f9fa;padding:10px;margin:10px 0;border:1px solid #ddd;'>";
+            echo "<strong>Encabezados encontrados en el Excel:</strong><br>";
+            foreach ($columnMap as $nombre => $col) {
+                echo "- $nombre (columna $col)<br>";
+            }
+            echo "</div>";
+            
+            // Verificar que todas las columnas requeridas existen
+            $requeridos = [
+                'nombres',
+                'apellidos',
+                'tipo_documento',
+                'numero_documento',
+                'genero',
+                'grado',
+                'jornada'
+            ];
+            
+            $errores = [];
+            foreach ($requeridos as $columna) {
+                $columnaLower = strtolower(trim($columna));
+                if (!isset($columnMap[$columnaLower])) {
+                    $errores[] = $columna;
                 }
+            }
+            
+            if (!empty($errores)) {
+                die('⚠️ Faltan columnas requeridas en el Excel: ' . implode(', ', $errores));
             }
 
             // Validar mínimos
@@ -226,25 +256,25 @@ class EstudianteController {
                 if (!is_array($row)) { continue; }
 
                 $datos = [
-                    'nombres' => trim((string)($row[$map['nombres']] ?? '')),
-                    'apellidos' => trim((string)($row[$map['apellidos']] ?? '')),
-                    'tipo_documento' => trim((string)($row[$map['tipo_documento']] ?? '')),
-                    'numero_documento' => trim((string)($row[$map['numero_documento']] ?? '')),
-                    'correo_electronico' => trim((string)($row[$map['correo_electronico']] ?? '')),
-                    'telefono' => trim((string)($row[$map['telefono']] ?? '')),
-                    'fecha_nacimiento' => trim((string)($row[$map['fecha_nacimiento']] ?? '')),
-                    'genero' => trim((string)($row[$map['genero']] ?? '')),
+                    'nombres' => trim((string)($row[$columnMap['nombres']] ?? '')),
+                    'apellidos' => trim((string)($row[$columnMap['apellidos']] ?? '')),
+                    'tipo_documento' => trim((string)($row[$columnMap['tipo_documento']] ?? '')),
+                    'numero_documento' => trim((string)($row[$columnMap['numero_documento']] ?? '')),
+                    'correo_electronico' => '', // No veo columna de correo en el Excel
+                    'telefono' => '', // No veo columna de teléfono en el Excel
+                    'fecha_nacimiento' => trim((string)($row[$columnMap['fecha_nacimiento']] ?? '')),
+                    'genero' => trim((string)($row[$columnMap['genero']] ?? '')),
                     'colegio_id' => $colegio_id,
-                    'grado' => trim((string)($row[$map['grado']] ?? '')),
-                    'grupo' => trim((string)($row[$map['grupo']] ?? '')),
-                    'jornada' => trim((string)($row[$map['jornada']] ?? '')),
+                    'grado' => trim((string)($row[$columnMap['grado']] ?? '')),
+                    'grupo' => trim((string)($row[$columnMap['grupo']] ?? '')),
+                    'jornada' => trim((string)($row[$columnMap['jornada']] ?? '')),
                     'fecha_ingreso' => date('Y-m-d'),
-                    'nombre_completo_acudiente' => trim((string)($row[$map['nombre_completo_acudiente']] ?? '')),
-                    'tipo_documento_acudiente' => trim((string)($row[$map['tipo_documento_acudiente']] ?? '')),
-                    'numero_documento_acudiente' => trim((string)($row[$map['numero_documento_acudiente']] ?? '')),
-                    'telefono_acudiente' => trim((string)($row[$map['telefono_acudiente']] ?? '')),
-                    'parentesco' => trim((string)($row[$map['parentesco']] ?? '')),
-                    'ocupacion' => trim((string)($row[$map['ocupacion']] ?? '')),
+                    'nombre_completo_acudiente' => trim((string)($row[$columnMap['nombre_completo_acudiente']] ?? '')),
+                    'tipo_documento_acudiente' => trim((string)($row[$columnMap['tipo_documento_acudiente']] ?? '')),
+                    'numero_documento_acudiente' => trim((string)($row[$columnMap['numero_documento_acudiente']] ?? '')),
+                    'telefono_acudiente' => trim((string)($row[$columnMap['telefono_acudiente']] ?? '')),
+                    'parentesco' => trim((string)($row[$columnMap['parentesco']] ?? '')),
+                    'ocupacion' => trim((string)($row[$columnMap['ocupacion']] ?? '')),
                     'ficha_id' => $ficha_id,
                 ];
 

@@ -1,6 +1,9 @@
 {
     "name": "sena/colegios",
     "require": {
+        "php": "^8.0",
+        "ext-json": "*",
+        "ext-pdo": "*",
         "dompdf/dompdf": "^3.1",
         "phpoffice/phpspreadsheet": "^5.0"
     },

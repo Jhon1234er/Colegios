@@ -854,6 +854,39 @@ function loadStudentCompleteData(studentId, container) {
 }
 
 // ============================================
+// FUNCIONALIDAD DE BOTONES PARA FACILITADORES/PROFESORES
+// ============================================
+
+// Manejar clic en botones de exportar de la búsqueda
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-exportar-profesor');
+  if (!btn) return;
+  
+  e.preventDefault();
+  const profesorId = btn.getAttribute('data-id');
+  if (!profesorId) return;
+  
+  // Obtener el rango de fechas del mes actual
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  
+  // Construir URL de exportación
+  const url = new URL(window.location.href);
+  url.searchParams.set('page', 'calendario_exportar');
+  url.searchParams.set('action', 'exportarReporte');
+  url.searchParams.set('profesor_id', profesorId);
+  url.searchParams.set('fecha_inicio', firstDay.toISOString().split('T')[0]);
+  url.searchParams.set('fecha_fin', lastDay.toISOString().split('T')[0]);
+  
+  // Abrir en nueva pestaña para iniciar la descarga
+  window.open(url.toString(), '_blank');
+  
+  // Mostrar notificación
+  mostrarNotificacionTemporal('Generando reporte de clases...', 'info');
+});
+
+// ============================================
 // FUNCIONALIDAD DE BOTONES "VER DETALLES" PARA FACILITADORES/PROFESORES
 // ============================================
 
@@ -946,6 +979,33 @@ function loadProfessorCompleteData(profId, container) {
 
       // Wire acciones
       const btnCal = container.querySelector('#btnVerCalendarioProf');
+      const btnExport = container.querySelector('#btnExportarCSVProf');
+      
+      // Configurar botón de exportación
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          // Obtener el rango de fechas del mes actual
+          const now = new Date();
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+          const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          
+          // Construir URL de exportación
+          const url = new URL(window.location.href);
+          url.searchParams.set('page', 'calendario_exportar');
+          url.searchParams.set('action', 'exportarReporte');
+          url.searchParams.set('profesor_id', profId);
+          url.searchParams.set('fecha_inicio', firstDay.toISOString().split('T')[0]);
+          url.searchParams.set('fecha_fin', lastDay.toISOString().split('T')[0]);
+          
+          // Abrir en nueva pestaña para iniciar la descarga
+          window.open(url.toString(), '_blank');
+          
+          // Mostrar notificación
+          mostrarNotificacionTemporal('Generando reporte de clases...', 'info');
+        });
+      }
+      
+      // Configurar botón de calendario
       if (btnCal) {
         btnCal.addEventListener('click', () => {
           // Navegar al calendario filtrado por profesor (el backend soporta filtro por profesor)

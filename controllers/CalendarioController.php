@@ -14,6 +14,9 @@ class CalendarioController {
         if ($action === 'obtenerFichas') {
             $this->obtenerFichas();
             exit;
+        } elseif ($action === 'exportarReporte') {
+            $this->exportarReporteCSV();
+            exit;
         }
     }
     
@@ -38,23 +41,39 @@ class CalendarioController {
             
             error_log("Parámetros recibidos - Start: $start, End: $end, View: $view");
             
-            // Si es Admin y se solicita profesor específico, devolver solo ese calendario
-            if ($esAdmin && $profesorFiltro) {
+            // Si es Admin, mostrar todos los calendarios
+            if ($esAdmin) {
                 $sql = "
                     SELECT 
                         hf.*,
                         f.numero as ficha_codigo,
                         f.nombre as ficha_nombre,
                         u.nombres as profesor_nombre,
+                        CONCAT(u.nombres, ' ', u.apellidos) as profesor_completo,
                         hf.color as color_actual
                     FROM horarios_fichas hf
                     JOIN fichas f ON hf.ficha_id = f.id
                     JOIN profesores p ON hf.profesor_id = p.id
                     JOIN usuarios u ON p.usuario_id = u.id
-                    WHERE hf.profesor_id = ?";
-                $params = [$profesorFiltro];
-                if ($start && $end) { $sql .= " AND hf.fecha_inicio >= ? AND hf.fecha_fin <= ?"; $params[] = $start; $params[] = $end; }
-                $sql .= " ORDER BY hf.fecha_inicio";
+                    WHERE 1=1";
+                
+                $params = [];
+                
+                // Si hay un filtro de profesor, aplicarlo
+                if ($profesorFiltro) {
+                    $sql .= " AND hf.profesor_id = ?";
+                    $params[] = $profesorFiltro;
+                }
+                
+                // Filtrar por rango de fechas si se especifica
+                if ($start && $end) { 
+                    $sql .= " AND hf.fecha_inicio >= ? AND hf.fecha_fin <= ?"; 
+                    $params[] = $start; 
+                    $params[] = $end; 
+                }
+                
+                $sql .= " ORDER BY hf.fecha_inicio, u.nombres, u.apellidos";
+                
                 $stmt = $this->pdo->prepare($sql);
                 $stmt->execute($params);
                 $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -64,10 +83,17 @@ class CalendarioController {
                     $ahora = new DateTime();
                     $fechaInicio = new DateTime($horario['fecha_inicio']);
                     $fechaFin = new DateTime($horario['fecha_fin']);
-                    $color = ($fechaFin < $ahora) ? '#6c757d' : $horario['color_actual'];
+                    
+                    // Solo marcar como pasado si la fecha de finalización es anterior a ahora
+                    // y no está en estado 'cancelado' o 'finalizado'
+                    $esPasado = $fechaFin < $ahora && 
+                               $horario['estado'] !== 'cancelado' && 
+                               $horario['estado'] !== 'finalizado';
+                    
+                    $color = $esPasado ? '#6c757d' : $horario['color_actual'];
                     $eventos[] = [
                         'id' => $horario['id'],
-                        'title' => $horario['titulo'],
+                        'title' => $horario['titulo'] . ' - ' . $horario['profesor_completo'],
                         'start' => $fechaInicio->format('Y-m-d\TH:i:s'),
                         'end' => $fechaFin->format('Y-m-d\TH:i:s'),
                         'backgroundColor' => $color,
@@ -78,6 +104,7 @@ class CalendarioController {
                             'ficha_codigo' => $horario['ficha_codigo'],
                             'ficha_nombre' => $horario['ficha_nombre'],
                             'profesor_nombre' => $horario['profesor_nombre'],
+                            'profesor_id' => $horario['profesor_id'],
                             'aula' => $horario['aula'],
                             'estado' => $horario['estado'],
                             'tipo' => 'admin_vista',
@@ -91,7 +118,12 @@ class CalendarioController {
 
             // Verificar si el usuario es profesor
             if (!isset($_SESSION['usuario']['profesor_id'])) {
-                // Mostrar todos los horarios si no es profesor (modo público)
+                // Si no es profesor, no debería llegar aquí porque ya manejamos el caso de admin
+                http_response_code(403);
+                echo json_encode(['error' => 'Acceso no autorizado']);
+                return;
+            } else {
+                // Mostrar solo los horarios del profesor
                 $sql = "
                     SELECT 
                         hf.*,
@@ -393,16 +425,6 @@ class CalendarioController {
             $aula = $_POST['aula'] ?? null;
             $color = $_POST['color'] ?? '#007bff';
             $estado = $_POST['estado'] ?? 'programado';
-
-            // Derivar hora_inicio, hora_fin y dia_semana si la tabla los requiere
-            $hora_inicio = null; $hora_fin = null; $dia_semana = null;
-            if ($fecha_inicio) {
-                $hora_inicio = substr($fecha_inicio, 11, 5); // HH:MM
-                $dia_semana = date('N', strtotime($fecha_inicio)); // 1 (Lunes) - 7 (Domingo)
-            }
-            if ($fecha_fin) {
-                $hora_fin = substr($fecha_fin, 11, 5); // HH:MM
-            }
             
             error_log("=== CREANDO HORARIO ===");
             error_log("Ficha ID: " . $ficha_id);
@@ -417,10 +439,10 @@ class CalendarioController {
                 return;
             }
             
-            // Insertar en la base de datos, incluyendo hora_inicio, hora_fin y dia_semana si existen y son NOT NULL
+            // Insertar en la base de datos solo con los campos que existen
             $sql = "INSERT INTO horarios_fichas 
-                    (profesor_id, ficha_id, titulo, fecha_inicio, fecha_fin, hora_inicio, hora_fin, dia_semana, aula, color, estado, creado_por) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    (profesor_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado, creado_por) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->pdo->prepare($sql);
             $result = $stmt->execute([
@@ -429,9 +451,6 @@ class CalendarioController {
                 $titulo,
                 $fecha_inicio,
                 $fecha_fin,
-                $hora_inicio,
-                $hora_fin,
-                $dia_semana,
                 $aula,
                 $color,
                 $estado,
@@ -442,9 +461,8 @@ class CalendarioController {
                 echo json_encode(['success' => true, 'message' => 'Horario creado correctamente']);
             } else {
                 http_response_code(500);
-                echo json_encode(['error' => 'Error al guardar en la base de datos']);
+                echo json_encode(['error' => 'Error al crear el horario']);
             }
-            
         } catch (Exception $e) {
             error_log('Error en crearHorario: ' . $e->getMessage());
             http_response_code(500);
@@ -488,8 +506,8 @@ class CalendarioController {
             
             $sql = "
                 UPDATE horarios_fichas 
-                SET titulo = ?, fecha_inicio = ?, fecha_fin = ?, dia_semana = ?,
-                    hora_inicio = ?, hora_fin = ?, aula = ?, color = ?
+                SET titulo = ?, fecha_inicio = ?, fecha_fin = ?, 
+                    aula = ?, color = ?
                 WHERE id = ?
             ";
             
@@ -498,9 +516,6 @@ class CalendarioController {
                 $data['titulo'],
                 $data['fecha_inicio'],
                 $data['fecha_fin'],
-                $data['dia_semana'],
-                $data['hora_inicio'],
-                $data['hora_fin'],
                 $data['aula'] ?? null,
                 $data['color'] ?? '#007bff',
                 $horario_id
@@ -665,6 +680,191 @@ class CalendarioController {
     /**
      * Obtener fichas disponibles para el profesor
      */
+    /**
+     * Exporta un reporte de las clases a formato CSV
+     */
+    public function exportarReporteCSV() {
+        try {
+            // Verificar sesión
+            start_secure_session();
+            
+            if (!isset($_SESSION['usuario'])) {
+                http_response_code(401);
+                echo 'No autorizado';
+                return;
+            }
+            
+            // Obtener parámetros de filtro
+            $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+            $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-t');
+            $estado = $_GET['estado'] ?? null;
+            
+            // Manejar el ID del profesor según el rol del usuario
+            $profesorId = null;
+            if (isset($_SESSION['usuario'])) {
+                if ($_SESSION['usuario']['rol_id'] == 1 && isset($_GET['profesor_id'])) {
+                    // Admin puede ver cualquier profesor
+                    $profesorId = $_GET['profesor_id'];
+                } else if (isset($_SESSION['usuario']['profesor_id'])) {
+                    // Profesores solo pueden verse a sí mismos
+                    $profesorId = $_SESSION['usuario']['profesor_id'];
+                }
+            }
+            
+            // Registrar parámetros para depuración
+            error_log('Exportar CSV - Parámetros: ' . print_r([
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'estado' => $estado,
+                'profesor_id' => $profesorId,
+                'usuario_rol' => $_SESSION['usuario']['rol_id'] ?? 'no-sesion',
+                'usuario_profesor_id' => $_SESSION['usuario']['profesor_id'] ?? 'no-profesor'
+            ], true));
+            
+            try {
+                // Construir consulta base
+                $sql = "
+                    SELECT 
+                        hf.id,
+                        hf.titulo,
+                        hf.fecha_inicio,
+                        hf.fecha_fin,
+                        hf.aula,
+                        hf.estado,
+                        f.numero as ficha_numero,
+                        f.nombre as ficha_nombre,
+                        CONCAT(u.nombres, ' ', u.apellidos) as profesor_nombre,
+                        (SELECT COUNT(*) FROM asistencias a WHERE a.ficha_id = hf.ficha_id AND a.fecha BETWEEN hf.fecha_inicio AND hf.fecha_fin) as total_asistencias,
+                        (SELECT COUNT(*) FROM asistencias a WHERE a.ficha_id = hf.ficha_id AND a.estado = 'presente' AND a.fecha BETWEEN hf.fecha_inicio AND hf.fecha_fin) as asistencias_confirmadas
+                    FROM horarios_fichas hf
+                    JOIN fichas f ON hf.ficha_id = f.id
+                    JOIN profesores p ON hf.profesor_id = p.id
+                    JOIN usuarios u ON p.usuario_id = u.id
+                    WHERE hf.fecha_inicio BETWEEN ? AND ?
+                ";
+                
+                $params = [$fechaInicio, $fechaFin];
+                
+                // Aplicar filtros adicionales
+                if ($estado) {
+                    $sql .= " AND hf.estado = ?";
+                    $params[] = $estado;
+                }
+                
+                if ($profesorId) {
+                    $sql .= " AND hf.profesor_id = ?";
+                    $params[] = $profesorId;
+                }
+                
+                $sql .= " ORDER BY hf.fecha_inicio, u.apellidos, u.nombres";
+                
+                error_log('Ejecutando consulta SQL: ' . $sql);
+                error_log('Parámetros: ' . print_r($params, true));
+                
+                $stmt = $this->pdo->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception('Error al preparar la consulta: ' . print_r($this->pdo->errorInfo(), true));
+                }
+                
+                $result = $stmt->execute($params);
+                if (!$result) {
+                    throw new Exception('Error al ejecutar la consulta: ' . print_r($stmt->errorInfo(), true));
+                }
+                
+                $clases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                error_log('Se encontraron ' . count($clases) . ' clases para el reporte');
+                
+            } catch (Exception $e) {
+                error_log('Error en la consulta SQL: ' . $e->getMessage());
+                throw new Exception('Error al obtener los datos del reporte: ' . $e->getMessage());
+            }
+            
+            // Configurar nombre del archivo con extensión .xls para forzar apertura en Excel
+            $filename = 'reporte_clases_' . date('Y-m-d') . '.xls';
+            
+            // Crear un archivo temporal
+            $tempFile = tempnam(sys_get_temp_dir(), 'xls_');
+            $file = fopen($tempFile, 'w');
+            
+            // Escribir BOM para Excel
+            fputs($file, "\xEF\xBB\xBF");
+            
+            // Escribir encabezados como HTML para forzar formato de tabla
+            $html = "<table border='1'>\r\n";
+            $html .= "<tr>\r\n";
+            $html .= "<th>ID</th>\r\n";
+            $html .= "<th>Título</th>\r\n";
+            $html .= "<th>Fecha Inicio</th>\r\n";
+            $html .= "<th>Fecha Fin</th>\r\n";
+            $html .= "<th>Aula</th>\r\n";
+            $html .= "<th>Estado</th>\r\n";
+            $html .= "<th>Ficha</th>\r\n";
+            $html .= "<th>Grupo</th>\r\n";
+            $html .= "<th>Profesor</th>\r\n";
+            $html .= "<th>Total Estudiantes</th>\r\n";
+            $html .= "<th>Asistencias Confirmadas</th>\r\n";
+            $html .= "<th>Porcentaje Asistencia</th>\r\n";
+            $html .= "</tr>\r\n";
+            
+            // Escribir datos
+            foreach ($clases as $clase) {
+                $total = (int)$clase['total_asistencias'];
+                $asistieron = (int)$clase['asistencias_confirmadas'];
+                $porcentaje = $total > 0 ? round(($asistieron / $total) * 100, 2) : 0;
+                
+                $html .= "<tr>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['id']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['titulo']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['fecha_inicio']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['fecha_fin']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['aula']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars(ucfirst($clase['estado'])) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['ficha_numero']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['ficha_nombre']) . "</td>\r\n";
+                $html .= "<td>" . htmlspecialchars($clase['profesor_nombre']) . "</td>\r\n";
+                $html .= "<td>" . $total . "</td>\r\n";
+                $html .= "<td>" . $asistieron . "</td>\r\n";
+                $html .= "<td>" . $porcentaje . '%' . "</td>\r\n";
+                $html .= "</tr>\r\n";
+            }
+            
+            $html .= "</table>";
+            fwrite($file, $html);
+            fclose($file);
+            
+            // Configurar cabeceras para descarga
+            header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Content-Length: ' . filesize($tempFile));
+            header('Cache-Control: max-age=0');
+            
+            // Enviar el archivo
+            readfile($tempFile);
+            
+            // Eliminar el archivo temporal
+            unlink($tempFile);
+            exit;
+            
+        } catch (Exception $e) {
+            error_log('Error al generar reporte CSV: ' . $e->getMessage());
+            http_response_code(500);
+            echo 'Error al generar el reporte';
+        }
+    }
+    
+    /**
+     * Limpia el texto para CSV
+     */
+    private function limpiarTexto($texto) {
+        // Eliminar saltos de línea y tabulaciones
+        $texto = str_replace(["\r", "\n", "\t"], ' ', $texto);
+        // Reemplazar comillas dobles por comillas simples
+        $texto = str_replace('"', "'", $texto);
+        // Eliminar espacios en blanco múltiples
+        $texto = preg_replace('/\s+/', ' ', trim($texto));
+        return $texto;
+    }
+    
     public function obtenerFichasDisponibles() {
         try {
             start_secure_session();

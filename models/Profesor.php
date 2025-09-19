@@ -98,16 +98,92 @@ class Profesor {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Obtiene las fichas asignadas a un profesor con sus respectivos horarios
+     * 
+     * @param int $profesor_id ID del profesor
+     * @return array Lista de fichas con información de horarios
+     */
     public function obtenerFichasPorProfesor($profesor_id) {
-        $stmt = $this->pdo->prepare("
-            SELECT DISTINCT f.id, f.numero AS numero_ficha, f.nombre
-            FROM fichas f
-            INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
-            WHERE pf.profesor_id = ?
-            ORDER BY f.numero
-        ");
-        $stmt->execute([$profesor_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            // Obtener las fichas asignadas al profesor
+            $stmt = $this->pdo->prepare("
+                SELECT DISTINCT f.id, f.numero AS numero_ficha, f.nombre, f.jornada
+                FROM fichas f
+                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
+                WHERE pf.profesor_id = ?
+                ORDER BY f.numero
+            ");
+            $stmt->execute([$profesor_id]);
+            $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Procesar cada ficha para agregar información de horarios
+            return array_map(function($ficha) use ($profesor_id) {
+                // Obtener los próximos horarios programados para esta ficha
+                $stmt = $this->pdo->prepare("
+                    SELECT 
+                        id, 
+                        DATE(fecha_inicio) as fecha,
+                        TIME(fecha_inicio) as hora_inicio,
+                        TIME(fecha_fin) as hora_fin,
+                        fecha_inicio,
+                        fecha_fin,
+                        DAYOFWEEK(fecha_inicio) as dia_numero,
+                        CASE 
+                            WHEN DAYOFWEEK(fecha_inicio) = 1 THEN 'domingo'
+                            WHEN DAYOFWEEK(fecha_inicio) = 2 THEN 'lunes'
+                            WHEN DAYOFWEEK(fecha_inicio) = 3 THEN 'martes'
+                            WHEN DAYOFWEEK(fecha_inicio) = 4 THEN 'miércoles'
+                            WHEN DAYOFWEEK(fecha_inicio) = 5 THEN 'jueves'
+                            WHEN DAYOFWEEK(fecha_inicio) = 6 THEN 'viernes'
+                            WHEN DAYOFWEEK(fecha_inicio) = 7 THEN 'sábado'
+                        END as dia_semana,
+                        titulo,
+                        aula,
+                        color,
+                        estado
+                    FROM horarios_fichas 
+                    WHERE ficha_id = ? 
+                    AND profesor_id = ?
+                    AND fecha_inicio >= CURDATE()
+                    ORDER BY fecha_inicio
+                    LIMIT 5  -- Limitar a los próximos 5 horarios para determinar días
+                ");
+                $stmt->execute([$ficha['id'], $profesor_id]);
+                $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Procesar los horarios
+                if (!empty($horarios)) {
+                    // Extraer los días de la semana únicos
+                    $dias_semana = array_values(array_unique(array_column($horarios, 'dia_semana')));
+                    
+                    // Usar el primer horario para los valores por defecto
+                    $primerHorario = $horarios[0];
+                    
+                    $ficha['hora_inicio'] = $primerHorario['hora_inicio'];
+                    $ficha['hora_fin'] = $primerHorario['hora_fin'];
+                    $ficha['dia_semana'] = $primerHorario['dia_semana'];
+                    $ficha['dias_semana'] = $dias_semana;
+                    $ficha['horario_actual'] = $primerHorario;
+                    $ficha['proximos_horarios'] = $horarios;
+                } else {
+                    // Valores por defecto si no hay horarios programados
+                    $ficha['hora_inicio'] = '07:00:00';
+                    $ficha['hora_fin'] = '17:00:00';
+                    $ficha['dia_semana'] = 'lunes';
+                    $ficha['dias_semana'] = ['lunes', 'miércoles', 'viernes']; // Días comunes de clase
+                    $ficha['horario_actual'] = null;
+                    $ficha['proximos_horarios'] = [];
+                }
+                
+                return $ficha;
+            }, $fichas);
+            
+        } catch (Exception $e) {
+            error_log("Error en obtenerFichasPorProfesor: " . $e->getMessage());
+            error_log("Trace: " . $e->getTraceAsString());
+            return [];
+        }
     }
 
 

@@ -10,6 +10,29 @@ $page = $_GET['page'] ?? null; // ensure $page is defined before any use
 
 $error = null;
 
+// ====== MENU ITEMS ======
+$menuItems = [
+    [
+        'title' => 'Inicio',
+        'icon' => 'fa-home',
+        'url' => '?page=dashboard',
+        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+    ],
+    [
+        'title' => 'Asistencias',
+        'icon' => 'fa-clipboard-check',
+        'url' => '?page=asistencias',
+        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+    ],
+    [
+        'title' => 'Reportes',
+        'icon' => 'fa-chart-bar',
+        'url' => '?page=reportes',
+        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+    ],
+    // ... otros elementos del menú existentes ...
+];
+
 // ====== LOGIN ======
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     csrf_validate();
@@ -61,6 +84,31 @@ if ($page === 'materias') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
     csrf_validate();
     AuthController::registrar($_POST);
+    exit;
+}
+
+// ====== API ENDPOINTS ======
+if ($page === 'api') {
+    require_once '../controllers/ApiController.php';
+    $api = new ApiController();
+    exit;
+}
+
+// ====== ASISTENCIAS ======
+if ($page === 'asistencias') {
+    require_login();
+    require_role([1, 2, 3]); // Admin, Profesor, Coordinador
+    require_once '../views/Asistencia/index.php';
+    exit;
+}
+
+// ====== REPORTES ======
+if ($page === 'reportes') {
+    require_login();
+    require_role([1, 2, 3]); // Admin, Profesor, Coordinador
+    require_once '../controllers/ReporteController.php';
+    $reporteController = new ReporteController();
+    $reporteController->index();
     exit;
 }
 
@@ -178,7 +226,8 @@ if ($page === 'estudiantesporficha') {
 // Obtener horarios para calendario
 if ($page === 'calendario_obtener') {
     start_secure_session();
-    require_role(2);
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->obtenerHorarios();
@@ -188,7 +237,8 @@ if ($page === 'calendario_obtener') {
 // Obtener fichas disponibles
 if ($page === 'calendario_obtener_fichas') {
     start_secure_session();
-    require_role(2);
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->obtenerFichasDisponibles();
@@ -198,7 +248,8 @@ if ($page === 'calendario_obtener_fichas') {
 // Crear nuevo horario
 if ($page === 'calendario_crear') {
     start_secure_session();
-    require_role(2);
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->crearHorario();
@@ -207,6 +258,9 @@ if ($page === 'calendario_crear') {
 
 // Actualizar horario existente
 if ($page === 'calendario_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->actualizarHorario();
@@ -216,7 +270,8 @@ if ($page === 'calendario_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') 
 // Eliminar horario
 if ($page === 'calendario_eliminar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     start_secure_session();
-    require_role(2);
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->eliminarHorario();
@@ -226,10 +281,22 @@ if ($page === 'calendario_eliminar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // Cambiar estado de horario
 if ($page === 'calendario_estado' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     start_secure_session();
-    require_role(2);
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
     $controller->cambiarEstado();
+    exit;
+}
+
+// Exportar reporte de clases a CSV
+if ($page === 'calendario_exportar' && isset($_GET['action']) && $_GET['action'] === 'exportarReporte') {
+    start_secure_session();
+    require_login();
+    require_role([1, 2]); // Permite administradores (1) y profesores (2)
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->exportarReporteCSV();
     exit;
 }
 
@@ -525,7 +592,7 @@ if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // ====== CALENDARIO ======
 if ($page === 'calendario') {
     require_login();
-    require_role(2);
+    require_role([1, 2]); // Permite tanto a administradores (1) como a profesores (2)
     include '../views/Calendario/calendario.php';
     exit;
 }

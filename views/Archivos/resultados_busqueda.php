@@ -73,7 +73,12 @@ $filtroTexto = [
                             <?php endif; ?>
                         </div>
                         <div class="result-actions">
-                            <button type="button" class="btn btn-primary btn-ver-detalles-profesor" data-id="<?= htmlspecialchars($resultado['id'] ?? '') ?>">Ver Detalles</button>
+                            <button type="button" class="btn btn-primary btn-ver-detalles-profesor" data-id="<?= htmlspecialchars($resultado['id'] ?? '') ?>">
+                                <i class="fas fa-eye me-1"></i> Ver Detalles
+                            </button>
+                            <button type="button" class="btn btn-info text-white btn-exportar-profesor" data-id="<?= htmlspecialchars($resultado['id'] ?? '') ?>" title="Exportar reporte de clases">
+                                <i class="fas fa-file-export me-1"></i> Exportar
+                            </button>
                         </div>
 
                     <?php elseif ($filtro === 'estudiante'): ?>
