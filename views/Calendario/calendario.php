@@ -345,6 +345,9 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
                                     <button type="button" class="btn btn-info btn-sm text-white" id="btnExportarReporte" title="Exportar reporte">
                                         <i class="fas fa-file-export me-1"></i> Exportar
                                     </button>
+                                    <button type="button" class="btn btn-warning btn-sm" id="btnDuplicarSemana" title="Duplicar semana">
+                                        <i class="fas fa-copy me-1"></i> Duplicar
+                                    </button>
                                     <div class="vr mx-1"></div>
                                     <div class="text-center">
                                         <div class="stat-number small" id="totalHorarios">0</div>
@@ -650,7 +653,52 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
         // Pasar datos del profesor desde PHP a JavaScript
         window.nombreProfesor = '<?php echo htmlspecialchars($_SESSION['usuario']['nombres'] . ' ' . $_SESSION['usuario']['apellidos'], ENT_QUOTES, 'UTF-8'); ?>';
         window.profesorFiltro = '<?php echo htmlspecialchars((string)($profesor_id ?? ''), ENT_QUOTES, 'UTF-8'); ?>';
+        // Preselección de ficha desde querystring (?ficha_id=...)
+        window.fichaPreseleccionada = '<?php echo htmlspecialchars((string)($_GET['ficha_id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>';
     </script>
     <script src="/js/calendario_nuevo.js"></script>
+    <script>
+    // Botón Duplicar semana: usa la vista actual del calendario (lunes de la semana)
+    document.addEventListener('DOMContentLoaded', function(){
+        const btnDup = document.getElementById('btnDuplicarSemana');
+        if (!btnDup) return;
+        btnDup.addEventListener('click', async function(){
+            try {
+                if (!window.calendario) { alert('Calendario no disponible'); return; }
+                const view = window.calendario.view;
+                const weekStart = view?.currentStart || new Date();
+                const y = weekStart.getFullYear();
+                const m = String(weekStart.getMonth()+1).padStart(2,'0');
+                const d = String(weekStart.getDate()).padStart(2,'0');
+                const weekStartISO = `${y}-${m}-${d}`;
+
+                const filtro = document.getElementById('filtroFicha');
+                let fichaId = '';
+                if (filtro && filtro.value) {
+                    const val = filtro.value;
+                    const f = (window.fichasDisponibles || []).find(ff => String(ff.codigo || ff.id) === String(val));
+                    fichaId = f ? f.id : val;
+                }
+                if (!fichaId) { alert('Selecciona una ficha en el filtro para duplicar.'); return; }
+
+                if (!confirm('¿Duplicar la semana visible al resto del mes?')) return;
+
+                const url = new URL('/', window.location.origin);
+                url.searchParams.append('page','calendario_duplicar');
+                const payload = { ficha_id: Number(fichaId), week_start: weekStartISO, months_ahead: 0 };
+                const res = await fetch(url.toString(), {
+                    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload)
+                });
+                const raw = await res.text();
+                let data; try { data = JSON.parse(raw); } catch { throw new Error('Respuesta inesperada'); }
+                if (!res.ok || data.success === false) throw new Error(data.error || 'No se pudo duplicar');
+                alert(`Semana duplicada. Bloques creados: ${data.insertados || 0}`);
+                try { window.calendario.refetchEvents(); } catch(_) {}
+            } catch (e) {
+                alert('Error al duplicar: ' + (e.message || ''));
+            }
+        });
+    });
+    </script>
 </body>
 </html>

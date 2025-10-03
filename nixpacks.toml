@@ -1,19 +1,19 @@
 [phases.setup]
 nixPkgs = [
-  'php80',
-  'php80Extensions.gd',
-  'php80Extensions.mbstring',
-  'php80Extensions.xml',
-  'php80Extensions.zip',
-  'php80Extensions.dom',
-  'php80Extensions.simplexml',
-  'php80Extensions.fileinfo',
-  'php80Extensions.pdo_mysql'
+  'php81',
+  'php81Extensions.gd',
+  'php81Extensions.mbstring',
+  'php81Extensions.xml',
+  'php81Extensions.zip',
+  'php81Extensions.dom',
+  'php81Extensions.simplexml',
+  'php81Extensions.fileinfo',
+  'php81Extensions.pdo_mysql'
 ]
 
 [phases.install]
 cmds = [
-  'composer install --no-dev --ignore-platform-reqs --optimize-autoloader'
+  'composer install --no-dev --optimize-autoloader'
 ]
 
 [start]

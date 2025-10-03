@@ -19,16 +19,16 @@ $menuItems = [
         'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
     ],
     [
-        'title' => 'Asistencias',
-        'icon' => 'fa-clipboard-check',
-        'url' => '?page=asistencias',
-        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
-    ],
-    [
         'title' => 'Reportes',
         'icon' => 'fa-chart-bar',
         'url' => '?page=reportes',
         'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+    ],
+    [
+        'title' => 'Asistente',
+        'icon' => 'fa-user-shield',
+        'url' => '?page=asistente',
+        'roles' => [1, 4] // Admin y Asistente
     ],
     // ... otros elementos del menú existentes ...
 ];
@@ -45,11 +45,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             header('Location: ?page=dashboard');
         } elseif ($rol === 2) {
             header('Location: ?page=dashboard_profesor');
+        } elseif ($rol === 4) {
+            header('Location: ?page=asistente');
         } else {
             header('Location: ?');
         }
+
+// Duplicar semana de calendario
+if ($page === 'calendario_duplicar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->duplicarSemana();
+    exit;
+}
         exit;
     }
+}
+
+// ====== ASISTENTE (ROL 4) ======
+if ($page === 'asistente') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_resumen') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'resumen_hoy';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_ausentes') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'ausentes_hoy';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_notificar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'notificar_falta';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_colegios') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'colegios';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_reporte_csv') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'reporte_csv';
+    new AsistenteController();
+    exit;
+}
+
+if ($page === 'asistente_reporte_excel') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'reporte_excel';
+    new AsistenteController();
+    exit;
 }
 
 // Gestión de materias (cursos)
@@ -94,13 +170,107 @@ if ($page === 'api') {
     exit;
 }
 
-// ====== ASISTENCIAS ======
-if ($page === 'asistencias') {
+// ====== ENDPOINTS DE ASISTENCIAS (para tablero profesor) ======
+// Obtener asistencias por rango para una ficha
+if ($page === 'obtener_asistencias') {
     require_login();
-    require_role([1, 2, 3]); // Admin, Profesor, Coordinador
-    require_once '../views/Asistencia/index.php';
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'obtener_por_rango';
+    new AsistenciaController();
     exit;
 }
+
+// Obtener estudiantes para asistencia (usado por calendario_nuevo.js)
+if ($page === 'asistencia_obtener_estudiantes') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'obtener_estudiantes';
+    new AsistenciaController();
+    exit;
+}
+
+// Guardar asistencias del día en lote para una ficha
+if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'registrar_lote';
+    new AsistenciaController();
+    exit;
+}
+
+// Próxima clase de HOY para una ficha (dashboard profesor)
+if ($page === 'clase_proxima_hoy') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'proxima_hoy';
+    new AsistenciaController();
+    exit;
+}
+
+// Alias para guardar asistencias (endpoint usado por JS)
+if ($page === 'asistencia_registrar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'registrar_lote';
+    new AsistenciaController();
+    exit;
+}
+
+// Actualizar una asistencia específica (id, estado)
+if ($page === 'asistencia_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'actualizar';
+    new AsistenciaController();
+    exit;
+}
+
+// Actualizar una asistencia (justificación desde modal calendario, modo solo lectura)
+if ($page === 'asistencia_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'actualizar';
+    new AsistenciaController();
+    exit;
+}
+
+// Iniciar seguimiento por ausencia (vista para asistentes/admin)
+if ($page === 'seguimiento_ausencia_iniciar') {
+    require_login();
+    require_role([1, 4, 1]); // admin(1) y asistente(4), profesor opcional si se desea permitir
+    require_once '../controllers/SeguimientoController.php';
+    $_GET['action'] = 'iniciar';
+    new SeguimientoController();
+    exit;
+}
+
+// Guardar seguimiento por ausencia
+if ($page === 'seguimiento_ausencia_guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/SeguimientoController.php';
+    $_GET['action'] = 'guardar';
+    new SeguimientoController();
+    exit;
+}
+// Verificar si hay clase en curso para la ficha (habilita registro de asistencia)
+if ($page === 'clase_en_curso') {
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/AsistenciaController.php';
+    $_GET['action'] = 'clase_en_curso';
+    new AsistenciaController();
+    exit;
+}
+
+// (Vista Asistencias removida: se usa la tabla semanal del dashboard de ficha)
 
 // ====== REPORTES ======
 if ($page === 'reportes') {

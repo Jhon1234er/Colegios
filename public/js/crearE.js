@@ -74,6 +74,20 @@ document.addEventListener("DOMContentLoaded", function () {
     return txt ? [txt] : [];
   }
 
+  // Limpia texto: remueve comillas envolventes y decodifica \uXXXX
+  function cleanTextItem(s) {
+    try {
+      let t = String(s).trim();
+      // quitar comillas de borde simples o dobles
+      if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+        t = t.slice(1, -1);
+      }
+      // decodificar secuencias unicode usando JSON.parse sobre string
+      try { t = JSON.parse('"' + t.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'); } catch (_) {}
+      return t;
+    } catch (_) { return s; }
+  }
+
   // ────────────────────────────────────────────────────────────
   // Inicializar selects con Choices
   // ────────────────────────────────────────────────────────────
@@ -132,8 +146,8 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("📥 Grados raw:", gradosRaw);
     console.log("📥 Jornadas raw:", jornadasRaw);
 
-    const grados = safeParseList(gradosRaw);
-    const jornadas = safeParseList(jornadasRaw).map(toTitle);
+    const grados = safeParseList(gradosRaw).map(cleanTextItem);
+    const jornadas = safeParseList(jornadasRaw).map(cleanTextItem).map(toTitle);
 
     console.log("✅ Grados parseados:", grados);
     console.log("✅ Jornadas parseadas:", jornadas);

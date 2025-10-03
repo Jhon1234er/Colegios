@@ -94,17 +94,7 @@ if ($usuario_id && $tipo_usuario) {
     <nav class="nav-main">
       <?php if ($rol_id === 1): ?>
 
-        <!-- Menús de navegación -->
-        <!-- Enlace directo a Asistencias -->
-        <a href="/?page=asistencias" class="nav-link">
-          <i class="fas fa-clipboard-check"></i> Asistencias
-        </a>
-        
-        <!-- Enlace directo a Reportes -->
-        <a href="/?page=reportes" class="nav-link">
-          <i class="fas fa-chart-bar"></i> Reportes
-        </a>
-        
+        <!-- Menús de navegación (Administrador) -->
         <div class="dropdown">
           <button class="dropbtn">
             <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,9 +158,7 @@ if ($usuario_id && $tipo_usuario) {
     <div class="user-panel">
       <!-- Notificaciones -->
       <div class="notifications-btn" onclick="toggleNotifications()">
-        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.02 2.87A7 7 0 118 15l-4 4v-4H3a1 1 0 01-1-1v-3a7 7 0 017-7z"></path>
-        </svg>
+        <i class="fa-regular fa-bell" style="font-size:18px;"></i>
         <?php if ($totalNoLeidas > 0): ?>
           <span class="notifications-badge"><?= $totalNoLeidas ?></span>
         <?php endif; ?>

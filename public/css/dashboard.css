@@ -536,7 +536,7 @@ body {
 
 /* Botón PDF con hover rojo */
 .div10 .btn {
-  background: linear-gradient(to bottom right, #5dd1ab, #0ead6e);
+  background:linear-gradient(to bottom right, #5dd1ab, #0ead6e);
 }
 
 .div10 .btn:hover {
@@ -954,18 +954,18 @@ body {
 /* Student Details Sidebar */
 .student-details-sidebar {
   position: fixed;
-  top: 139px;
-  left: 67%;
+  top: 120px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 2100px;
+  width: min(1100px, 90vw);
   background: #ffffff;
   border: 2px solid #ffffff;
   border-radius: 12px;
-  padding: 25px;
+  padding: 24px;
   z-index: 1000;
   box-shadow: 0 25px 35px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
-  height: 1070px;
+  max-height: calc(100vh - 160px);
 }
 
 .details-header {
@@ -1038,10 +1038,10 @@ body {
 }
 
 .section-content {
-  padding: 28px;
+  padding: 24px;
   min-height: 75px;
   background: white;
-  width: 2000px;
+  width: 100%;
 }
 
 .section-content p {
@@ -1070,6 +1070,19 @@ body {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1366px) {
+  .student-details-sidebar {
+    top: 100px;
+    width: min(1000px, 92vw);
+    padding: 20px;
+    max-height: calc(100vh - 140px);
+  }
+
+  .section-content {
+    padding: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .modal-footer {
     flex-direction: column;

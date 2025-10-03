@@ -167,8 +167,8 @@ $filtroTexto = [
 
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
     margin-top: 20px;
 }
 
@@ -289,7 +289,10 @@ $filtroTexto = [
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 20px;
-    width: 2000px;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-title {
@@ -421,6 +424,31 @@ $filtroTexto = [
 }
 
 /* Responsive adjustments */
+@media (max-width: 1366px) {
+    .search-results-container {
+        padding: 16px;
+    }
+
+    .result-card {
+        padding: 16px;
+    }
+
+    .results-grid {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+    }
+
+    .result-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .data-container {
+        padding: 22px;
+        max-width: 1100px;
+    }
+}
 @media (max-width: 1200px) {
     .data-container {
         padding: 20px;

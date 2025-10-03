@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let estudiantesCache = []; 
   let fichaSeleccionada = null; 
   let registrosAsistencia = {}; 
+  let registrosAsistenciaIds = {}; // fecha(YYYY-MM-DD) -> { estudiante_id: asistencia_id }
 
   // ==== Utilidades de fechas ====
   const hoy = () => new Date();
@@ -40,18 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let registros;
       try {
-        registros = JSON.parse(text);
+        const parsed = JSON.parse(text);
+        // Soportar respuesta como array o como objeto {success, data}
+        registros = Array.isArray(parsed) ? parsed : (parsed?.data || []);
       } catch (e) {
         registrosAsistencia = {};
         return; // simplemente salimos sin mostrar error
       }
 
       registrosAsistencia = {};
+      registrosAsistenciaIds = {};
       if (Array.isArray(registros)) {
         registros.forEach(registro => {
           const fecha = registro.fecha;
           if (!registrosAsistencia[fecha]) registrosAsistencia[fecha] = {};
-          registrosAsistencia[fecha][registro.estudiante_id] = registro.estado;
+          if (!registrosAsistenciaIds[fecha]) registrosAsistenciaIds[fecha] = {};
+          // Conservar estado original tal cual viene de BD
+          const estado = (registro.estado || '').toString();
+          registrosAsistencia[fecha][registro.estudiante_id] = estado;
+          if (registro.id) {
+            registrosAsistenciaIds[fecha][registro.estudiante_id] = registro.id;
+          }
         });
       }
     } catch (error) {
@@ -64,13 +74,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const fechaStr = formatYMD(fecha);
     return registrosAsistencia[fechaStr]?.[estudianteId] ?? null;
   }
+  function obtenerAsistenciaId(estudianteId, fecha) {
+    const fechaStr = formatYMD(fecha);
+    return registrosAsistenciaIds[fechaStr]?.[estudianteId] ?? null;
+  }
   function huboClase(fecha) {
     const fechaStr = formatYMD(fecha);
     return registrosAsistencia[fechaStr] && Object.keys(registrosAsistencia[fechaStr]).length > 0;
   }
   function formatearEstado(estado) {
-    const estados = { 'presente':'P', 'ausente':'A', 'tarde':'T', 'justificado':'J' };
-    return estados[estado] || estado;
+    const map = {
+      'presente': 'Presente',
+      'no_asistio': 'No asistió',
+      'tarde': 'Tarde',
+      'justificado': 'Justificado',
+      'falla': 'Falla',
+      'ausente': 'Ausente'
+    };
+    return map[estado] || (estado ? estado : '—');
   }
 
   // ==== Render Calendario ====
@@ -103,6 +124,32 @@ document.addEventListener('DOMContentLoaded', () => {
       indiceHoy = diasNumeros.indexOf(diaActual);
     }
 
+    // Consultar si hay clase en curso para habilitar el registro del día actual
+    let hayClaseEnCurso = false;
+    let proximaClaseHoy = null;
+    try {
+      const respClase = await fetch(`index.php?page=clase_en_curso&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, {
+        credentials: 'include'
+      });
+      if (respClase.ok) {
+        const info = await respClase.json();
+        hayClaseEnCurso = !!info?.en_curso;
+      }
+    } catch (e) { /* ignorar, se asume false */ }
+
+    // Si no hay clase en curso, consultamos si existe una próxima clase hoy para mostrar contador
+    if (!hayClaseEnCurso) {
+      try {
+        const rprox = await fetch(`index.php?page=clase_proxima_hoy&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, { credentials: 'include' });
+        if (rprox.ok) {
+          const jprox = await rprox.json();
+          if (jprox?.success && jprox?.horario) {
+            proximaClaseHoy = jprox.horario; // { id, titulo, fecha_inicio, fecha_fin }
+          }
+        }
+      } catch(_) {}
+    }
+
     const header = `
       <div class="cal-topbar">
         <div class="cal-info">
@@ -126,12 +173,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const filas = estudiantesCache.map(e => {
       const celdas = days.map((d, idx) => {
         const esHoy = (esSemanaActual && idx === indiceHoy);
+        const hoyStr = formatYMD(fechaHoy);
+        const huboRegHoy = !!(registrosAsistencia[hoyStr] && Object.keys(registrosAsistencia[hoyStr]).length > 0);
 
         if (esHoy) {
+          // Si YA hay registros hoy, mostrar en texto y no selects ni mensajes
+          if (huboRegHoy) {
+            const estado = obtenerEstadoAsistencia(e.id, fechaHoy);
+            const aid = obtenerAsistenciaId(e.id, fechaHoy);
+            if (estado) return `<td class="estado-${estado}"><span class="estado-text">${formatearEstado(estado)}</span> ${aid ? `<button type="button" class="edit-asistencia" data-asistencia-id="${aid}" data-estado="${estado}" title="Editar asistencia">✎</button>` : ''}</td>`;
+            // Si no hay estado individual pero hubo registros en general, dejar guion
+            return `<td class="estado-sin-registro">—</td>`;
+          }
+
+          if (!hayClaseEnCurso) {
+            if (proximaClaseHoy) {
+              const inicio = new Date(proximaClaseHoy.fecha_inicio.replace(' ', 'T'));
+              const ms = Math.max(0, inicio - new Date());
+              const idCt = `ct_${fichaSeleccionada.id}`;
+              setTimeout(() => iniciarCountdown(inicio, idCt, proximaClaseHoy.id), 100); // iniciar cuando se pinte
+              // Link con creación rápida pre-rellena (inicio próximo y duración 60m)
+              const now = new Date();
+              const roundUp = (d)=>{ const n=new Date(d); const m=n.getMinutes(); n.setMinutes(m%30===0?m: m + (30 - (m%30)),0,0); return n; };
+              const ini = roundUp(now);
+              const fin = new Date(ini.getTime()+60*60*1000);
+              const pad = (n)=>String(n).padStart(2,'0');
+              const date = `${ini.getFullYear()}-${pad(ini.getMonth()+1)}-${pad(ini.getDate())}`;
+              const start = `${pad(ini.getHours())}:${pad(ini.getMinutes())}`;
+              const end = `${pad(fin.getHours())}:${pad(fin.getMinutes())}`;
+              const urlCal = `/?page=calendario&quick=1&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}&date=${date}&start=${start}&end=${end}`;
+              return `<td class="clase-proxima">
+                <div><strong>Próxima clase hoy</strong></div>
+                <div id="${idCt}" class="countdown" style="font-weight:700;color:#0d6efd;">—</div>
+                <div class="no-clase-cta" style="margin-top:6px;">
+                  <a href="${urlCal}" class="btn-ir-calendario" style="display:inline-block;padding:6px 12px;background:#0d6efd;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Ir al calendario</a>
+                </div>
+              </td>`;
+            } else {
+              const urlCal = `/?page=calendario&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`;
+              return `<td class="no-clase-hoy">
+                <div><strong>NO TIENEN CLASE</strong></div>
+                <div class="no-clase-msg">Para registrar asistencias y mantener historial, crea las clases de esta ficha en el calendario.</div>
+                <div class="no-clase-cta">
+                  <a href="${urlCal}" class="btn-ir-calendario" style="display:inline-block;padding:6px 12px;background:#0d6efd;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Ir al calendario</a>
+                </div>
+              </td>`;
+            }
+          }
+          // Si hay clase en curso, pero ya existe un registro hoy para este estudiante, mostrarlo en texto y no el select
+          const estadoHoy = obtenerEstadoAsistencia(e.id, hoy());
+          if (estadoHoy) {
+            const txt = formatearEstado(estadoHoy);
+            const aid = obtenerAsistenciaId(e.id, fechaHoy);
+            return `<td class="estado-${estadoHoy}"><span class="estado-text">${txt}</span> ${aid ? `<button type="button" class="edit-asistencia" data-asistencia-id="${aid}" data-estado="${estadoHoy}" title="Editar asistencia">✎</button>` : ''}</td>`;
+          }
           return `<td><select name="asistencias[${e.id}][estado]" class="sel-estado" required>
               <option value="" selected disabled>—</option>
               <option value="presente">Presente</option>
-              <option value="ausente">Ausente</option>
+              <option value="no_asistio">No asistió</option>
               <option value="tarde">Tarde</option>
               <option value="justificado">Justificado</option>
             </select>
@@ -139,7 +238,10 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>`;
         } else if (d < fechaHoy) {
           const estado = obtenerEstadoAsistencia(e.id, d);
-          if (estado) return `<td class="estado-${estado}">${formatearEstado(estado)}</td>`;
+          if (estado) {
+            const aid = obtenerAsistenciaId(e.id, d);
+            return `<td class="estado-${estado}"><span class="estado-text">${formatearEstado(estado)}</span> ${aid ? `<button type="button" class="edit-asistencia" data-asistencia-id="${aid}" data-estado="${estado}" title="Editar asistencia">✎</button>` : ''}</td>`;
+          }
           else if (huboClase(d)) return `<td class="estado-falta">—</td>`;
           else return `<td class="no-clase">No hubo clase</td>`;
         } else {
@@ -171,10 +273,154 @@ document.addEventListener('DOMContentLoaded', () => {
     if (esSemanaActual) {
       const selects = Array.from(calWrapper.querySelectorAll('.sel-estado'));
       const btn     = calWrapper.querySelector('#btnSubir');
-      function checkCompleto() { btn.disabled = !selects.every(s => s.value); }
+      function checkCompleto() {
+        // Debe haber clase en curso y al menos un select visible
+        if (!hayClaseEnCurso) { btn.disabled = true; return; }
+        if (selects.length === 0) { btn.disabled = true; return; }
+        // Habilitar solo si todos los selects tienen valor
+        btn.disabled = !selects.every(s => !!s.value);
+      }
       selects.forEach(s => s.addEventListener('change', checkCompleto));
       checkCompleto();
+
+      // Envío via fetch en JSON al endpoint registrar_lote
+      const form = calWrapper.querySelector('#formAsistencia');
+      form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        if (!hayClaseEnCurso || btn.disabled) return;
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+        try {
+          const fichaId = fichaSeleccionada.id;
+          const fecha = formatYMD(hoy());
+          const asistencias = {};
+          selects.forEach(sel => {
+            const estId = sel.name.match(/asistencias\[(\d+)\]/)?.[1];
+            if (estId) {
+              asistencias[estId] = { estudiante_id: parseInt(estId), estado: sel.value };
+            }
+          });
+          const resp = await fetch('index.php?page=guardar_asistencia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ ficha_id: fichaId, fecha, asistencias })
+          });
+          const raw = await resp.text();
+          let data;
+          try {
+            data = JSON.parse(raw);
+          } catch(parseErr) {
+            console.error('Respuesta no-JSON del servidor:', raw);
+            throw new Error('Respuesta inesperada del servidor. Detalle: ' + (raw?.slice(0, 200) || ''));
+          }
+          if (!resp.ok || data.success === false) {
+            throw new Error(data.message || 'Error al guardar asistencias');
+          }
+          // Recargar registros y re-renderizar
+          await cargarRegistrosAsistencia(fichaSeleccionada.id, monday, ultimoDia);
+          renderCalendario();
+        } catch (e) {
+          console.error('Error guardando asistencias:', e);
+          alert('Error al guardar asistencias: ' + (e.message || ''));
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Subir Registro';
+        }
+      });
     }
+
+    // Delegación: editar asistencia inline
+    calWrapper.addEventListener('click', async (ev) => {
+      const btnEdit = ev.target.closest('.edit-asistencia');
+      if (!btnEdit) return;
+      const td = btnEdit.closest('td');
+      const asistenciaId = btnEdit.dataset.asistenciaId;
+      const estadoActual = btnEdit.dataset.estado;
+      if (!td || !asistenciaId) return;
+
+      // Construir editor inline
+      const opciones = [
+        {v:'presente', l:'Presente'},
+        {v:'no_asistio', l:'No asistió'},
+        {v:'tarde', l:'Tarde'},
+        {v:'justificado', l:'Justificado'}
+      ];
+      const selectHtml = `<select class="edit-select-estado">${opciones.map(o=>`<option value="${o.v}" ${o.v===estadoActual?'selected':''}>${o.l}</option>`).join('')}</select>`;
+      const accionesHtml = `<button type="button" class="edit-guardar">Guardar</button> <button type="button" class="edit-cancelar">Cancelar</button>`;
+      const original = td.innerHTML;
+      td.innerHTML = `<div class="editor-asistencia">${selectHtml} ${accionesHtml}</div>`;
+
+      const cancelar = () => { td.innerHTML = original; };
+      td.querySelector('.edit-cancelar').addEventListener('click', cancelar);
+      td.querySelector('.edit-guardar').addEventListener('click', async () => {
+        const nuevo = td.querySelector('.edit-select-estado').value;
+        try {
+          const fd = new FormData();
+          fd.append('id', asistenciaId);
+          fd.append('estado', nuevo);
+          const resp = await fetch('index.php?page=asistencia_actualizar', {
+            method: 'POST',
+            credentials: 'include',
+            body: fd
+          });
+          const txt = await resp.text();
+          let data; try { data = JSON.parse(txt); } catch(_) { throw new Error('Respuesta inesperada'); }
+          if (!resp.ok || data.success === false) throw new Error(data.message || 'Error al actualizar');
+          // Refrescar datos y re-renderizar
+          await cargarRegistrosAsistencia(fichaSeleccionada.id, monday, ultimoDia);
+          renderCalendario();
+        } catch (e) {
+          alert('No se pudo actualizar: ' + (e.message || ''));
+          cancelar();
+        }
+      });
+    });
+  }
+
+  // ==== Countdown para próxima clase de hoy ====
+  function iniciarCountdown(fechaInicio, elementId, horarioId) {
+    try {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      // Normalizar a Date si viene como string
+      const target = (fechaInicio instanceof Date) ? fechaInicio : new Date(fechaInicio);
+      // Guardar timer para poder limpiarlo si se re-renderiza
+      window.__ctTimers = window.__ctTimers || {};
+      if (window.__ctTimers[elementId]) {
+        clearInterval(window.__ctTimers[elementId]);
+      }
+      const fmt = (n)=> String(n).padStart(2,'0');
+      const tick = async () => {
+        const now = new Date();
+        let diff = target - now;
+        if (diff <= 0) {
+          el.textContent = '¡Es hora!';
+          clearInterval(window.__ctTimers[elementId]);
+          // Intentar iniciar clase automáticamente
+          if (horarioId) {
+            try {
+              const resp = await fetch('index.php?page=iniciar_clase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ horario_id: horarioId })
+              });
+              // Ignorar errores, igual re-renderizamos
+            } catch (_) {}
+          }
+          // Re-render para que el tablero revalide si ya hay clase en curso
+          try { renderCalendario(); } catch(_) {}
+          return;
+        }
+        const sec = Math.floor(diff/1000) % 60;
+        const min = Math.floor(diff/(1000*60)) % 60;
+        const hr  = Math.floor(diff/(1000*60*60));
+        el.textContent = `${fmt(hr)}:${fmt(min)}:${fmt(sec)}`;
+      };
+      tick();
+      window.__ctTimers[elementId] = setInterval(tick, 1000);
+    } catch(_) {}
   }
 
 // ==== Cargar lista de fichas y activar calendario ====
@@ -225,6 +471,7 @@ async function cargarFichas() {
           <div class="menu-dropdown">
             <a href="/?page=fichas&action=ver&id=${ficha.id}" class="ver-ficha" data-ficha-id="${ficha.id}" data-ficha-nombre="${ficha.nombre}">Ver Ficha</a>
             ${ficha.tipo !== 'compartida' ? '<a href="#" class="compartir-ficha" data-ficha-id="' + ficha.id + '" data-ficha-nombre="' + ficha.nombre + '">Compartir</a>' : ''}
+            <a href="/?page=reportes" class="ir-reportes">Reportes</a>
           </div>
         </div>
       `;
@@ -296,6 +543,15 @@ async function cargarFichas() {
           const fichaId = e.target.getAttribute('data-ficha-id');
           const fichaNombre = e.target.getAttribute('data-ficha-nombre');
           abrirModalCompartir(fichaId, fichaNombre);
+          menuDropdown.classList.remove('show');
+        });
+      }
+
+      // Event listener para Reportes (navegación simple y cerrar menú)
+      const irReport = card.querySelector('.ir-reportes');
+      if (irReport) {
+        irReport.addEventListener('click', (e) => {
+          e.stopPropagation();
           menuDropdown.classList.remove('show');
         });
       }

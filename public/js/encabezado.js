@@ -886,6 +886,43 @@ document.addEventListener('click', function(e) {
   mostrarNotificacionTemporal('Generando reporte de clases...', 'info');
 });
 
+// ==========================
+// CERRAR SIDEbars DE DETALLES (delegado)
+// ==========================
+document.addEventListener('click', function(e) {
+  // Cerrar detalles de Facilitador/Instructor
+  if (e.target && e.target.id === 'close-prof-details') {
+    const profSidebar = document.getElementById('professor-details-sidebar');
+    if (profSidebar) profSidebar.style.display = 'none';
+    // Resetear botones de "Ver Detalles" (profesores)
+    document.querySelectorAll('.btn-ver-detalles-profesor').forEach(b => {
+      b.textContent = 'Ver Detalles';
+      b.classList.remove('btn-secondary');
+      b.classList.add('btn-primary');
+      b.disabled = false;
+    });
+  }
+
+  // Cerrar detalles de Aprendiz
+  if (e.target && e.target.id === 'close-details') {
+    const studentSidebar = document.getElementById('student-details-sidebar');
+    if (studentSidebar) studentSidebar.style.display = 'none';
+    // Resetear botones de "Ver Detalles" (estudiantes)
+    document.querySelectorAll('.btn-ver-detalles').forEach(b => {
+      b.textContent = 'Ver Detalles';
+      b.classList.remove('btn-secondary');
+      b.classList.add('btn-primary');
+      b.disabled = false;
+    });
+    // Deshabilitar botones de Editar en tarjetas
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+      btn.style.opacity = '0.5';
+      btn.style.pointerEvents = 'none';
+      btn.classList.remove('enabled');
+    });
+  }
+});
+
 // ============================================
 // FUNCIONALIDAD DE BOTONES "VER DETALLES" PARA FACILITADORES/PROFESORES
 // ============================================

@@ -1,8 +1,34 @@
 // ===== CALENDARIO COLABORATIVO COMPLETO =====
+// Silenciar logs no críticos en producción (mantiene warn/error)
+(function() {
+    try {
+        // Permitir activar logs poniendo DEBUG_CAL en true desde consola o localStorage
+        if (typeof window !== 'undefined') {
+            if (window.DEBUG_CAL === undefined) {
+                window.DEBUG_CAL = !!(window.localStorage && localStorage.getItem('DEBUG_CAL'));
+            }
+        }
+        if (!window.DEBUG_CAL) {
+            const __orig = {
+                log: console.log,
+                info: console.info,
+                debug: console.debug,
+                warn: console.warn
+            };
+            console.log = function(){};
+            console.info = function(){};
+            console.debug = function(){};
+            console.warn = function(){};
+            // Restaurar cuando se necesite: ejecutar window.__restoreConsole() en la consola
+            window.__restoreConsole = () => Object.assign(console, __orig);
+        }
+    } catch(_) { /* no-op */ }
+})();
 
 let calendario;
 let fichasDisponibles = [];
 let eventoSeleccionado = null;
+let __countdownTimer = null;
 
 // Utilidad: obtener nombre del día en español (necesaria para setInfoVisual)
 function obtenerNombreDia(fechaISO) {
@@ -54,6 +80,22 @@ document.addEventListener('DOMContentLoaded', function() {
     configurarBotonesUI();
     cargarFichasDisponibles();
     console.log('Botones configurados');
+
+    // Crear panel informativo si no existe
+    try {
+        const cal = document.getElementById('calendario');
+        if (cal && !document.getElementById('panelInfoClases')) {
+            const panel = document.createElement('div');
+            panel.id = 'panelInfoClases';
+            panel.style.margin = '10px 0';
+            panel.style.padding = '10px';
+            panel.style.border = '1px solid #e3e6ea';
+            panel.style.borderRadius = '6px';
+            panel.style.background = '#f8fafc';
+            panel.innerHTML = '<div id="infoHoy"></div><div id="infoProximo" style="margin-top:6px"></div>';
+            cal.parentNode.insertBefore(panel, cal);
+        }
+    } catch(_) {}
 });
 
 // Inicializar FullCalendar
@@ -155,22 +197,21 @@ function inicializarCalendario() {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Eventos cargados:', data);
-                    
                     // Procesar eventos para asegurar formato correcto
                     const eventosFormateados = data.map(evento => ({
                         id: evento.id,
-                        title: evento.title || evento.titulo,
-                        start: evento.start || evento.fecha_inicio,
-                        end: evento.end || evento.fecha_fin,
-                        backgroundColor: evento.backgroundColor || '#3788d8',
-                        borderColor: evento.borderColor || '#3788d8',
-                        textColor: '#ffffff',
-                        extendedProps: evento.extendedProps || {},
-                        classNames: (evento.className ? [evento.className] : [])
+                        title: evento.title,
+                        start: evento.start,
+                        end: evento.end || null,
+                        backgroundColor: evento.backgroundColor || evento.color || '#3788d8',
+                        borderColor: evento.borderColor || evento.color || '#3788d8',
+                        classNames: evento.className ? (Array.isArray(evento.className) ? evento.className : [evento.className]) : [],
+                        // Si el backend no envía 'editable', asumir true para permitir mover/redimensionar
+                        editable: (evento.editable === undefined ? true : !!evento.editable),
+                        extendedProps: Object.assign({}, evento.extendedProps || {})
                     }));
 
-                    // Marcar eventos pasados como finalizados (visual y UX)
+                    // Normalizar estados pasado/finalizado
                     const ahora = new Date();
                     const normalizados = eventosFormateados.map(e => {
                         try {
@@ -178,13 +219,13 @@ function inicializarCalendario() {
                             if (fin < ahora) {
                                 e.extendedProps = Object.assign({}, e.extendedProps, { estado: 'finalizado', esPasado: true });
                                 e.classNames = [...(e.classNames || []), 'evento-pasado'];
-                                e.editable = false; // no permitir mover/estirar
-                                // Mantener el color original; la opacidad se maneja por CSS (.evento-pasado)
+                                e.editable = false; // no permitir mover/estirar en pasados
+                            } else {
+                                e.editable = (e.extendedProps?.editable === undefined ? true : !!e.extendedProps?.editable);
                             }
                         } catch(_) {}
                         return e;
                     });
-
                     // Marcar automáticamente como "en_curso" si corresponde
                     try {
                         window.__marcadosEnCurso = window.__marcadosEnCurso || new Set();
@@ -245,6 +286,7 @@ function inicializarCalendario() {
 
                     // Actualizar contadores
                     try { actualizarContadores(filtrados); } catch (e) { console.warn('No se pudieron actualizar contadores:', e); }
+                    try { actualizarPanelInformativo(filtrados); } catch (_) {}
 
                     successCallback(filtrados);
                     setLoading(false);
@@ -274,28 +316,14 @@ function inicializarCalendario() {
             mostrarDetallesEvento(info.event);
         },
         
-        // Arrastrar y soltar evento
+        // Arrastrar y soltar evento (sin restricciones locales)
         eventDrop: function(info) {
-            const estado = info.event.extendedProps?.estado || '';
-            const esPasado = !!info.event.extendedProps?.esPasado || estado === 'finalizado';
-            if (estado === 'cancelado' || esPasado || estado === 'en_curso') {
-                console.warn('Movimiento bloqueado: evento cancelado');
-                info.revert();
-                return;
-            }
             console.log('Evento movido:', info.event);
             actualizarEventoEnServidor(info.event);
         },
         
-        // Redimensionar evento
+        // Redimensionar evento (sin restricciones locales)
         eventResize: function(info) {
-            const estado = info.event.extendedProps?.estado || '';
-            const esPasado = !!info.event.extendedProps?.esPasado || estado === 'finalizado';
-            if (estado === 'cancelado' || esPasado || estado === 'en_curso') {
-                console.warn('Redimensionamiento bloqueado: evento cancelado');
-                info.revert();
-                return;
-            }
             console.log('Evento redimensionado:', info.event);
             actualizarEventoEnServidor(info.event);
         },
@@ -675,79 +703,45 @@ function guardarHorario() {
     const horaInicio = document.getElementById('horaInicio').value;
     const horaFin = document.getElementById('horaFin').value;
     
+    // Si no viene título, generar uno por defecto para no bloquear el guardado
+    if (!titulo) {
+        try {
+            const nombreProfesor = (window.nombreProfesor || 'Profesor').trim();
+            if (fichaId && Array.isArray(fichasDisponibles)) {
+                const f = fichasDisponibles.find(ff => String(ff.id) === String(fichaId));
+                if (f) {
+                    const cod = f.codigo || f.id;
+                    const nom = f.nombre || '';
+                    titulo = `Clase con ${nombreProfesor} - ${cod} ${nom}`.trim();
+                } else {
+                    titulo = `Clase con ${nombreProfesor}`;
+                }
+            } else {
+                titulo = `Clase con ${nombreProfesor}`;
+            }
+            document.getElementById('titulo').value = titulo;
+        } catch(_) { /* noop */ }
+    }
+
     // Validaciones
-    if (!fichaId) {
-        mostrarError('Por favor selecciona una ficha');
-        return;
-    }
-    
-    // Forzar título compuesto con profesor y ficha seleccionada
-    const fichaSel = fichasDisponibles.find(f => String(f.id) === String(fichaId));
-    if (fichaSel) {
-        const prof = (window.nombreProfesor || 'Profesor').trim();
-        const cod = fichaSel.codigo || fichaSel.id;
-        const nom = fichaSel.nombre || '';
-        titulo = `Clase con ${prof} - ${cod} ${nom}`.trim();
-        const tituloInput = document.getElementById('titulo');
-        if (tituloInput) tituloInput.value = titulo;
-    } else if (!titulo) {
-        // Último fallback
-        generarTituloAutomatico();
-        titulo = (document.getElementById('titulo').value || '').trim();
-    }
-    
-    if (!fecha || !horaInicio || !horaFin) {
-        mostrarError('Por favor completa todos los campos de fecha y hora');
-        return;
-    }
-    
-    // Validar que la hora de fin sea posterior a la de inicio
-    if (horaFin <= horaInicio) {
-        mostrarError('La hora de fin debe ser posterior a la hora de inicio');
-        return;
-    }
-    
-    // Preparar FormData como espera el backend
-    const formData = new FormData();
-    formData.append('ficha_id', parseInt(fichaId));
-    formData.append('titulo', titulo || (window.nombreProfesor ? `Clase con ${window.nombreProfesor}` : 'Clase'));
-    formData.append('fecha_inicio', `${fecha} ${horaInicio}:00`);
-    formData.append('fecha_fin', `${fecha} ${horaFin}:00`);
-    formData.append('aula', document.getElementById('aula')?.value || 'Aula 101');
-    formData.append('color', document.getElementById('color')?.value || '#007bff');
-    formData.append('estado', 'programado');
-    
-    try {
-        console.log('Guardando horario:', Object.fromEntries(formData.entries()));
-    } catch (e) { /* noop */ }
-    
-    // Deshabilitar botón de guardar
-    const btnGuardar = document.querySelector('#modalHorario .btn-primary');
-    if (btnGuardar) {
-        btnGuardar.disabled = true;
-        btnGuardar.textContent = 'Guardando...';
-    }
-    
-    // Decidir crear o actualizar
-    const idEditar = (document.getElementById('horarioId')?.value || '').trim();
-    const fecha_inicio_full = `${fecha} ${horaInicio}:00`;
-    const fecha_fin_full = `${fecha} ${horaFin}:00`;
-    if (idEditar) {
-        // Actualizar existente
-        const payload = {
-            id: idEditar,
-            titulo,
-            fecha_inicio: fecha_inicio_full,
-            fecha_fin: fecha_fin_full,
-            dia_semana: (new Date(`${fecha}T00:00:00`)).getDay() || 7,
-            hora_inicio: horaInicio,
-            hora_fin: horaFin,
-            aula: document.getElementById('aula')?.value || 'Aula 101',
-            color: document.getElementById('color')?.value || '#007bff'
-        };
-        const url = new URL('/', window.location.origin);
-        url.searchParams.append('page', 'calendario_actualizar');
-        fetch(url.toString(), {
+    if (!fichaId) { mostrarError('Por favor selecciona una ficha'); return; }
+    if (!fecha || !horaInicio || !horaFin) { mostrarError('Completa fecha y horas'); return; }
+    const aula = (document.getElementById('aula')?.value || '').trim();
+    if (!aula) { mostrarError('Selecciona el Aula'); return; }
+    const color = document.getElementById('color')?.value || '#007bff';
+    const estado = 'programado';
+
+    const fechaInicioStr = `${fecha} ${horaInicio}:00`;
+    const fechaFinStr = `${fecha} ${horaFin}:00`;
+
+    // Diferenciar crear vs actualizar por presencia de horarioId
+    const horarioId = document.getElementById('horarioId')?.value || '';
+    if (horarioId) {
+        // Actualizar
+        const payload = { id: horarioId, titulo, fecha_inicio: fechaInicioStr, fecha_fin: fechaFinStr, aula, color };
+        const urlUpd = new URL('/', window.location.origin);
+        urlUpd.searchParams.append('page', 'calendario_actualizar');
+        fetch(urlUpd.toString(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -756,19 +750,22 @@ function guardarHorario() {
         .then(r => r.json())
         .then(resp => {
             if (!resp.success) throw new Error(resp.error || 'Error al actualizar');
-            mostrarExito('Evento actualizado');
             cerrarModal();
             if (calendario) calendario.refetchEvents();
         })
-        .catch(err => {
-            console.error(err);
-            mostrarError(err.message || 'Error al actualizar evento');
-        })
-        .finally(() => {
-            if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.textContent = 'Guardar'; }
-        });
+        .catch(err => { console.error(err); mostrarError(err.message || 'Error al actualizar evento'); });
+        return;
     } else {
-        // Crear nuevo
+        // Crear
+        const formData = new FormData();
+        formData.append('ficha_id', String(fichaId));
+        formData.append('titulo', titulo);
+        formData.append('fecha_inicio', fechaInicioStr);
+        formData.append('fecha_fin', fechaFinStr);
+        formData.append('aula', aula);
+        formData.append('color', color);
+        formData.append('estado', estado);
+
         const url = new URL('/', window.location.origin);
         url.searchParams.append('page', 'calendario_crear');
         fetch(url.toString(), {
@@ -778,43 +775,19 @@ function guardarHorario() {
         })
         .then(async response => {
             const raw = await response.text();
-            let json = null;
-            try { json = JSON.parse(raw); } catch {}
-            if (!response.ok) {
-                const msg = json?.error || raw || `HTTP error ${response.status}`;
-                throw new Error(msg);
-            }
-            if (!json) {
-                throw new Error('Respuesta no válida del servidor');
-            }
+            let json = null; try { json = JSON.parse(raw); } catch {}
+            if (!response.ok || !json?.success) { throw new Error(json?.error || raw || `HTTP error ${response.status}`); }
             return json;
         })
-        .then(data => {
-            console.log('Respuesta del servidor:', data);
-            
-            if (data.success) {
-                mostrarExito('Evento creado exitosamente');
-                cerrarModal();
-                
-                // Recargar eventos del calendario
-                if (calendario) {
-                    calendario.refetchEvents();
-                }
-            } else {
-                mostrarError(data.error || 'Error al crear el evento');
-            }
+        .then(() => {
+            cerrarModal();
+            if (calendario) calendario.refetchEvents();
         })
-        .catch(error => {
-            console.error('Error al guardar horario:', error);
-            mostrarError(`Error de conexión o servidor: ${error.message}`);
-        })
-        .finally(() => {
-            // Rehabilitar botón
-            if (btnGuardar) {
-                btnGuardar.disabled = false;
-                btnGuardar.textContent = 'Guardar';
-            }
+        .catch(err => {
+            console.error('Error al crear horario:', err);
+            mostrarError(err.message || 'Error al crear el horario');
         });
+        return;
     }
 }
 
@@ -886,72 +859,97 @@ async function cargarEstudiantesAsistencia(fichaId, fecha) {
     }
 }
 
-// Actualizar la interfaz de asistencias
 function actualizarInterfazAsistencias(estudiantes) {
     const tbody = document.getElementById('listaAsistencias');
     if (!tbody) return;
-    
+
+    // Modo solo lectura: ocultar botón de guardar y ajustar texto informativo
+    try {
+        const btnGuardarAsistencias = document.getElementById('btnGuardarAsistencias');
+        if (btnGuardarAsistencias) btnGuardarAsistencias.style.display = 'none';
+        const infoAsistencia = document.getElementById('infoAsistencia');
+        if (infoAsistencia) {
+            infoAsistencia.classList.remove('alert-info');
+            infoAsistencia.classList.add('alert-secondary');
+            infoAsistencia.innerHTML = '<i class="fas fa-eye me-2"></i>Vista de solo lectura. Aquí ves lo que se registró ese día. Para registrar, usa la tabla semanal en el dashboard de la ficha.';
+        }
+    } catch(_) {}
+
     if (!estudiantes || estudiantes.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" class="text-center py-4">
-                    <i class="fas fa-exclamation-circle text-muted me-2"></i>
-                    No hay estudiantes registrados en esta ficha.
+                <td colspan="3" class="text-center py-4 text-muted">
+                    <i class="fas fa-user-slash me-2"></i>
+                    No hay estudiantes para esta ficha.
                 </td>
-            </tr>`;
+            </tr>
+        `;
         return;
     }
-    
+
+    const badgeHtml = (estado) => {
+        const map = {
+            'presente': '<span class="badge estado-badge estado-presente">Presente</span>',
+            'tardanza': '<span class="badge estado-badge estado-tardanza">Tardanza</span>',
+            'falla': '<span class="badge estado-badge estado-falla">Falla</span>',
+            'justificada': '<span class="badge estado-badge estado-justificada">Justificada</span>'
+        };
+        return map[estado] || '<span class="badge estado-badge estado-pendiente">—</span>';
+    };
+
     tbody.innerHTML = estudiantes.map(est => {
-        const estadoClase = est.estado ? `estado-${est.estado}` : 'estado-pendiente';
-        const estadoTexto = est.estado ? est.estado.charAt(0).toUpperCase() + est.estado.slice(1) : 'Pendiente';
-        
+        const nombre = `${est.nombres || ''} ${est.apellidos || ''}`.trim();
+        const estado = est.estado || '';
+        const puedeJustificar = estado === 'falla' && est.asistencia_id;
         return `
-        <tr data-estudiante-id="${est.id}">
-            <td class="align-middle">
-                <div class="d-flex align-items-center">
-                    <div class="ms-2">
-                        <div class="fw-medium">${est.nombres} ${est.apellidos}</div>
-                        <div class="small text-muted">${est.documento || ''}</div>
+            <tr data-estudiante-id="${est.estudiante_id}" data-asistencia-id="${est.asistencia_id || ''}">
+                <td class="align-middle">
+                    <div class="d-flex align-items-center">
+                        <div class="ms-2">
+                            <div class="fw-semibold">${nombre || 'Sin nombre'}</div>
+                        </div>
                     </div>
-                </div>
-            </td>
-            <td class="align-middle text-center">
-                <select class="form-select form-select-sm estado-asistencia" data-estado="${est.estado || ''}">
-                    <option value="" ${!est.estado ? 'selected' : ''}>Seleccionar</option>
-                    <option value="presente" ${est.estado === 'presente' ? 'selected' : ''}>Presente</option>
-                    <option value="tardanza" ${est.estado === 'tardanza' ? 'selected' : ''}>Tardanza</option>
-                    <option value="falla" ${est.estado === 'falla' ? 'selected' : ''}>Falla</option>
-                    <option value="justificada" ${est.estado === 'justificada' ? 'selected' : ''}>Justificada</option>
-                </select>
-            </td>
-            <td class="align-middle text-center">
-                <div class="badge-container">
-                    <span class="estado-badge ${estadoClase}">${estadoTexto}</span>
-                </div>
-            </td>
-        </tr>`;
+                </td>
+                <td class="align-middle text-center">
+                    ${badgeHtml(estado)}
+                </td>
+                <td class="align-middle text-center">
+                    ${puedeJustificar
+                        ? `<button class="btn btn-sm btn-outline-primary btn-justificar" data-id="${est.asistencia_id}">
+                                <i class="fa fa-file-medical me-1"></i> Justificar
+                           </button>`
+                        : '<button class="btn btn-sm btn-outline-secondary" disabled><i class="fas fa-lock me-1"></i> Solo lectura</button>'
+                    }
+                </td>
+            </tr>
+        `;
     }).join('');
-    
-    // Agregar eventos a los selectores de estado
-    document.querySelectorAll('.estado-asistencia').forEach(select => {
-        select.addEventListener('change', function() {
-            const fila = this.closest('tr');
-            const estado = this.value;
-            const badge = fila.querySelector('.estado-badge');
-            
-            // Actualizar clases y texto del badge
-            badge.className = 'estado-badge';
-            if (estado) {
-                badge.classList.add(`estado-${estado}`);
-                badge.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
-            } else {
-                badge.classList.add('estado-pendiente');
-                badge.textContent = 'Pendiente';
+
+    // Acción justificar
+    document.querySelectorAll('.btn-justificar').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const asistenciaId = this.getAttribute('data-id');
+            if (!asistenciaId) return;
+            const obs = prompt('Ingrese la justificación (obligatorio):');
+            if (obs === null) return;
+            if (!obs || !obs.trim()) { alert('La justificación es obligatoria.'); return; }
+            try {
+                const form = new FormData();
+                form.append('id', asistenciaId);
+                form.append('estado', 'justificada');
+                form.append('observaciones', obs.trim());
+                const resp = await fetch('?page=asistencia_actualizar', { method: 'POST', body: form, credentials: 'same-origin' });
+                const data = await resp.json();
+                if (!resp.ok || data.success === false) throw new Error(data.message || 'Error al justificar');
+                alert('Justificación registrada.');
+                // Recargar la lista
+                if (eventoActualAsistencia) {
+                    inicializarPestanaAsistencias(eventoActualAsistencia);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('No se pudo justificar: ' + (e.message || ''));
             }
-            
-            // Actualizar el atributo data-estado
-            this.setAttribute('data-estado', estado);
         });
     });
 }
