@@ -11,9 +11,24 @@
   --text-dark: #1f2937;
   --muted-border: #e5e7eb;
 }
+
+/* Layout de página: centrado vertical con respiro simétrico */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
 /* Botón principal: Registrar / Actualizar */
 button.btn.btn-primary {
-  background-color: #007bff;
+  background-color: #00304D;
   border: none;
   padding: 10px 20px;
   color: white;
@@ -26,7 +41,7 @@ button.btn.btn-primary {
 }
 
 button.btn.btn-primary:hover {
-  background-color: #0056b3;
+  background-color: #2d6d94;
   transform: translateY(-1px);
   align-self: center;
 }
@@ -88,15 +103,16 @@ button.btn.btn-primary:hover {
 .card-widget {
   background: #fff;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  margin: 24px auto;
-  max-width: 2100px;
+  padding: 32px 36px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  max-width: 1160px; /* ancho cómodo para 2 columnas */
+  width: 92%;
 }
 
 .section-title {
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -190,7 +206,7 @@ button.btn.btn-primary:hover {
 /* Fila de acciones generales */
 .row {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
   gap: 16px;
@@ -216,7 +232,7 @@ button.btn.btn-primary:hover {
 .courses-header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .course-grid {
@@ -228,7 +244,7 @@ button.btn.btn-primary:hover {
 .course-card {
   border: 1px solid #e9ecef;
   border-radius: 10px;
-  padding: 16px;
+  padding: 16px 16px 10px;
   background: #fafcff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
@@ -236,17 +252,50 @@ button.btn.btn-primary:hover {
 .card-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
 .field { display: flex; flex-direction: column; }
 .field label { font-weight: 600; margin-bottom: 6px; color: #495057; }
 .field-wide { grid-column: span 2; }
 
+/* Inputs y textareas con look moderno */
+.course-card .form-control,
+.card-widget input[type="text"],
+.card-widget input[type="number"],
+.card-widget textarea {
+  border: 1px solid #dde3ec;
+  border-radius: 50px;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: #333;
+  height: 48px;
+  box-sizing: border-box;
+}
+.card-widget textarea.form-control {
+  height: auto;
+  border-radius: 14px;
+  min-height: 96px;
+  padding: 12px 14px;
+}
+.course-card .form-control:focus,
+.card-widget input:focus,
+.card-widget textarea:focus {
+  border-color: #4c7840;
+  outline: none;
+  box-shadow: 0 0 6px rgba(76, 120, 64, 0.2);
+}
+
 .card-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-actions .hint {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 /* Badges de estado */
@@ -272,7 +321,8 @@ button.btn.btn-primary:hover {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .card-widget { padding: 16px; }
+  .container { padding: 24px 0; }
+  .card-widget { padding: 16px; width: 94%; }
   .tabla-lista th, .tabla-lista td { font-size: 13px; }
   .card-row { grid-template-columns: 1fr; }
   .field-wide { grid-column: span 1; }

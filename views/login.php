@@ -19,8 +19,8 @@
         <div class="welcome-content">
             <img src="/icons/logo_sena.jpeg" alt="Logo SENA" class="sena-logo">
             <div class="welcome-text" id="welcomeText">
-                <h1 id="welcomeTitle">¡Hola!</h1>
-                <h2 id="welcomeSubtitle">Bienvenidos a <strong>System School</strong></h2>
+                <h1 id="welcomeTitle">Bienvenidos a <strong>System School</strong></h1>
+                <h2 id="welcomeSubtitle"></h2>
                 <p id="welcomeDescription">Tu plataforma educativa del SENA</p>
             </div>
         </div>
@@ -75,14 +75,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Switch modo oscuro/claro - Posición fija -->
-    <div class="theme-switch" id="themeSwitch">
-        <label for="switch" class="switch">
-            <input id="switch" type="checkbox" />
-            <span class="slider"></span>
-            <span class="decoration"></span>
-        </label>
-    </div>
 </div>
 
 <!-- Scripts para calendario y selects -->

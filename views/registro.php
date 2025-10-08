@@ -28,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <!-- Formulario redirigido correctamente -->
     <form method="POST" action="../../public/index.php?registro=true">
-        <?= csrf_input(); ?>
+        <?= csrf_input(); ?>         
         <div class="row">
             <div class="col-md-6">
                 <label for="nombres">Nombres*</label>

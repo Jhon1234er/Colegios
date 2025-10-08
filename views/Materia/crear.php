@@ -1,5 +1,4 @@
 <?php include __DIR__ . '/../Componentes/encabezado.php'; ?>
-<link rel="stylesheet" href="/css/crear.css">
 <link rel="stylesheet" href="/css/Materia/crear.css">
 
 <div class="container">

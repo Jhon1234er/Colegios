@@ -17,29 +17,10 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
                 <div class="col-md-6">
                     <label for="departamento" class="form-label">Departamento</label>
                     <select id="departamento" name="departamento" class="form-select" required></select>
-
-                    <label for="municipio" class="form-label">Municipio</label>
-                    <select id="municipio" name="municipio" class="form-select" required></select>
-
                     <label for="nombre" class="form-label">Nombre del Colegio</label>
                     <select id="nombre" name="nombre" class="form-select" required></select>
-
-                    <label for="codigo_dane" class="form-label">Código DANE</label>
-                    <input type="text" class="form-control" id="codigo_dane" name="codigo_dane" required>
-
                     <label for="nit" class="form-label">NIT</label>
                     <input type="text" class="form-control" id="nit" name="nit" required>
-
-                    <label for="tipo_institucion" class="form-label">Tipo de Institución</label>
-                    <select id="tipo_institucion" name="tipo_institucion" class="form-select" required>
-                    <option value="">Seleccione</option>
-                    <option value="Pública">Pública</option>
-                    <option value="Privada">Privada</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="telefono" class="form-label">Teléfono</label>
-                    <input type="text" class="form-control" id="telefono" name="telefono" required>
 
                     <label for="correo" class="form-label">Correo</label>
                     <input type="email" class="form-control" id="correo" name="correo" required>
@@ -47,12 +28,29 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
                     <label for="direccion" class="form-label">Dirección</label>
                     <input type="text" class="form-control" id="direccion" name="direccion" required>
 
-                    <label for="jornada" class="form-label">Jornada</label>
-                    <input type="text" class="form-control" id="jornada" name="jornada" required>
-
                     <label for="grados" class="form-label">Grados</label>
                     <input type="text" class="form-control" id="grados" name="grados" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="municipio" class="form-label">Municipio</label>
+                    <select id="municipio" name="municipio" class="form-select" required></select>
 
+                    <label for="codigo_dane" class="form-label">Código DANE</label>
+                    <input type="text" class="form-control" id="codigo_dane" name="codigo_dane" required>
+
+                    <label for="tipo_institucion" class="form-label">Tipo de Institución</label>
+                    <select id="tipo_institucion" name="tipo_institucion" class="form-select" required>
+                    <option value="">Seleccione</option>
+                    <option value="Pública">Pública</option>
+                    <option value="Privada">Privada</option>
+                    </select>
+
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input type="text" class="form-control" id="telefono" name="telefono" required>
+
+                    <label for="jornada" class="form-label">Jornada</label>
+                    <input type="text" class="form-control" id="jornada" name="jornada" required>
+                    
                     <label for="calendario" class="form-label">Calendario</label>
                     <input type="text" class="form-control" id="calendario" name="calendario" required>
 

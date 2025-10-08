@@ -1,12 +1,13 @@
 // /js/dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
-  // Delegación: responde a cualquier botón .btn-ver-colegio
-  document.querySelectorAll('.btn-ver-colegio').forEach(btn => {
-    btn.addEventListener('click', () => {
+  // Delegación de eventos en el documento para botones dinámicos
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-ver-colegio');
+    if (btn) {
       const colegioId = btn.dataset.id;
       if (!colegioId) return console.warn('Falta data-id en boton .btn-ver-colegio');
       handleVerColegio(colegioId);
-    });
+    }
   });
 
   async function handleVerColegio(colegioId) {
@@ -114,15 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function renderAsistencias(fichasData, alertasData, nombreColegio = '') {
   const container = document.getElementById('chart-container');
-  if (!container) return;
+  if (!container) {
+    console.warn('Contenedor chart-container no encontrado');
+    return;
+  }
   
   // Agregar clase loading
   container.classList.add('loading');
   
   try {
-    // Limpiar cualquier instancia previa
+    // Limpiar cualquier instancia previa de forma segura
     if (window.myChart) {
-      window.myChart.dispose();
+      try {
+        window.myChart.dispose();
+      } catch(e) {
+        console.warn('Error al limpiar gráfico previo:', e);
+      }
       window.myChart = null;
     }
     

@@ -781,30 +781,6 @@ class CalendarioController {
         return $resultado['tiene_permisos'] > 0;
     }
     
-    // Registrar cambios en historial
-    private function registrarHistorial($horario_id, $profesor_id, $accion, $datos_anteriores, $datos_nuevos) {
-        $sql = "
-            INSERT INTO calendario_historial 
-            (horario_id, profesor_id, accion, datos_anteriores, datos_nuevos) 
-            VALUES (?, ?, ?, ?, ?)
-        ";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            $horario_id,
-            $profesor_id,
-            $accion,
-            $datos_anteriores ? json_encode($datos_anteriores) : null,
-            $datos_nuevos ? json_encode($datos_nuevos) : null
-        ]);
-    }
-    
-    /**
-     * Obtener fichas disponibles para el profesor
-     */
-    /**
-     * Exporta un reporte de las clases a formato CSV
-     */
     public function exportarReporteCSV() {
         try {
             // Verificar sesión

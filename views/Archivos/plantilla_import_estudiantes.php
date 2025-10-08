@@ -28,6 +28,7 @@ $headers = [
   'telefono_acudiente',
   'parentesco',
   'ocupacion',
+  'ficha_medica',
 ];
 
 $sheet->fromArray($headers, null, 'A1');

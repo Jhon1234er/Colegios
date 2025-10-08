@@ -766,12 +766,24 @@ function guardarHorario() {
         formData.append('color', color);
         formData.append('estado', estado);
 
+        // Adjuntar CSRF si está disponible y deshabilitar botón Guardar
+        let csrfToken = '';
+        try {
+            csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            if (csrfToken) formData.append('_csrf', csrfToken);
+        } catch(_) {}
+        const __btnG = document.getElementById('btnGuardarHorario');
+        if (__btnG) { __btnG.disabled = true; __btnG.textContent = 'Guardando...'; }
+
         const url = new URL('/', window.location.origin);
         url.searchParams.append('page', 'calendario_crear');
+        const headers = {};
+        if (csrfToken) headers['X-CSRF-TOKEN'] = csrfToken;
         fetch(url.toString(), {
             method: 'POST',
             body: formData,
-            credentials: 'same-origin'
+            credentials: 'same-origin',
+            headers
         })
         .then(async response => {
             const raw = await response.text();
@@ -786,6 +798,10 @@ function guardarHorario() {
         .catch(err => {
             console.error('Error al crear horario:', err);
             mostrarError(err.message || 'Error al crear el horario');
+        })
+        .finally(() => {
+            const b = document.getElementById('btnGuardarHorario');
+            if (b) { b.disabled = false; b.textContent = 'Guardar'; }
         });
         return;
     }

@@ -8,16 +8,17 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 
 <div class="formulario-registro">
   <h2>Registro de Facilitador</h2>
-  <form action="/?page=profesores&action=guardar" method="POST" id="registroProfesorForm">
+  <?php
+    $isPublic = (($_GET['page'] ?? '') === 'registro_profesor');
+    $formAction = $isPublic ? '/?page=registro_profesor_guardar' : '/?page=profesores&action=guardar';
+  ?>
+  <form action="<?= htmlspecialchars($formAction) ?>" method="POST" id="registroProfesorForm">
       <?= csrf_input(); ?>
     <div class="form-grid">
-      <!-- Columna izquierda -->
+      <!-- Columna izquierda (orden solicitado) -->
       <div class="columna">
         <label>Nombres</label>
         <input type="text" name="nombres" class="form-nombre" required>
-
-        <label>Apellidos</label>
-        <input type="text" name="apellidos" class="form-apellido" required>
 
         <label>Tipo de Documento</label>
         <select name="tipo_documento" class="form-tipo" required>
@@ -26,50 +27,30 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
           <option value="CE">Cédula de Extranjería</option>
         </select>
 
-        <label>Número de Documento</label>
-        <input type="text" name="numero_documento" class="form-documento" required>
-
         <label>Correo Electrónico</label>
         <input type="email" name="correo_electronico" class="form-personal" required>
 
-        <label>Correo Electrónico Institucional</label>
-        <input type="email" name="correo_institucional" class="form-institucional" required>
-
+        <label>Título Académico</label>
+        <input type="text" name="titulo_academico" class="form-control-titulo" required>
+        
         <label>Teléfono</label>
         <input type="text" name="telefono" class="form-numero" required>
       </div>
 
-      <!-- Columna derecha -->
+      <!-- Columna derecha (orden solicitado) -->
       <div class="columna">
-        <label>Fecha de Nacimiento</label>
-        <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" class="form-nacimiento" required>
+        <label>Apellidos</label>
+        <input type="text" name="apellidos" class="form-apellido" required>
 
-        <label>RH</label>
-        <select name="rh" class="form-select-rh" required>
-          <option value="">Seleccione...</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-        </select>
+        <label>Número de Documento</label>
+        <input type="text" name="numero_documento" class="form-documento" required>
 
-        <label>Género</label>
-        <select name="genero" class="form-selec-genero" required>
-          <option value="">Seleccione...</option>
-          <option value="M">Masculino</option>
-          <option value="F">Femenino</option>
-          <option value="Otro">Otro</option>
-        </select>
-
-        <label>Título Académico</label>
-        <input type="text" name="titulo_academico" class="form-control-titulo" required>
+        <label>Correo Electrónico Institucional</label>
+        <input type="email" name="correo_institucional" class="form-institucional" required>
 
         <label>Especialidad</label>
         <input type="text" name="especialidad" class="form-control-especialidad" required>
+        
 
         <label>Tipo de Contrato</label>
         <select name="tip_contrato" class="form-select-contrato" required>
@@ -78,8 +59,9 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
           <option value="instructor">Instructor</option>
         </select>
 
-        <label>Contraseña</label>
-        <input type="password" name="password" class="form-contraseña" required>
+
+
+        <!-- Contraseña se generará automáticamente por el sistema -->
       </div>
     </div>
 

@@ -62,6 +62,63 @@ class Estudiante {
                 $datos['estado'] ?? 'Activo'
             ]);
 
+            $estudiante_id = $this->pdo->lastInsertId();
+
+            // Ficha médica (opcional)
+            if (!empty($datos['ficha_medica']) && is_array($datos['ficha_medica'])) {
+                $fm = $datos['ficha_medica'];
+                $stmtFM = $this->pdo->prepare("\n                    INSERT INTO ficha_medica_estudiantes (\n                      estudiante_id, padece_enfermedad, enfermedad_detalle, tiene_alergias, alergias_detalle,\n                      medicamento_permanente, medicamento_detalle, discapacidad, discapacidad_detalle, cursos_tecnoacademia\n                    ) VALUES (?,?,?,?,?,?,?,?,?,?)\n                    ON DUPLICATE KEY UPDATE\n                      padece_enfermedad=VALUES(padece_enfermedad), enfermedad_detalle=VALUES(enfermedad_detalle),\n                      tiene_alergias=VALUES(tiene_alergias), alergias_detalle=VALUES(alergias_detalle),\n                      medicamento_permanente=VALUES(medicamento_permanente), medicamento_detalle=VALUES(medicamento_detalle),\n                      discapacidad=VALUES(discapacidad), discapacidad_detalle=VALUES(discapacidad_detalle),\n                      cursos_tecnoacademia=VALUES(cursos_tecnoacademia)
+                ");
+                $stmtFM->execute([
+                    $estudiante_id,
+                    !empty($fm['padece_enfermedad']) ? 1 : 0,
+                    $fm['enfermedad_detalle'] ?? null,
+                    !empty($fm['tiene_alergias']) ? 1 : 0,
+                    $fm['alergias_detalle'] ?? null,
+                    !empty($fm['medicamento_permanente']) ? 1 : 0,
+                    $fm['medicamento_detalle'] ?? null,
+                    !empty($fm['discapacidad']) ? 1 : 0,
+                    $fm['discapacidad_detalle'] ?? null,
+                    !empty($fm['cursos_tecnoacademia']) ? 1 : 0
+                ]);
+            }
+
+            // Acudientes múltiples (opcional)
+            if (!empty($datos['acudientes']) && is_array($datos['acudientes'])) {
+                foreach ($datos['acudientes'] as $idx => $acu) {
+                    if (empty($acu['nombres']) && empty($acu['apellidos'])) continue;
+                    $stmtAcu = $this->pdo->prepare("\n                        INSERT INTO acudientes (nombres, apellidos, tipo_documento, numero_documento, genero, genero_otro, celular, correo, ocupacion)\n                        VALUES (?,?,?,?,?,?,?,?,?)\n                        ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), genero=VALUES(genero), genero_otro=VALUES(genero_otro), celular=VALUES(celular), correo=VALUES(correo), ocupacion=VALUES(ocupacion)
+                    ");
+                    $stmtAcu->execute([
+                        $acu['nombres'] ?? '',
+                        $acu['apellidos'] ?? '',
+                        $acu['tipo_documento'] ?? 'CC',
+                        $acu['numero_documento'] ?? '',
+                        $acu['genero'] ?? null,
+                        $acu['genero_otro'] ?? null,
+                        $acu['celular'] ?? null,
+                        $acu['correo'] ?? null,
+                        $acu['ocupacion'] ?? null,
+                    ]);
+                    $acudiente_id = $this->pdo->lastInsertId();
+                    if (!$acudiente_id) {
+                        $stmtFind = $this->pdo->prepare("SELECT id FROM acudientes WHERE tipo_documento=? AND numero_documento=? LIMIT 1");
+                        $stmtFind->execute([$acu['tipo_documento'] ?? 'CC', $acu['numero_documento'] ?? '']);
+                        $acudiente_id = $stmtFind->fetchColumn();
+                    }
+                    if ($acudiente_id) {
+                        $stmtLink = $this->pdo->prepare("\n                            INSERT IGNORE INTO estudiante_acudiente (estudiante_id, acudiente_id, parentesco, es_contacto_emergencia, prioridad_llamada)\n                            VALUES (?,?,?,?,?)\n                        ");
+                        $stmtLink->execute([
+                            $estudiante_id,
+                            $acudiente_id,
+                            $acu['parentesco'] ?? 'Acudiente',
+                            !empty($acu['es_contacto_emergencia']) ? 1 : 0,
+                            isset($acu['prioridad_llamada']) ? (int)$acu['prioridad_llamada'] : ($idx === 0 ? 1 : 2),
+                        ]);
+                    }
+                }
+            }
+
             // 🔹 Actualizar el cupo usado de la ficha
             $stmtCupo = $this->pdo->prepare("
                 UPDATE fichas
@@ -147,6 +204,63 @@ class Estudiante {
                 $datos['ocupacion'],
                 'Activo'
             ]);
+
+            $estudiante_id = $this->pdo->lastInsertId();
+
+            // Ficha médica (opcional)
+            if (!empty($datos['ficha_medica']) && is_array($datos['ficha_medica'])) {
+                $fm = $datos['ficha_medica'];
+                $stmtFM = $this->pdo->prepare("\n                    INSERT INTO ficha_medica_estudiantes (\n                      estudiante_id, padece_enfermedad, enfermedad_detalle, tiene_alergias, alergias_detalle,\n                      medicamento_permanente, medicamento_detalle, discapacidad, discapacidad_detalle, cursos_tecnoacademia\n                    ) VALUES (?,?,?,?,?,?,?,?,?,?)\n                    ON DUPLICATE KEY UPDATE\n                      padece_enfermedad=VALUES(padece_enfermedad), enfermedad_detalle=VALUES(enfermedad_detalle),\n                      tiene_alergias=VALUES(tiene_alergias), alergias_detalle=VALUES(alergias_detalle),\n                      medicamento_permanente=VALUES(medicamento_permanente), medicamento_detalle=VALUES(medicamento_detalle),\n                      discapacidad=VALUES(discapacidad), discapacidad_detalle=VALUES(discapacidad_detalle),\n                      cursos_tecnoacademia=VALUES(cursos_tecnoacademia)
+                ");
+                $stmtFM->execute([
+                    $estudiante_id,
+                    !empty($fm['padece_enfermedad']) ? 1 : 0,
+                    $fm['enfermedad_detalle'] ?? null,
+                    !empty($fm['tiene_alergias']) ? 1 : 0,
+                    $fm['alergias_detalle'] ?? null,
+                    !empty($fm['medicamento_permanente']) ? 1 : 0,
+                    $fm['medicamento_detalle'] ?? null,
+                    !empty($fm['discapacidad']) ? 1 : 0,
+                    $fm['discapacidad_detalle'] ?? null,
+                    !empty($fm['cursos_tecnoacademia']) ? 1 : 0
+                ]);
+            }
+
+            // Acudientes múltiples (opcional)
+            if (!empty($datos['acudientes']) && is_array($datos['acudientes'])) {
+                foreach ($datos['acudientes'] as $idx => $acu) {
+                    if (empty($acu['nombres']) && empty($acu['apellidos'])) continue;
+                    $stmtAcu = $this->pdo->prepare("\n                        INSERT INTO acudientes (nombres, apellidos, tipo_documento, numero_documento, genero, genero_otro, celular, correo, ocupacion)\n                        VALUES (?,?,?,?,?,?,?,?,?)\n                        ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), genero=VALUES(genero), genero_otro=VALUES(genero_otro), celular=VALUES(celular), correo=VALUES(correo), ocupacion=VALUES(ocupacion)
+                    ");
+                    $stmtAcu->execute([
+                        $acu['nombres'] ?? '',
+                        $acu['apellidos'] ?? '',
+                        $acu['tipo_documento'] ?? 'CC',
+                        $acu['numero_documento'] ?? '',
+                        $acu['genero'] ?? null,
+                        $acu['genero_otro'] ?? null,
+                        $acu['celular'] ?? null,
+                        $acu['correo'] ?? null,
+                        $acu['ocupacion'] ?? null,
+                    ]);
+                    $acudiente_id = $this->pdo->lastInsertId();
+                    if (!$acudiente_id) {
+                        $stmtFind = $this->pdo->prepare("SELECT id FROM acudientes WHERE tipo_documento=? AND numero_documento=? LIMIT 1");
+                        $stmtFind->execute([$acu['tipo_documento'] ?? 'CC', $acu['numero_documento'] ?? '']);
+                        $acudiente_id = $stmtFind->fetchColumn();
+                    }
+                    if ($acudiente_id) {
+                        $stmtLink = $this->pdo->prepare("\n                            INSERT IGNORE INTO estudiante_acudiente (estudiante_id, acudiente_id, parentesco, es_contacto_emergencia, prioridad_llamada)\n                            VALUES (?,?,?,?,?)\n                        ");
+                        $stmtLink->execute([
+                            $estudiante_id,
+                            $acudiente_id,
+                            $acu['parentesco'] ?? 'Acudiente',
+                            !empty($acu['es_contacto_emergencia']) ? 1 : 0,
+                            isset($acu['prioridad_llamada']) ? (int)$acu['prioridad_llamada'] : ($idx === 0 ? 1 : 2),
+                        ]);
+                    }
+                }
+            }
 
             // 🔹 Actualizar el cupo usado de la ficha
             $stmtCupo = $this->pdo->prepare("

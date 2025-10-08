@@ -18,6 +18,7 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
     <title>Calendario Colaborativo - Sistema Escolar SENA</title>
     
     <!-- Estilos personalizados para el calendario -->

@@ -50,17 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         } else {
             header('Location: ?');
         }
-
-// Duplicar semana de calendario
-if ($page === 'calendario_duplicar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    start_secure_session();
-    require_login();
-    require_role([1, 2]);
-    require_once '../controllers/CalendarioController.php';
-    $controller = new CalendarioController();
-    $controller->duplicarSemana();
-    exit;
-}
         exit;
     }
 }
@@ -470,6 +459,17 @@ if ($page === 'calendario_exportar' && isset($_GET['action']) && $_GET['action']
     exit;
 }
 
+// Duplicar semana de calendario
+if ($page === 'calendario_duplicar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_login();
+    require_role([1, 2]);
+    require_once '../controllers/CalendarioController.php';
+    $controller = new CalendarioController();
+    $controller->duplicarSemana();
+    exit;
+}
+
 // ====== ENDPOINTS DE SINCRONIZACIÓN ======
 // Solicitar sincronización de calendario
 if ($page === 'sincronizar_calendario' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -540,12 +540,7 @@ if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Guardar asistencia - Funcionalidad removida
-// if ($page === 'guardar_asistencia' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-//     require_once '../controllers/TareaController.php';
-//     TareaController::guardarAsistencias();
-//     exit;
-// }
+
 
 // Vista previa de estudiantes por colegio/ficha
 if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -647,6 +642,21 @@ if ($page === 'registro') {
         include '../views/registro.php';
         exit;
     }
+}
+
+// ====== REGISTRO PÚBLICO DE PROFESOR ======
+if ($page === 'registro_profesor') {
+    // Vista pública reutilizando el formulario de profesor
+    include '../views/Profesor/crear.php';
+    exit;
+}
+
+if ($page === 'registro_profesor_guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Guardado público (sin requerir login admin)
+    require_once '../controllers/ProfesorController.php';
+    $c = new ProfesorController();
+    $c->guardarPublico();
+    exit;
 }
 
 

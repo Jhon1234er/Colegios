@@ -62,20 +62,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (switchToRegister) {
         switchToRegister.addEventListener('click', function(e) {
             e.preventDefault();
+            // Mantener comportamiento AJAX (sin redirección inmediata)
             
             // Change welcome text
             welcomeTitle.textContent = '¡Únete!';
             welcomeSubtitle.innerHTML = 'Regístrate en <strong>System School</strong>';
             welcomeDescription.textContent = 'Crea tu cuenta y comienza tu experiencia SENA';
             
-            // Load register form content via AJAX
-            fetch('/?page=registro')
+            // Cargar formulario de Facilitador/Instructor (ruta pública)
+            fetch('/?page=registro_profesor')
                 .then(response => response.text())
                 .then(html => {
                     // Extract just the form content from the response
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-                    const formContent = doc.querySelector('.registro-container');
+                    // Preferir contenedor de profesor, si no, intentar el general
+                    const formContent = doc.querySelector('.formulario-registro') || doc.querySelector('.registro-container');
                     
                     if (formContent) {
                         // Replace the h2 title and adjust styling
@@ -99,6 +101,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Insert the content into the register form container
                         registerForm.innerHTML = formContent.innerHTML;
+
+                        // Diseño embebido: estilos rápidos para que el formulario de profesor se vea bien en el layout verde
+                        const style = document.createElement('style');
+                        style.textContent = `
+                          #registerForm { max-width: 560px; margin: 0 auto; }
+                          #registerForm .form-title { font-size: 22px; color: #2a7e2e; text-align: center; margin-bottom: 14px; }
+                          #registerForm .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+                          #registerForm .form-grid .columna { display: contents; }
+                          #registerForm label { font-size: 12px; color: #5b6b7b; margin-bottom: 4px; display: block; }
+                          #registerForm input, #registerForm select { height: 40px; border-radius: 8px; border: 1px solid #dfe5eb; padding: 8px 12px; width: 100%; }
+                          #registerForm .form-select-contrato, #registerForm .form-tipo { width: 100%; }
+                          #registerForm .btn-registrar, #registerForm .form-button { margin-top: 8px; background: #2dbf44; border: none; color: #fff; border-radius: 24px; padding: 10px 16px; width: 100%; font-weight: 600; }
+                          #registerForm .form-links { margin-top: 10px; text-align: center; }
+                          @media (max-width: 640px) { #registerForm .form-grid { grid-template-columns: 1fr; } }
+                        `;
+                        registerForm.prepend(style);
+
+                        // Si el formulario cargado es el general y trae rol_id, forzar 2
+                        const rolInput = registerForm.querySelector('input[name="rol_id"]');
+                        if (rolInput) {
+                            rolInput.value = '2';
+                        }
                         
                         // Initialize Choices.js for select elements
                         const selectElements = registerForm.querySelectorAll('select');
@@ -136,8 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     e.preventDefault();
                                     
                                     // Change welcome text back
-                                    welcomeTitle.textContent = '¡Hola!';
-                                    welcomeSubtitle.innerHTML = 'Bienvenidos a <strong>System School</strong>';
+                                    welcomeTitle.textContent = 'Bienvenidos a System School';
+                                    welcomeSubtitle.innerHTML = '';
                                     welcomeDescription.textContent = 'Tu plataforma educativa del SENA';
                                     
                                     // Switch forms back
@@ -150,12 +174,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
                         }, 300);
+                    } else {
+                        // Si no encontró el contenedor esperado, redirigir a la ruta pública de profesor
+                        window.location.href = '/?page=registro_profesor';
                     }
                 })
                 .catch(error => {
                     console.error('Error loading register form:', error);
                     // Fallback to redirect if AJAX fails
-                    window.location.href = '/?page=registro';
+                    window.location.href = '/?page=registro_profesor';
                 });
         });
     }

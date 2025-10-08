@@ -33,9 +33,10 @@ class ProfesorController {
             'numero_documento'     => trim($_POST['numero_documento'] ?? ''),
             'correo_electronico'   => trim($_POST['correo_electronico'] ?? ''),
             'telefono'             => trim($_POST['telefono'] ?? ''),
-            'fecha_nacimiento'     => $_POST['fecha_nacimiento'] ?? '',
-            'genero'               => $_POST['genero'] ?? '',
-            'password'             => $_POST['password'] ?? '',
+            'fecha_nacimiento'     => $_POST['fecha_nacimiento'] ?? null,
+            'genero'               => $_POST['genero'] ?? null,
+            // contraseña auto-generada si no viene: número de documento
+            'password'             => $_POST['password'] ?? ($_POST['numero_documento'] ?? bin2hex(random_bytes(4))),
             'titulo_academico'     => trim($_POST['titulo_academico'] ?? ''),
             'especialidad'         => trim($_POST['especialidad'] ?? ''),
             'rh'                   => trim($_POST['rh'] ?? ''),
@@ -50,6 +51,38 @@ class ProfesorController {
             exit;
         } catch (Exception $e) {
             echo "❌ Error al guardar profesor: " . $e->getMessage();
+        }
+    }
+
+    /* 📌 Registro público de profesor (sin login) */
+    public function guardarPublico() {
+        start_secure_session();
+        csrf_validate();
+
+        $datos = [
+            'nombres'              => trim($_POST['nombres'] ?? ''),
+            'apellidos'            => trim($_POST['apellidos'] ?? ''),
+            'tipo_documento'       => $_POST['tipo_documento'] ?? '',
+            'numero_documento'     => trim($_POST['numero_documento'] ?? ''),
+            'correo_electronico'   => trim($_POST['correo_electronico'] ?? ''),
+            'telefono'             => trim($_POST['telefono'] ?? ''),
+            'fecha_nacimiento'     => $_POST['fecha_nacimiento'] ?? null,
+            'genero'               => $_POST['genero'] ?? null,
+            'password'             => $_POST['password'] ?? ($_POST['numero_documento'] ?? bin2hex(random_bytes(4))),
+            'titulo_academico'     => trim($_POST['titulo_academico'] ?? ''),
+            'especialidad'         => trim($_POST['especialidad'] ?? ''),
+            'rh'                   => trim($_POST['rh'] ?? ''),
+            'correo_institucional' => trim($_POST['correo_institucional'] ?? ''),
+            'tip_contrato'         => $_POST['tip_contrato'] ?? '',
+            'rol_id'               => 2
+        ];
+
+        try {
+            $this->profesorModel->guardar($datos);
+            header('Location: /?page=login&registro_profesor=ok');
+            exit;
+        } catch (Exception $e) {
+            echo "❌ Error al registrar profesor: " . $e->getMessage();
         }
     }
 

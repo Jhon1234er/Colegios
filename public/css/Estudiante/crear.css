@@ -1,27 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 
-/* ESTILO BASE DEL FORMULARIO */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+
 
 body {
   font-family: 'Inter', sans-serif;
   background-color: whitesmoke;
   margin: 0;
-  padding: 0;
-  margin-top: 10%;
+  padding: 80px 0 80px; /* Espacio simétrico: header y pie */
+  min-height: 100vh; /* Altura de la ventana */
+  display: flex; /* Centrado vertical */
+  flex-direction: column;
+  justify-content: center; /* Centra entre los paddings superior e inferior */
 }
 
 .container {
-  max-width: 900px;
-  margin: 60px auto;
   background-color: #fff;
-  padding: 40px;
-  border-radius: 12px;
+  max-width: 960px; /* Más compacto */
+  margin: 0 auto; /* El espaciado vertical lo maneja el body */
+  padding: 24px; /* Menor padding interno */
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -30,6 +28,12 @@ h2 {
   margin-bottom: 30px;
   font-size: 28px;
   color: #304d2f;
+
+
+
+
+
+  
 }
 
 /* FORMULARIO PASOS (STEPPER) */
@@ -38,7 +42,7 @@ ol.flex.items-center {
   justify-content: space-between;
   margin-bottom: 30px;
   padding-left: 0;
-  list-style: none;
+   list-style: none;
 }
 
 ol.flex.items-center li {
@@ -48,8 +52,8 @@ ol.flex.items-center li {
 }
 
 ol.flex.items-center li .step-circle {
-  width: 38px;
-  height: 38px;
+  width: 40px; /* Más pequeño */
+  height: 40px;
   margin: 0 auto;
   background: #92b7bc;
   border-radius: 50%;
@@ -57,7 +61,7 @@ ol.flex.items-center li .step-circle {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 16px;
   color: #32595f;
   box-shadow: 0 2px 8px rgba(76,120,64,0.10);
   transition: background 0.3s, color 0.3s, transform 0.2s;
@@ -72,9 +76,9 @@ ol.flex.items-center li.active .step-circle {
 ol.flex.items-center li:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 19px;
-  left: 50%;
-  width: 100%;
+  top: 15px; /* Ajuste por círculos más pequeños */
+  left: 60%;
+  width: 80%;
   height: 4px;
   background: #badddd;
   z-index: 0;
@@ -136,7 +140,7 @@ select:focus,
 
 .row {
   display: flex;
-  gap: 24px;
+  gap: 20px; /* Un poco más compacto */
   flex-wrap: wrap;
 }
 
@@ -144,7 +148,7 @@ select:focus,
   flex: 1 1 48%;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px; /* Menor separación vertical */
 }
 
 /* BOTONES DE NAVEGACIÓN */
@@ -167,64 +171,37 @@ select:focus,
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  align-self: center;
-  
-}
-
-.next-btn:hover,
-.prev-btn:hover,
-.submit-btn:hover {
-  background-color: #336646;
-}
-
-/* FORMULARIO PASO A PASO */
-.form-step {
-  display: none;
-  animation: fadeIn 0.3s ease-in-out;
 }
 
 .form-step.active {
   display: block;
 }
 
+/* Desactivar animaciones de entrada para evitar "bajada" inicial */
+.container,
+.form-step,
+ol.flex.items-center li .step-circle {
+  animation: none !important;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
-  .container {
-    padding: 24px 8px;
-  }
-  .row {
-    flex-direction: column;
-    gap: 0;
-  }
-  .col-md-6 {
-    min-width: 100%;
-    margin-bottom: 24px;
-  }
-  .form-navigation {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .next-btn,
-  .prev-btn,
-  .submit-btn {
-    width: 100%;
-  }
-  ol.flex.items-center li .step-circle {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
-  }
+  body { padding-top: 80px; }
+  .container { padding: 20px 8px; max-width: 600px; margin: 24px auto; }
+  .row { flex-direction: column; gap: 0; }
+  .col-md-6 { min-width: 100%; margin-bottom: 24px; }
+  .form-navigation { flex-direction: column; gap: 10px; }
+  .next-btn, .prev-btn, .submit-btn { width: 100%; }
+  ol.flex.items-center li .step-circle { width: 28px; height: 28px; font-size: 13px; }
 }
 
-.btn btn-primary{
+.btn.btn-primary{
   background-color: #4c7840;
   color: #fff;
-  border: none;
   padding: 14px 24px;
   border-radius: 6px;
   font-size: 16px;
@@ -277,19 +254,4 @@ select:focus,
 }
 .detalles-registro li:last-child {
   border-bottom: none;
-}
-.acciones-finales {
-  margin-top: 30px;
-}
-.btn {
-  background: #007bff;
-  color: white;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-.btn:hover {
-  background: #0056b3;
 }

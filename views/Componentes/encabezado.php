@@ -106,7 +106,7 @@ if ($usuario_id && $tipo_usuario) {
             <a href="/?page=profesores&action=crear">Crear Facilitador</a>
             <a href="/?page=estudiantes&action=crear">Crear Aprendiz</a>
             <a href="/?page=colegios&action=crear">Registrar Colegios</a>
-            <a href="/?page=crear_materia">Registrar Cursos</a>
+            <a href="/?page=materias">Registrar Cursos</a>
           </div>
         </div>
 

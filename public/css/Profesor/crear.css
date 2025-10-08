@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+html, body {
+  height: 100%;
+}
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
@@ -8,8 +11,8 @@ body {
 
 /* Contenedor principal */
 .formulario-registro {
-  max-width: 1000px;
-  margin: 40px auto;
+  width: 30%;
+  margin: 3% auto;
   background: #fff;
   padding: 40px;
   border-radius: 16px;
@@ -22,8 +25,7 @@ body {
   margin-bottom: 40px;
   font-size: 32px;
   font-weight: 700;
-  color: #304d2f;
-  letter-spacing: -0.5px;
+  color: black;
 }
 
 /* Grid de formulario */
@@ -32,15 +34,21 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   margin-bottom: 40px;
-  align-items: start; /* Alinear al inicio */
+  align-items: start; /* Asegura alineación superior en ambas columnas */
 }
 
 .columna {
   display: flex;
   flex-direction: column;
-  gap: 24px; /* Espaciado más uniforme */
-  min-height: 600px; /* Altura mínima para ambas columnas */
 }
+
+/* Reset y espaciado consistente entre controles dentro de cada columna */
+.columna > * { margin: 0; }
+.columna > label { margin: 0 0 15px; }
+.columna > input,
+.columna > select { margin: 0 0 20px; }
+.columna > .choices { margin: 0 0 20px; } /* Selects renderizados por Choices: igual a inputs/select */
+.columna > :last-child { margin-bottom: 0; }
 
 /* Grupos de campo uniformes */
 .columna > label {
@@ -48,13 +56,10 @@ body {
   font-weight: 600;
   color: #374151;
   letter-spacing: 0.25px;
-  min-height: 20px; /* Altura mínima para todos los labels */
   display: block;
 }
 
-.columna > input {
-  margin-bottom: 21px; /* Espaciado consistente después de cada campo */
-}
+
 
 /* Estilos para el datepicker */
 .flatpickr-calendar {
@@ -124,14 +129,26 @@ body {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Igualar altura visual de Choices a 48px */
+.choices__inner {
+  min-height: 48px !important;
+  padding: 10px 12px !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+}
+.choices[data-type*='select-one'] .choices__inner { padding-bottom: 10px !important; }
+.choices__list--single { padding: 0 !important; }
+.choices__list--dropdown { z-index: 10000; }
+
 /* Estilo específico para el campo de fecha */
 .form-nacimiento {
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') !important;
-  background-repeat: no-repeat !important;
-  background-position: right 12px center !important;
-  background-size: 18px !important;
-  padding-right: 40px !important;
-  cursor: pointer !important;
+
+  background-repeat: no-repeat ;
+  background-position: right 12px center ;
+  background-size: 18px ;
+  padding-right: 40px ;
+  cursor: pointer ;
 }
 
 /* Selectores con estilos personalizados */
@@ -139,11 +156,6 @@ select.form-tipo,
 select.form-select-rh,
 select.form-selec-genero,
 select.form-select-contrato {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="%23374151" d="M8 11L3 6h10l-5 5z"/></svg>');
-  background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
   padding-right: 40px;
@@ -153,7 +165,6 @@ select.form-select-contrato {
 /* Campo de fecha con icono */
 .form-nacimiento {
   background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23374151" stroke-width="2"><rect x="3" y="4" width="18" height="15" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>');
-  background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
   padding-right: 40px;
@@ -175,9 +186,23 @@ select.form-select-contrato {
 .form-control-especialidad:focus,
 .form-select-contrato:focus,
 .form-contraseña:focus {
-  border-color: #6366f1;
+  border-color: #3ee35c;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   background: #fefefe;
+}
+
+
+/* Solo mostrar validación en focus */
+.form-nombre:focus:invalid,
+.form-apellido:focus:invalid,
+.form-documento:focus:invalid,
+.form-personal:focus:invalid,
+.form-institucional:focus:invalid,
+.form-numero:focus:invalid,
+.form-control-titulo:focus:invalid,
+.form-control-especialidad:focus:invalid,
+.form-contraseña:focus:invalid {
+  border-color: #db2121;
 }
 
 /* Hover effects */
@@ -208,7 +233,7 @@ select.form-select-contrato {
 .form-control-titulo::placeholder,
 .form-control-especialidad::placeholder,
 .form-contraseña::placeholder {
-  color: #1b5dcf;
+  color: #77d8f6;
   opacity: 1;
   font-style: italic;
 }
@@ -219,55 +244,25 @@ select.form-select-contrato {
   width: 280px;
   height: 56px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #4c7840 0%, #3a5e2f 100%);
+  background: #00304D;
   color: white;
-  border: none;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(76, 120, 64, 0.2);
-  letter-spacing: 0.5px;
 }
 
 .btn-registrar:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(76, 120, 64, 0.3);
-  background: linear-gradient(135deg, #3a5e2f 0%, #304d2f 100%);
+  background: #2b6386;
 }
 
-.btn-registrar:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 16px rgba(76, 120, 64, 0.2);
-}
 
-/* Eliminar validación visual que causa desnivelación */
-.form-nombre,
-.form-apellido,
-.form-documento,
-.form-personal,
-.form-institucional,
-.form-numero,
-.form-control-titulo,
-.form-control-especialidad,
-.form-contraseña {
-  border-color: #e5e7eb !important; /* Forzar borde uniforme */
-}
 
-/* Solo mostrar validación en focus */
-.form-nombre:focus:invalid,
-.form-apellido:focus:invalid,
-.form-documento:focus:invalid,
-.form-personal:focus:invalid,
-.form-institucional:focus:invalid,
-.form-numero:focus:invalid,
-.form-control-titulo:focus:invalid,
-.form-control-especialidad:focus:invalid,
-.form-contraseña:focus:invalid {
-  border-color: #db2121;
-}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -294,7 +289,7 @@ select.form-select-contrato {
 
   .columna {
     gap: 20px;
-    min-height: auto; /* Remover altura mínima en móvil */
+    min-height: auto; 
   }
 
   .btn-registrar {
@@ -333,10 +328,6 @@ select.form-select-contrato {
   }
 }
 
-/* Mejoras de accesibilidad */
-.formulario-registro label:focus-within {
-  color: #6366f1;
-}
 
 /* Animación suave al cargar */
 .formulario-registro {
@@ -354,14 +345,3 @@ select.form-select-contrato {
   }
 }
 
-/* Efectos especiales para los selectores */
-select.form-tipo:focus,
-select.form-select-rh:focus,
-select.form-selec-genero:focus,
-select.form-select-contrato:focus {
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="%236366f1" d="M8 11L3 6h10l-5 5z"/></svg>');
-}
-
-.form-nacimiento:focus {
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%236366f1" stroke-width="2"><rect x="3" y="4" width="18" height="15" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>');
-}
