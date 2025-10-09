@@ -2,7 +2,14 @@
 require_once '../helpers/auth.php';
 require_once '../controllers/AuthController.php';
 // Autoload de Composer (PhpSpreadsheet, Dompdf, etc.)
-require_once __DIR__ . '/../vendor/autoload.php';
+// Cargar autoload solo si existe, para evitar error fatal cuando no está instalado
+$__autoload = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($__autoload)) {
+    require_once $__autoload;
+} else {
+    // Registrar aviso en el log; algunas funciones (PDF/Excel) no estarán disponibles
+    error_log('Aviso: vendor/autoload.php no encontrado. Ejecuta "composer install" en la raíz del proyecto.');
+}
 
 start_secure_session();
 
