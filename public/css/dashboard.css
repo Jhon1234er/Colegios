@@ -59,10 +59,38 @@ body{
   border-radius:var(--r-pill);
   padding:18px 26px;
   box-shadow:var(--sh);
-  display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 24px; /* separación visible entre "Bienvenido" y "Rol" */
   font-weight:800; letter-spacing:.02em;
 }
-.div9 p{color:#fff; font-size:1.05rem}
+.div9 p{color:#fff; font-size:1.05rem; margin:0}
+/* saludo central entre Bienvenido y Rol */
+.welcome-center{
+  color:#fff; font-weight:900; letter-spacing:.04em;
+  font-size:1.05rem; display:flex; align-items:center; gap:8px;
+}
+.hand-wave{ display:inline-block; transform-origin: 70% 70%; animation: wave 1.4s ease-in-out infinite; }
+@keyframes wave{ 0%{transform:rotate(0)} 15%{transform:rotate(18deg)} 30%{transform:rotate(-10deg)} 45%{transform:rotate(14deg)} 60%{transform:rotate(-6deg)} 75%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
+/* versión SVG en verde */
+.hand-wave-svg{ display:inline-block; transform-origin: 70% 70%; animation: wave 1.4s ease-in-out infinite; fill: var(--green); color: var(--green); }
+.hand-wave-svg path{ fill: currentColor; }
+/* personita saludando */
+.person-wave{ display:inline-block; margin-left: 6px; }
+.pw-head{ fill: var(--green); }
+.pw-body{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round; stroke-linejoin:round }
+.pw-arm-fixed{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round }
+.pw-arm-line{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round; transform-origin: 0 0 }
+.pw-hand{ fill: var(--green) }
+/* animación del brazo derecho */
+.person-wave .pw-arm{ transform-origin: 0 0; animation: armwave 1.4s ease-in-out infinite }
+@keyframes armwave{ 0%{transform:rotate(0)} 20%{transform:rotate(-18deg)} 40%{transform:rotate(12deg)} 60%{transform:rotate(-14deg)} 80%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
+
+/* Mano de contorno verde */
+.hand-outline{ display:inline-block; margin-left:8px; }
+.hand-outline path{ fill:none; stroke: var(--green); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round }
+.hand-outline .ho-accent{ stroke-width:2; opacity:.8 }
+.hand-outline{ transform-origin: 24px 28px; animation: handwave 1.4s ease-in-out infinite }
+@keyframes handwave{ 0%{transform:rotate(0)} 20%{transform:rotate(-12deg)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-10deg)} 80%{transform:rotate(8deg)} 100%{transform:rotate(0)} }
 
 /* ===== COLUMNA IZQUIERDA ===== */
 .indicaciones-column{grid-area:indicaciones; display:flex; flex-direction:column; gap:18px}
@@ -188,6 +216,175 @@ body{
   overflow-y:auto; z-index:1000; max-height:calc(100vh - 100px);
 }
 #dashboard-overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:none}
+
+
+/* =========================================================
+   MODALES DE REPORTES (coinciden con la maqueta)
+   ========================================================= */
+
+/* Dialog y contenedor */
+.modal.fade .modal-dialog{
+  transform: translateY(-8px);
+  transition: transform .25s ease, opacity .25s ease;
+}
+.modal.show .modal-dialog{ transform: translateY(0); }
+
+.modal-content{
+  border: 2px solid var(--blue);
+  border-radius: 18px;
+  box-shadow: 0 14px 28px rgba(0,0,0,.12);
+  overflow: visible; /* no cortar flatpickr */
+}
+
+/* Header azul con título centrado y botón cerrar blanco */
+.modal-header{
+  background: var(--blue);
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  border-top-left-radius: 16px; border-top-right-radius: 16px;
+}
+.modal-title{
+  font-weight: 800; letter-spacing: .02em;
+  width: 100%; text-align: center; color:#fff;
+}
+.modal-header .btn-close{
+  filter: invert(1); opacity: .9;
+}
+.modal-header .btn-close:focus{ box-shadow: none; }
+
+/* Cuerpo */
+.modal-body{ background:#fff; }
+.modal-body .form-label{
+  font-weight: 700; color:#000; margin-bottom: 6px;
+}
+
+/* Selects e inputs con borde verde (focus también) */
+.modal-body .form-select,
+.modal-body .form-control{
+  border: 2px solid var(--green);
+  border-radius: 14px;
+  padding: 10px 12px;
+  outline: none;
+  box-shadow: none;
+}
+.modal-body .form-select:focus,
+.modal-body .form-control:focus{
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(57,169,0,.15);
+}
+
+/* Grupo de fichas: check tipo “chip” */
+#fichasContainerPDF,
+#fichasContainerExcel{
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+#fichasContainerPDF .form-check,
+#fichasContainerExcel .form-check{
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 0; /* el gap del grid se encarga del espacio */
+  padding: 8px 12px;
+  border: 2px solid var(--green);
+  border-radius: 12px;
+  background: #fff;
+  transition: .2s ease;
+  width: 100%;
+}
+#fichasContainerPDF .form-check:hover,
+#fichasContainerExcel .form-check:hover{
+  background: rgba(57,169,0,.06);
+}
+
+/* Checkbox cuadrado con borde verde; activo relleno verde */
+#fichasContainerPDF .form-check-input,
+#fichasContainerExcel .form-check-input{
+  width: 20px; height: 20px;
+  margin-top: 0; margin-left: 0;
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  box-shadow: none;
+}
+#fichasContainerPDF .form-check-input:checked,
+#fichasContainerExcel .form-check-input:checked{
+  background-color: var(--green);
+  border-color: var(--green);
+}
+#fichasContainerPDF .form-check-label,
+#fichasContainerExcel .form-check-label{
+  color:#000; font-weight: 600; cursor: pointer;
+}
+
+/* “Seleccionar todas” alineado limpio */
+#checkAllFichasPDF,
+#checkAllFichasExcel{
+  width: 18px; height: 18px; border-radius: 6px;
+  border: 2px solid var(--green);
+  box-shadow: none;
+}
+#checkAllFichasPDF:checked,
+#checkAllFichasExcel:checked{
+  background: var(--green); border-color: var(--green);
+}
+
+/* Vista previa: tabla con borde verde y cabeceras tipo cápsula */
+.table.table-bordered{
+  border-color: var(--green) !important;
+}
+.table.table-bordered thead th{
+  background: #fff !important;
+  color: #000 !important;
+  border: 2px solid var(--green) !important;
+  border-radius: 10px;             /* efecto pastilla en cabeceras */
+  font-weight: 800; font-size: .9rem;
+  text-align: center;
+}
+.table.table-bordered tbody td{
+  border: 1.8px solid var(--green) !important;
+}
+
+/* Footer: dos botones AZULES (como en la maqueta) */
+.modal-footer{
+  border-top: 1px solid #eef1f4;
+  background: #fff;
+  display: flex; gap: 12px; justify-content: center;
+}
+
+/* Forzar azul a los botones del modal (PDF y Excel) */
+#modalReportesPDF .btn,
+#modalReportesExcel .btn{
+  background: var(--blue) !important;
+  color:#fff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 10px 18px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 20px rgba(0,48,77,.18);
+  transition: transform .15s ease, filter .2s ease;
+}
+#modalReportesPDF .btn:hover,
+#modalReportesExcel .btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+#modalReportesPDF .btn:active,
+#modalReportesExcel .btn:active{
+  transform: translateY(0);
+}
+
+/* Responsive modal */
+@media (max-width: 576px){
+  .modal-dialog{ margin: .75rem; }
+  .modal-title{ font-size: 1rem; }
+  .modal-footer{ flex-direction: column; }
+  #fichasContainerPDF .form-check,
+  #fichasContainerExcel .form-check{ width: 100%; }
+}
+
+/* Ensanchar el modal grande para acomodar 4 fichas y el calendario */
+.modal-lg{ max-width: 1000px; }
+@media (max-width: 992px){
+  .modal-lg{ max-width: 95%; }
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width:1200px){

@@ -776,6 +776,14 @@ if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// ====== ENDPOINT PREVIEW V2 (para modales de reportes) ======
+if ($page === 'preview_v2' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 2]);
+    include '../views/Archivos/preview.php';
+    exit;
+}
+
 // ====== CALENDARIO ======
 if ($page === 'calendario') {
     require_login();

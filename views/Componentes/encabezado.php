@@ -51,9 +51,10 @@ if ($usuario_id && $tipo_usuario) {
 </head>
 <body>
 <header class="header-unified" role="banner">
-  <div class="header-inner" style="display:flex;align-items:center;gap:16px;width:100%;min-width:0;justify-content:space-between">
+  <div class="header-inner">
     <!-- Logo -->
     <div class="logo-section" style="flex:0 0 auto">
+      <img src="/icons/logo_sistem.png" alt="Logo Sistem Scholl">
       <a href="/?page=dashboard" class="logo" aria-label="Ir al inicio">Sistem Scholl</a>
     </div>
 
@@ -133,24 +134,30 @@ if ($usuario_id && $tipo_usuario) {
           </a>
 
         <?php elseif ($rol_id === 2): ?>
-          <a href="/?page=dashboard_profesor" class="nav-link">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-            Mis Fichas
-          </a>
-          <a href="/?page=calendario" class="nav-link">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-            Calendario
-          </a>
-          <a href="/?page=fichas&action=crear" class="nav-link">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Nueva Ficha
-          </a>
+          <div class="nav-item-box" role="listitem">
+            <a href="/?page=dashboard_profesor" class="nav-link">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+              </svg>
+              Mis Fichas
+            </a>
+          </div>
+          <div class="nav-item-box" role="listitem">
+            <a href="/?page=calendario" class="nav-link">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Calendario
+            </a>
+          </div>
+          <div class="nav-item-box" role="listitem">
+            <a href="/?page=fichas&action=crear" class="nav-link">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Nueva Ficha
+            </a>
+          </div>
         <?php endif; ?>
       </nav>
 
@@ -213,8 +220,8 @@ if ($usuario_id && $tipo_usuario) {
         <div class="profile-menu" data-dropdown>
           <button type="button" class="profile-btn" data-dropdown-button aria-haspopup="true" aria-expanded="false">
             <img src="/icons/usuario.png" alt="Perfil" class="profile-avatar" />
-            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <svg class="profile-caret-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></polyline>
             </svg>
           </button>
           <div class="profile-dropdown" role="menu">
@@ -278,6 +285,10 @@ if ($usuario_id && $tipo_usuario) {
         el.style.visibility = 'hidden';
         el.style.pointerEvents = 'none';
       });
+      // quitar estado activo para flechas/estilos
+      $$('.profile-menu, [data-dropdown]').forEach(el => el.classList.remove('active'));
+      // aria-expanded a false en todos los botones de dropdown
+      $$('[data-dropdown-button]').forEach(btn => btn.setAttribute('aria-expanded','false'));
       if (panelNotif) panelNotif.classList.remove('active');
       if (btnNotif) btnNotif.setAttribute('aria-expanded','false');
       return;
@@ -296,14 +307,22 @@ if ($usuario_id && $tipo_usuario) {
           el.style.pointerEvents = 'none';
         }
       });
+      // Quitar 'active' a otros dropdowns
+      $$('.profile-menu, [data-dropdown]').forEach(el => {
+        if (el !== dropdown) el.classList.remove('active');
+      });
 
       // Toggle del actual
       const menu = dropdown.querySelector('.dropdown-content, .profile-dropdown');
+      const btn = dropdown.querySelector('[data-dropdown-button]');
       const visible = menu && menu.style.visibility === 'visible';
       if (menu) {
         menu.style.opacity   = visible ? '0' : '1';
         menu.style.visibility= visible ? 'hidden' : 'visible';
         menu.style.pointerEvents = visible ? 'none' : 'auto';
+        // Marcar contenedor como activo para rotar flecha del perfil
+        if (visible) dropdown.classList.remove('active'); else dropdown.classList.add('active');
+        if (btn) btn.setAttribute('aria-expanded', visible ? 'false' : 'true');
       }
     }
   });
