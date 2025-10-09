@@ -1,6 +1,6 @@
 .footer {
   /* Colores y tipografía */
-  background: linear-gradient(135deg, #436b7e 0%, #3a5d70 100%);
+  background: #00304D;
   color: #ffffff;
   text-align: center;
   font-size: 0.875rem; /* 14px - más específico que 0.85rem */
@@ -27,13 +27,7 @@
   transition: all 0.3s ease;
 }
 
-/* Hover effect para interactividad */
-.footer:hover {
-  background: linear-gradient(135deg, #3a5d70 0%, #436b7e 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.2), 
-              0 -2px 4px rgba(0, 0, 0, 0.1);
-}
+
 
 /* Enlaces dentro del footer */
 .footer a {

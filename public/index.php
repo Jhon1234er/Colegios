@@ -646,8 +646,8 @@ if ($page === 'registro') {
 
 // ====== REGISTRO PÚBLICO DE PROFESOR ======
 if ($page === 'registro_profesor') {
-    // Vista pública reutilizando el formulario de profesor
-    include '../views/Profesor/crear.php';
+    // Vista pública del nuevo formulario de profesor
+    include '../views/Profesor/registro.php';
     exit;
 }
 

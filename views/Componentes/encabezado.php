@@ -50,285 +50,281 @@ if ($usuario_id && $tipo_usuario) {
 
 </head>
 <body>
-
-<header class="header-unified">
-  <!-- Logo -->
-  <div class="logo-section">
-    <a href="/?page=dashboard" class="logo">Sistem Scholl</a>
-  </div>
-
-  <!-- Buscador (solo para administradores en dashboard) -->
-  <?php if ($usuario && $rol_id === 1): ?>
-    <?php 
-    $current_page = $_GET['page'] ?? '';
-    // Mostrar en dashboard (cuando page=dashboard o cuando no hay page definida y estamos en dashboard)
-    if ($current_page === 'dashboard' || ($current_page === '' && !isset($_GET['action']))): 
-    ?>
-    <div class="search-section">
-      <form id="buscador-global" class="search-form">
-        <div class="select-wrapper">
-          <select id="filtro-busqueda" class="search-select">
-            <option value="colegio">Colegios</option>
-            <option value="profesor">Facilitadores</option>
-            <option value="estudiante">Aprendices</option>
-          </select>
-          <div class="select-arrow">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <polyline points="6,9 12,15 18,9"></polyline>
-            </svg>
-          </div>
-        </div>
-        <input id="input-busqueda" type="text" placeholder="Buscar..." class="search-input" />
-        <button type="submit" class="search-btn">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </form>
+<header class="header-unified" role="banner">
+  <div class="header-inner" style="display:flex;align-items:center;gap:16px;width:100%;min-width:0;justify-content:space-between">
+    <!-- Logo -->
+    <div class="logo-section" style="flex:0 0 auto">
+      <a href="/?page=dashboard" class="logo" aria-label="Ir al inicio">Sistem Scholl</a>
     </div>
+
+    <!-- Buscador (solo admin en dashboard) -->
+    <?php if ($usuario && $rol_id === 1): ?>
+      <?php 
+        $current_page = $_GET['page'] ?? '';
+        $mostrar_buscador = ($current_page === 'dashboard' || ($current_page === '' && !isset($_GET['action'])));
+      ?>
+      <?php if ($mostrar_buscador): ?>
+        <div class="search-section" role="search" aria-label="Buscador global">
+          <form id="buscador-global" class="search-form" autocomplete="off">
+            <div class="select-wrapper">
+              <select id="filtro-busqueda" class="search-select" aria-label="Filtro de búsqueda">
+                <option value="colegio">Colegios</option>
+                <option value="profesor">Facilitadores</option>
+                <option value="estudiante">Aprendices</option>
+              </select>
+              <span class="select-arrow" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" aria-hidden="true">
+                  <polyline points="6,9 12,15 18,9"></polyline>
+                </svg>
+              </span>
+            </div>
+            <input id="input-busqueda" type="text" placeholder="Buscar..." class="search-input" aria-label="Ingresar término de búsqueda" />
+            <button type="submit" class="search-btn" aria-label="Buscar">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </button>
+          </form>
+        </div>
+      <?php endif; ?>
     <?php endif; ?>
-  <?php endif; ?>
 
-  <!-- Navegación Principal -->
-  <?php if ($usuario): ?>
-    <nav class="nav-main">
-      <?php if ($rol_id === 1): ?>
+    <!-- Navegación -->
+    <?php if ($usuario): ?>
+      <nav class="nav-main" role="navigation" aria-label="Navegación principal">
+        <?php if ($rol_id === 1): ?>
+          <!-- Registros -->
+          <div class="dropdown" data-dropdown>
+            <button type="button" class="dropbtn" aria-haspopup="true" aria-expanded="false" data-dropdown-button>
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Registros
+            </button>
+            <div class="dropdown-content" role="menu">
+              <a role="menuitem" href="/?page=profesores&action=crear">Crear Facilitador</a>
+              <a role="menuitem" href="/?page=estudiantes&action=crear">Crear Aprendiz</a>
+              <a role="menuitem" href="/?page=colegios&action=crear">Registrar Colegios</a>
+              <a role="menuitem" href="/?page=materias">Registrar Cursos</a>
+            </div>
+          </div>
 
-        <!-- Menús de navegación (Administrador) -->
-        <div class="dropdown">
-          <button class="dropbtn">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- Listas -->
+          <div class="dropdown" data-dropdown>
+            <button type="button" class="dropbtn" aria-haspopup="true" aria-expanded="false" data-dropdown-button>
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+              </svg>
+              Listas
+            </button>
+            <div class="dropdown-content" role="menu">
+              <a role="menuitem" href="/?page=profesores">Facilitadores</a>
+              <a role="menuitem" href="/?page=estudiantes">Aprendices</a>
+              <a role="menuitem" href="/?page=colegios">Colegios</a>
+              <a role="menuitem" href="/?page=materias">Cursos</a>
+            </div>
+          </div>
+
+          <a href="/?page=dashboard" class="dropbtn">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Inicio
+          </a>
+
+        <?php elseif ($rol_id === 2): ?>
+          <a href="/?page=dashboard_profesor" class="nav-link">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            Mis Fichas
+          </a>
+          <a href="/?page=calendario" class="nav-link">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Calendario
+          </a>
+          <a href="/?page=fichas&action=crear" class="nav-link">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            Registros
-          </button>
-          <div class="dropdown-content">
-            <a href="/?page=profesores&action=crear">Crear Facilitador</a>
-            <a href="/?page=estudiantes&action=crear">Crear Aprendiz</a>
-            <a href="/?page=colegios&action=crear">Registrar Colegios</a>
-            <a href="/?page=materias">Registrar Cursos</a>
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="dropbtn">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-            </svg>
-            Listas
-          </button>
-          <div class="dropdown-content">
-            <a href="/?page=profesores">Facilitadores</a>
-            <a href="/?page=estudiantes">Aprendices</a>
-            <a href="/?page=colegios">Colegios</a>
-            <a href="/?page=materias">Cursos</a>
-          </div>
-        </div>
-
-        <a href="/?page=dashboard" class="nav-link">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-          </svg>
-          Inicio
-        </a>
-
-      <?php elseif ($rol_id === 2): ?>
-        <a href="/?page=dashboard_profesor" class="nav-link">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-          </svg>
-          Mis Fichas
-        </a>
-        <a href="/?page=calendario" class="nav-link">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-          Calendario
-        </a>
-        <a href="/?page=fichas&action=crear" class="nav-link">
-          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Nueva Ficha
-        </a>
-      <?php endif; ?>
-    </nav>
-
-    <!-- Panel de Usuario -->
-    <div class="user-panel">
-      <!-- Notificaciones -->
-      <div class="notifications-btn" onclick="toggleNotifications()">
-        <i class="fa-regular fa-bell" style="font-size:18px;"></i>
-        <?php if ($totalNoLeidas > 0): ?>
-          <span class="notifications-badge"><?= $totalNoLeidas ?></span>
+            Nueva Ficha
+          </a>
         <?php endif; ?>
-      </div>
+      </nav>
 
-      <!-- Panel de notificaciones -->
-      <div id="notifications-panel" class="notifications-panel">
-        <div class="notifications-header">
-          Notificaciones
-        </div>
-        <div class="notifications-list">
-          <?php if (empty($notificaciones)): ?>
-            <div class="empty-notifications">
-              No tienes notificaciones nuevas
-            </div>
-          <?php else: ?>
-            <?php foreach ($notificaciones as $n): ?>
-              <div class="notification-item <?= $n['estado'] === 'no_leida' ? 'unread' : '' ?>">
-                <div class="notification-content">
-                  <?= htmlspecialchars(str_replace('profesor', 'facilitador', $n['mensaje'])) ?>
-                </div>
-                
-                <?php if ($n['botones_accion'] && $n['estado'] === 'no_leida'): ?>
-                  <?php $botones = json_decode($n['botones_accion'], true); ?>
-                  <?php $datos = json_decode($n['datos_accion'], true); ?>
-                  <div class="notification-buttons">
-                    <?php if (isset($botones['aceptar'])): ?>
-                      <button class="btn-aceptar" onclick="responderSolicitud(<?= $datos['solicitud_id'] ?>, 'aceptar', <?= $n['id'] ?>)">
-                        <?= $botones['aceptar'] ?>
-                      </button>
-                    <?php endif; ?>
-                    <?php if (isset($botones['rechazar'])): ?>
-                      <button class="btn-rechazar" onclick="responderSolicitud(<?= $datos['solicitud_id'] ?>, 'rechazar', <?= $n['id'] ?>)">
-                        <?= $botones['rechazar'] ?>
-                      </button>
-                    <?php endif; ?>
-                  </div>
-                <?php elseif ($n['botones_accion'] && $n['estado'] === 'leida'): ?>
-                  <div class="notification-buttons-disabled">
-                    <span class="btn-disabled">Procesado</span>
-                  </div>
-                <?php endif; ?>
-                
-                <div class="notification-actions">
-                  <span class="notification-date"><?= date('d/m/Y H:i', strtotime($n['fecha'])) ?></span>
-                  <?php if ($n['estado'] === 'no_leida'): ?>
-                    <button class="mark-read-btn" onclick="markAsRead(<?= $n['id'] ?>)">
-                      Marcar leída
-                    </button>
-                  <?php endif; ?>
-                </div>
-              </div>
-            <?php endforeach; ?>
+      <!-- Panel de usuario -->
+      <div class="user-panel" style="flex:0 0 auto;display:flex;align-items:center;gap:12px;position:relative">
+        <!-- Notificaciones -->
+        <button type="button" class="notifications-btn" id="btn-notificaciones" aria-expanded="false" aria-controls="notifications-panel" title="Notificaciones">
+          <i class="fa-regular fa-bell" style="font-size:18px;"></i>
+          <?php if ($totalNoLeidas > 0): ?>
+            <span class="notifications-badge" aria-label="No leídas"><?= $totalNoLeidas ?></span>
           <?php endif; ?>
-        </div>
-      </div>
-
-      <!-- Menú de Perfil -->
-      <div class="profile-menu">
-        <button class="profile-btn">
-          <img src="/icons/usuario.png" alt="Perfil" class="profile-avatar" />
-          <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
         </button>
-        <div class="profile-dropdown">
-          <a href="/?page=ver_perfil">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-            Ver Perfil
-          </a>
-          <a href="#">
-            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            Configuración
-          </a>
-        </div>
-      </div>
 
-      <!-- Botón de Logout -->
-      <form action="/logout.php" method="post" style="display:inline;">
-        <button type="submit" class="logout-btn" title="Cerrar sesión">
-          <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-          </svg>
-          Salir
-        </button>
-      </form>
-    </div>
-  <?php endif; ?>
+        <div id="notifications-panel" class="notifications-panel" role="region" aria-label="Notificaciones">
+          <div class="notifications-header">Notificaciones</div>
+          <div class="notifications-list">
+            <?php if (empty($notificaciones)): ?>
+              <div class="empty-notifications">No tienes notificaciones nuevas</div>
+            <?php else: ?>
+              <?php foreach ($notificaciones as $n): ?>
+                <div class="notification-item <?= $n['estado'] === 'no_leida' ? 'unread' : '' ?>">
+                  <div class="notification-content">
+                    <?= htmlspecialchars(str_replace('profesor', 'facilitador', $n['mensaje'])) ?>
+                  </div>
+
+                  <?php if ($n['botones_accion'] && $n['estado'] === 'no_leida'): ?>
+                    <?php $botones = json_decode($n['botones_accion'], true); ?>
+                    <?php $datos = json_decode($n['datos_accion'], true); ?>
+                    <div class="notification-buttons">
+                      <?php if (isset($botones['aceptar'])): ?>
+                        <button type="button" class="btn-aceptar" onclick="responderSolicitud(<?= (int)$datos['solicitud_id'] ?>, 'aceptar', <?= (int)$n['id'] ?>)">
+                          <?= $botones['aceptar'] ?>
+                        </button>
+                      <?php endif; ?>
+                      <?php if (isset($botones['rechazar'])): ?>
+                        <button type="button" class="btn-rechazar" onclick="responderSolicitud(<?= (int)$datos['solicitud_id'] ?>, 'rechazar', <?= (int)$n['id'] ?>)">
+                          <?= $botones['rechazar'] ?>
+                        </button>
+                      <?php endif; ?>
+                    </div>
+                  <?php elseif ($n['botones_accion'] && $n['estado'] === 'leida'): ?>
+                    <div class="notification-buttons-disabled">
+                      <span class="btn-disabled">Procesado</span>
+                    </div>
+                  <?php endif; ?>
+
+                  <div class="notification-actions">
+                    <span class="notification-date"><?= date('d/m/Y H:i', strtotime($n['fecha'])) ?></span>
+                    <?php if ($n['estado'] === 'no_leida'): ?>
+                      <button type="button" class="mark-read-btn" onclick="markAsRead(<?= (int)$n['id'] ?>)">Marcar leída</button>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </div>
+        </div>
+
+        <!-- Menú Perfil -->
+        <div class="profile-menu" data-dropdown>
+          <button type="button" class="profile-btn" data-dropdown-button aria-haspopup="true" aria-expanded="false">
+            <img src="/icons/usuario.png" alt="Perfil" class="profile-avatar" />
+            <svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="profile-dropdown" role="menu">
+            <a role="menuitem" href="/?page=ver_perfil">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Ver Perfil
+            </a>
+            <a role="menuitem" href="/?page=configuracion">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Configuración
+            </a>
+            <a role="menuitem" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
+              <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              Salir
+            </a>
+          </div>
+        </div>
+
+        <!-- Hidden logout POST form -->
+        <form id="logout-form" action="/logout.php" method="post" style="display:none;"></form>
+      </div>
+    <?php endif; ?>
+  </div>
 </header>
 
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script>
-// Toggle panel de notificaciones
-function toggleNotifications() {
-  const panel = document.getElementById('notifications-panel');
-  panel.classList.toggle('active');
-  
-  // Cerrar al hacer clic fuera
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.notifications-btn') && !e.target.closest('#notifications-panel')) {
-      panel.classList.remove('active');
+// ---------- UTIL: fuera de control, centralizamos listeners una sola vez
+(function () {
+  const $ = (sel, ctx=document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+  // Notificaciones (un solo listener global)
+  const btnNotif = $('#btn-notificaciones');
+  const panelNotif = $('#notifications-panel');
+
+  if (btnNotif && panelNotif) {
+    btnNotif.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panelNotif.classList.toggle('active');
+      const expanded = panelNotif.classList.contains('active');
+      btnNotif.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+  }
+
+  // Dropdowns por clic (soporta touch). Cierra los demás si abres uno
+  document.addEventListener('click', (e) => {
+    const isToggle = e.target.closest('[data-dropdown-button]');
+    const dropdown = e.target.closest('[data-dropdown]');
+
+    // Cerrar todo si haces click fuera
+    if (!dropdown) {
+      $$('.dropdown-content, .profile-dropdown').forEach(el => {
+        el.style.opacity = '0';
+        el.style.visibility = 'hidden';
+        el.style.pointerEvents = 'none';
+      });
+      if (panelNotif) panelNotif.classList.remove('active');
+      if (btnNotif) btnNotif.setAttribute('aria-expanded','false');
+      return;
+    }
+
+    // Si el botón del dropdown fue clickeado
+    if (isToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Cierra otros
+      $$('.dropdown-content, .profile-dropdown').forEach(el => {
+        if (!dropdown.contains(el)) {
+          el.style.opacity = '0';
+          el.style.visibility = 'hidden';
+          el.style.pointerEvents = 'none';
+        }
+      });
+
+      // Toggle del actual
+      const menu = dropdown.querySelector('.dropdown-content, .profile-dropdown');
+      const visible = menu && menu.style.visibility === 'visible';
+      if (menu) {
+        menu.style.opacity   = visible ? '0' : '1';
+        menu.style.visibility= visible ? 'hidden' : 'visible';
+        menu.style.pointerEvents = visible ? 'none' : 'auto';
+      }
     }
   });
-}
+})();
 
-// Marcar notificación como leída
+// ---------- APIs (sin cambios sustanciales)
 function markAsRead(notificationId) {
   const formData = new FormData();
   formData.append('notificacion_id', notificationId);
-  
-  fetch('/?page=marcar_notificacion', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Actualizar la interfaz
-      location.reload();
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+  fetch('/?page=marcar_notificacion', { method: 'POST', body: formData })
+    .then(r => r.json()).then(d => { if (d.success) location.reload(); });
 }
 
-// Responder a solicitud de compartir ficha
 function responderSolicitud(solicitudId, respuesta, notificationId) {
   fetch('index.php?page=responder_solicitud', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ 
-      solicitud_id: solicitudId, 
-      respuesta: respuesta 
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ solicitud_id: solicitudId, respuesta })
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Marcar notificación como leída automáticamente
-      markAsRead(notificationId);
-    } else {
-      alert('Error: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('Error al procesar la respuesta');
-  });
+  .then(r => r.json())
+  .then(d => d.success ? markAsRead(notificationId) : alert('Error: ' + d.message))
+  .catch(() => alert('Error al procesar la respuesta'));
 }
-
-
-// Cerrar dropdowns al hacer clic fuera
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.dropdown') && !e.target.closest('.profile-menu')) {
-    // Cerrar todos los dropdowns activos
-    document.querySelectorAll('.dropdown-content, .profile-dropdown').forEach(dropdown => {
-      dropdown.style.opacity = '0';
-      dropdown.style.visibility = 'hidden';
-    });
-  }
-});
 </script>
-
-</body>
-</html>

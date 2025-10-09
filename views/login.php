@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - SENA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/login_sena.css">
     <!-- Estilos para el calendario -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -13,19 +16,17 @@
 </head>
 <body>
 
-<div class="login-container">
     <!-- Panel de bienvenida -->
     <div class="welcome-panel" id="welcomePanel">
         <div class="welcome-content">
             <img src="/icons/logo_sena.jpeg" alt="Logo SENA" class="sena-logo">
             <div class="welcome-text" id="welcomeText">
-                <h1 id="welcomeTitle">Bienvenidos a <strong>System School</strong></h1>
+                <h1 id="welcomeTitle">Bienvenidos a <strong>Sistem&nbsp;School</strong></h1>
                 <h2 id="welcomeSubtitle"></h2>
                 <p id="welcomeDescription">Tu plataforma educativa del SENA</p>
             </div>
         </div>
     </div>
-
     <!-- Panel Derecho - Formulario Login -->
     <div class="login-panel" id="loginPanel">
         <div class="form-container">
@@ -36,17 +37,19 @@
                 <form method="POST" action="index.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                     
-                    <div class="form-group">
-                        <label for="correo">Usuario</label>
-                        <input type="email" name="correo" id="correo" required>
+                    <!-- Usuario -->
+                    <div class="form-group floating">
+                    <input type="email" name="correo" id="correo" placeholder=" " required>
+                    <label for="correo">Usuario</label>
                     </div>
 
-                    <div class="form-group">
+                    <!-- Contraseña -->
+                    <div class="form-group floating">
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="password" placeholder=" " required>
                         <label for="password">Contraseña</label>
-                        <div class="password-wrapper">
-                            <input type="password" name="password" id="password" required>
-                            <img src="/icons/Ver.svg" alt="Ver contraseña" id="togglePassword" class="toggle-password">
-                        </div>
+                        <img src="/icons/Ver.svg" alt="Ver contraseña" id="togglePassword" class="toggle-password">
+                    </div>
                     </div>
 
                     <div class="forgot-password">
@@ -56,7 +59,7 @@
                     <button type="submit" name="login" class="form-button">Entrar</button>
 
                     <div class="form-links">
-                        ¿No tienes cuenta? <a href="#" id="switchToRegister">Crea una</a>
+                        ¿No tienes cuenta? <a href="/?page=registro_profesor">Crea una</a>
                     </div>
                 </form>
             </div>
