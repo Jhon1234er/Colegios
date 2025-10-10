@@ -18,16 +18,17 @@ class Asistencia {
     public const ESTADO_TARDANZA     = 'tarde';
 
     public function obtenerFallasPorFicha($colegio_id) {
+        // Usar SIEMPRE el CÓDIGO/NUMERO de la ficha
         $sql = "SELECT 
                     f.id AS ficha_id, 
-                    f.nombre AS numero_ficha, 
+                    COALESCE(f.numero, f.nombre) AS numero_ficha, 
                     COUNT(CASE WHEN a.estado != 'presente' THEN 1 END) AS total_fallas
                 FROM fichas f
                 INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id
                 INNER JOIN profesores p ON pf.profesor_id = p.id
                 LEFT JOIN asistencias a ON f.id = a.ficha_id
                 WHERE p.colegio_id = ?
-                GROUP BY f.id, f.nombre";
+                GROUP BY f.id, f.numero, f.nombre";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$colegio_id]);
         $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -40,7 +41,7 @@ class Asistencia {
                 e.id AS estudiante_id,
                 u.nombres,
                 u.apellidos,
-                f.nombre AS numero_ficha,
+                COALESCE(f.numero, f.nombre) AS numero_ficha,
                 COUNT(a.id) AS total_fallas
             FROM estudiantes e
             INNER JOIN usuarios u ON u.id = e.usuario_id
@@ -50,7 +51,7 @@ class Asistencia {
             LEFT JOIN asistencias a 
                 ON a.estudiante_id = e.id AND a.estado = 'ausente'
             WHERE p.colegio_id = :colegio_id
-            GROUP BY e.id, u.nombres, u.apellidos, f.nombre
+            GROUP BY e.id, u.nombres, u.apellidos, f.numero, f.nombre
             HAVING total_fallas >= :min_fallas
             ORDER BY total_fallas DESC
         ";

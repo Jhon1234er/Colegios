@@ -24,6 +24,8 @@
   --sh:0 6px 14px rgba(0,0,0,.08);
   --sh-lg:0 14px 28px rgba(0,0,0,.10);
   --tr:all .25s ease;
+  /* offset vertical para alinear columnas con títulos externos (.section-title) */
+  --title-offset: 52px;
 }
 
 /* ---- Reset / base ---- */
@@ -93,16 +95,91 @@ body{
 @keyframes handwave{ 0%{transform:rotate(0)} 20%{transform:rotate(-12deg)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-10deg)} 80%{transform:rotate(8deg)} 100%{transform:rotate(0)} }
 
 /* ===== COLUMNA IZQUIERDA ===== */
-.indicaciones-column{grid-area:indicaciones; display:flex; flex-direction:column; gap:18px}
+.indicaciones-column{
+  grid-area:indicaciones;
+  display:flex; flex-direction:column; gap:18px;
+  /* sin borde: cada bloque (.div1 y .div2) tiene su propio borde */
+}
 
-.div1,.div2{
-  background:var(--white);
-  border:1px solid var(--line);
-  border-radius:var(--r-xl);
-  padding:18px;
-  box-shadow:var(--sh);
-  min-height:320px;
-  transition:var(--tr);
+/* ===== TARJETA TIPO MAQUETA  ===== */
+/* Contenedor verde con borde grueso y sombra suave */
+.div1, .div2{
+  background:#fff;
+  border: 2px solid #39A900; /* borde verde delgado (mismo estilo que contadores) */
+  border-radius:22px;            /* igual que .div5..div11 */
+  padding:14px 16px;             /* igual que contadores */
+  box-shadow: var(--sh);         /* sombra sutil, no tan grande */
+  min-height: 220px;             /* asegurar que el borde se vea aun sin contenido */
+  max-height: 320px;             /* mismo alto que ya tenías */
+  overflow: hidden;              /* evita que crezca */
+  display:flex; flex-direction:column; gap:10px;
+}
+
+/* Título centrado y fuerte (Facilitadores/Aprendices) */
+.div1 .block-title, .div2 .block-title{
+  font-weight:900;
+  font-size:1.15rem;
+  text-align:center;
+  margin:2px 0 10px;
+}
+
+/* Barra de filtros como píldora verde (Ficha + Buscar + botón) */
+.filter-bar{
+  display:flex; align-items:center; gap:8px;
+  background: var(--green-12);
+  border:3px solid var(--green);
+  border-radius:14px;
+  padding:8px 10px;
+  margin-bottom:10px;
+}
+.filter-bar .filter-select{
+  border:0; outline:0;
+  background:#fff; font-weight:700;
+  padding:6px 10px; border-radius:10px;
+  border:2px solid var(--green);
+}
+.filter-bar .filter-input{
+  flex:1; border:2px solid var(--green);
+  border-radius:10px; padding:7px 10px; outline:0;
+}
+.filter-bar .filter-btn{
+  width:38px; height:38px; border-radius:50%;
+  border:2px solid var(--green); background:#fff; cursor:pointer;
+  display:grid; place-items:center; transition:transform .15s ease;
+}
+.filter-bar .filter-btn:hover{ transform: translateY(-1px); }
+
+/* Contenido con scroll sin romper el layout */
+.list-scroll{ flex:1; overflow:auto; padding-right:6px; }
+.list-scroll::-webkit-scrollbar{ width:10px }
+.list-scroll::-webkit-scrollbar-track{ background: var(--green-08); border-radius: 10px }
+.list-scroll::-webkit-scrollbar-thumb{ background: var(--green); border-radius: 10px }
+
+/* Caja interna blanca con borde AZUL (como maqueta) */
+.mockup-box{
+  background:#fff;
+  border:3px solid var(--blue);
+  border-radius:18px;
+  padding:12px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.10);
+}
+
+/* Cada item dentro de la caja: limpio, tipografía fuerte en el nombre */
+.person-card, .student-card{
+  background:transparent;
+  border:0; padding:0; box-shadow:none;
+}
+.pc-name, .student-name{
+  font-weight:800; color:#000; margin:0 0 8px; border:0; padding:0;
+}
+.pc-inner, .student-details{
+  border:0; padding:0; box-shadow:none; color:var(--muted);
+  font-size:.95rem; line-height:1.35;
+}
+
+/* Separador fino entre items (opcional) */
+.mockup-box .item + .item{
+  margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
 }
 .div1:hover,.div2:hover{transform:translateY(-2px); box-shadow:var(--sh-lg)}
 .div1 h3,.div2 h3{
@@ -129,16 +206,20 @@ body{
 .div3{
   grid-area:grafico;
   background:var(--white);
+  border: 2px solid var(--green); /* borde verde delgado */
   border-radius:var(--r-xl);
   padding:16px;
   box-shadow:var(--sh-lg);
-  display:flex; flex-direction:column; min-height:620px;
+  display:flex; flex-direction:column; min-height:auto; /* evitar espacio blanco extra */
+  margin-top: var(--title-offset); /* alinear con barra superior de Profesores */
 }
 .div3 h3{color:var(--black); margin-bottom:12px; text-align:center; font-weight:800; font-size:1.05rem}
 
 #chart-container{
   height:560px; width:100%;
-  display:flex; align-items:center; justify-content:center;
+  display:block; /* evitar expansión por flex */
+  position: relative;
+  overflow: hidden; /* no permitir que el lienzo sobresalga */
   background: var(--green-12);            /* verde muy claro */
   border:2px solid var(--green-18);
   border-radius:18px;
@@ -155,6 +236,7 @@ body{
 
 /* ===== CONTADORES (píldoras blancas con borde verde) ===== */
 .contadores-column{grid-area:contadores; display:flex; flex-direction:column; gap:14px}
+.contadores-column{ margin-top: var(--title-offset); }
 .div5,.div6,.div7,.div8,.div10,.div11{
   background:var(--white);
   border:2px solid var(--green);
@@ -193,8 +275,21 @@ body{
   overflow:hidden;
   height:80%;
 }
+#tabla-title{
+  text-align: center;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .02em;
+  padding: 10px 14px;
+  border-radius: 33px; /* estilo píldora */
+  margin: 0 auto 10px; /* centrar y separar ligeramente de la tabla */
+  width: 34%;
+}
 #tabla-colegios{
-  width:100%; border-collapse:separate; border-spacing:0; border-radius:14px; overflow:hidden;
+  width:96%; /* un poco más angosta para separarla visualmente del título */
+  margin: 0 auto; /* centrar debajo del título */
+  border-collapse:separate; border-spacing:0; border-radius:0 0 14px 14px; overflow:hidden; /* pegada al título */
   box-shadow:0 1px 2px rgba(0,0,0,.04);
 }
 #tabla-colegios thead{background: var(--blue)}
@@ -271,6 +366,34 @@ body{
 .modal-body .form-control:focus{
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(57,169,0,.15);
+}
+
+/* Flatpickr: selección en VERDE y acentos de marca */
+.flatpickr-calendar{
+  background: rgba(255,255,255,.85) !important; /* más transparente */
+  backdrop-filter: blur(4px);
+  border: 2px solid var(--green-18) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.16) !important;
+}
+/* Variante aún más translúcida (usada en Semana fin) */
+.fp-more-transparent{
+  background: rgba(255,255,255,.80) !important;
+}
+.flatpickr-calendar .flatpickr-day.selected,
+.flatpickr-calendar .flatpickr-day.startRange,
+.flatpickr-calendar .flatpickr-day.endRange,
+.flatpickr-calendar .flatpickr-day.selected:hover{
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+  color: #fff !important;
+}
+.flatpickr-calendar .flatpickr-day.inRange{
+  background: rgba(57,169,0,.12) !important;
+  border-color: rgba(57,169,0,.18) !important;
+}
+.flatpickr-calendar .flatpickr-day.today{
+  background-color: #39A900 !important;
 }
 
 /* Grupo de fichas: check tipo “chip” */
@@ -410,3 +533,78 @@ body{
   .div3{min-height:520px}
   #chart-container{height:440px}
 }
+
+/* ===== TARJETAS BÁSICAS (para estudiantes y facilitadores) ===== */
+.cards-scroll{ flex:1; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:12px }
+/* Los contenedores principales tienen borde delgado y
+   cada tarjeta también conserva su borde verde con parte superior más ancha */
+.tarjeta{
+  background: var(--white);
+  border: 2px solid var(--green);   /* lados y base delgados */
+  border-top-width: 8px;            /* parte superior más ancha */
+  border-radius: 28px;
+  padding: 12px;                    /* espacio interior del contenedor */
+  box-shadow: none;                 /* sin sombra para evitar doble caja */
+}
+.tarjeta.tarjeta--mini{ max-height:none }
+/* El contenido NO lleva borde ni sombra ni color distinto para que no se note separación */
+.mockup{ background: transparent; border: none; border-radius: 0; padding: 0; box-shadow: none }
+/* Encabezado: solo una línea negra muy fina como separador */
+.mockup__header{ border: none; border-bottom: 1px solid var(--black); border-radius: 0; padding: 6px 0 8px; font-weight: 800; color: var(--black); margin-bottom: 10px; background: transparent }
+
+/* ===== TÍTULOS DE SECCIÓN (fuera del contenedor) ===== */
+.section-title{
+  font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+  font-weight: 700; /* Bold */
+  font-style: normal;
+  font-size: 23.75px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: var(--black);
+  text-align: center;
+  display: block;
+  margin: 0 0 10px 0;
+}
+
+/* ===== Filtros dentro del contenedor (selects e input) ===== */
+.tarjeta__filters{ display:flex; align-items:center; gap:8px; background: var(--green-12); border:3px solid var(--green); border-radius:14px; padding:8px 10px }
+
+/* Select tipo chip con flecha personalizada */
+.chip-select{
+  appearance:none;
+  background: var(--green);
+  color:#fff;
+  font-weight:800;
+  border:none;
+  border-radius:10px;
+  padding:8px 34px 8px 12px; /* espacio para la flecha */
+  cursor:pointer; outline:none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat:no-repeat; background-position: right 10px center; background-size:16px 16px;
+}
+.chip-select:focus{ box-shadow: 0 0 0 3px rgba(57,169,0,.28); }
+
+/* Input buscar con fondo verde claro y lupa interna */
+.input-buscar{
+  flex:1;
+  background: var(--green-12);
+  border: 2px solid var(--green);
+  border-radius: 10px;
+  padding: 8px 10px; /* sin icono interno */
+  outline: none; color: var(--black); font-weight: 600;
+}
+.input-buscar::placeholder{ color:#2f5a1d; opacity:.8; font-weight:600 }
+
+/* Botón de búsqueda: círculo verde con icono blanco */
+.btn-icon{
+  width:38px; height:38px; min-width:38px;
+  display:grid; place-items:center;
+  background: var(--green);
+  color: #fff; /* el SVG usa currentColor */
+  border:2px solid var(--green);
+  border-radius:50%;
+  cursor:pointer;
+  transition: transform .15s ease, filter .15s ease;
+}
+.btn-icon:hover{ transform: translateY(-1px); filter: brightness(.95) }
+

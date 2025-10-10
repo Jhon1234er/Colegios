@@ -373,6 +373,7 @@ class Estudiante {
     // POR COLEGIO
     // -------------------------
     public function obtenerPorColegio($colegioId) {
+        // Devolver SIEMPRE el CÓDIGO de la ficha (f.numero) para evitar nombres largos
         $stmt = $this->pdo->prepare("
             SELECT 
                 CONCAT(u.nombres,' ',u.apellidos) AS nombre_completo,
@@ -381,7 +382,7 @@ class Estudiante {
                 e.grado,
                 e.jornada,
                 e.estado,
-                f.nombre AS ficha,
+                f.numero AS ficha,
                 e.nombre_completo_acudiente,
                 e.telefono_acudiente,
                 e.parentesco
@@ -389,7 +390,7 @@ class Estudiante {
             INNER JOIN usuarios u ON e.usuario_id = u.id
             INNER JOIN fichas f ON f.id = e.ficha_id
             WHERE e.colegio_id = ?
-            ORDER BY f.nombre, u.apellidos, u.nombres
+            ORDER BY f.numero, u.apellidos, u.nombres
         ");
         $stmt->execute([$colegioId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

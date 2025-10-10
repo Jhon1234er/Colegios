@@ -6,8 +6,8 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 
-<div class="formulario-registro">
-  <h2>Registro de Facilitador</h2>
+<div class="profesor-crear">
+  <h2 class="form-title">Registro de Facilitador</h2>
   <?php
     $isPublic = (($_GET['page'] ?? '') === 'registro_profesor');
     $formAction = $isPublic ? '/?page=registro_profesor_guardar' : '/?page=profesores&action=guardar';
@@ -44,30 +44,25 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 
         <label>Número de Documento</label>
         <input type="text" name="numero_documento" class="form-documento" required>
-
         <label>Correo Electrónico Institucional</label>
         <input type="email" name="correo_institucional" class="form-institucional" required>
 
         <label>Especialidad</label>
         <input type="text" name="especialidad" class="form-control-especialidad" required>
         
-
-        <label>Tipo de Contrato</label>
-        <select name="tip_contrato" class="form-select-contrato" required>
+        <label>Cargo</label>
+        <select name="cargo" class="form-select-contrato" required>
           <option value="">Seleccione...</option>
-          <option value="contratista">Facilitador</option>
+          <option value="facilitador">Facilitador</option>
           <option value="instructor">Instructor</option>
         </select>
 
-
-
         <!-- Contraseña se generará automáticamente por el sistema -->
       </div>
-    </div>
 
-    <button type="submit" class="btn-registrar">Registrar Profesor</button>
   </form>
 </div>
+<button type="submit" class="btn-registrar">Registrar Profesor</button>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

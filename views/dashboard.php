@@ -103,7 +103,19 @@ function formatearNombreColegio($nombre) {
 
             <!-- Tabla colegios -->
             <div class="div4">
-                <h3>Colegios Gestionados</h3>
+                <h3 id="tabla-title">Colegios Gestionados</h3>
+                <div id="tabla-controls" style="display:flex; gap:10px; align-items:center; justify-content:space-between; margin:10px 0 14px;">
+                  <div style="display:flex; align-items:center; gap:8px; flex:0 0 auto;">
+                    <input id="tabla-search" class="input-buscar" type="text" placeholder="Buscar colegio..." style="width:260px; max-width: 320px;">
+                    <button class="btn-icon" id="tabla-search-btn" aria-label="Buscar" type="button" style="width:38px; height:38px; border-radius:50%; border:2px solid var(--green); background: var(--green); color:#fff; display:grid; place-items:center;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                        <line x1="20" y1="20" x2="16.5" y2="16.5" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div id="tabla-pager" style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:flex-end; min-height:34px;"></div>
+                </div>
                 <table id="tabla-colegios">
                     <thead>
                         <tr>
@@ -128,6 +140,7 @@ function formatearNombreColegio($nombre) {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                
             </div>
 
 
@@ -482,25 +495,75 @@ $(function(){
   setupReportModal('PDF', 'generar_pdf');
   setupReportModal('Excel', 'generar_excel');
 
-  // Calendarios con Flatpickr (estilo igual al formulario de profesor)
+  // Calendarios con Flatpickr (posicionar a los lados y selección en verde controlada por CSS)
   if (typeof flatpickr !== 'undefined') {
-    const fpOpts = {
-      dateFormat: 'Y-m-d',
-      locale: 'es',
-      static: true,
-      monthSelectorType: 'static',
-      prevArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',
-      nextArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>',
-      allowInput: true,
-      clickOpens: true,
-      disableMobile: false,
-      onOpen: (_,__,inst)=>{ inst.calendarContainer.style.zIndex = '9999'; }
-    };
+    function makeFpOptions(side, colegioSelector, modalSelector, shiftX = 0, moreTransparent = false, alignTargetSelector = null){
+      return {
+        dateFormat: 'Y-m-d',
+        locale: 'es',
+        static: true, // lo mantendremos embebido, pero lo moveremos a modalContent
+        monthSelectorType: 'static',
+        prevArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',
+        nextArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>',
+        allowInput: true,
+        clickOpens: true,
+        disableMobile: false,
+        maxDate: 'today', // no permitir fechas futuras
+        onOpen: function(_, __, inst){
+          // Posicionar sobre el select de colegio, centrado respecto al modal
+          const cal = inst.calendarContainer;
+          const modal = document.querySelector(modalSelector) || inst.input.closest('.modal-content');
+          const colegio = document.querySelector(colegioSelector);
+          if (!modal || !colegio) return;
+          // Asegurar que el calendario cuelgue de .modal-content para usarlo como referencia
+          if (inst.config.appendTo !== modal) {
+            inst.config.appendTo = modal;
+            if (cal.parentNode !== modal) modal.appendChild(cal);
+          }
+          // Asegurar posicionamiento relativo del contenedor
+          if (getComputedStyle(modal).position === 'static') modal.style.position = 'relative';
+          cal.style.zIndex = '9999';
+          cal.style.position = 'absolute';
+          // Calcular posición relativa al modal
+          const modalRect = modal.getBoundingClientRect();
+          const selRect = colegio.getBoundingClientRect();
+          const targetEl = alignTargetSelector ? document.querySelector(alignTargetSelector) : null;
+          const targetRect = targetEl ? targetEl.getBoundingClientRect() : selRect;
+          // Dimensiones del calendario ya renderizado
+          const calRect = cal.getBoundingClientRect();
+          // Ubicar el calendario por ENCIMA del select (60px extra)
+          const top = (selRect.top - modalRect.top) - calRect.height - 60;
+          let left = (targetRect.left - modalRect.left) + (targetRect.width/2) - (calRect.width/2) + shiftX;
+          cal.style.top = `${Math.max(8, top)}px`; // mínimo 8px dentro del modal
+          // Limitar para que no se corte a la derecha
+          const maxLeft = modalRect.width - calRect.width - 8;
+          left = Math.max(8, Math.min(left, maxLeft));
+          cal.style.left = `${left}px`;
+          cal.style.right = '';
+          cal.style.bottom = '';
+          // Transparencia especial para fin de semana
+          cal.classList.toggle('fp-more-transparent', !!moreTransparent);
+        }
+      };
+    }
 
-    const fpStartPDF  = flatpickr('#weekStartPDF', fpOpts);
-    const fpEndPDF    = flatpickr('#weekEndPDF',   fpOpts);
-    const fpStartXLS  = flatpickr('#weekStartExcel', fpOpts);
-    const fpEndXLS    = flatpickr('#weekEndExcel',   fpOpts);
+    // PDF: coloca "inicio" sobre el input de fin y "fin" sobre el input de inicio
+    const fpStartPDF  = flatpickr('#weekStartPDF',  makeFpOptions('right', '#selectColegioPDF', '#modalReportesPDF .modal-content', 0, false, '#weekEndPDF'));
+    const fpEndPDF    = flatpickr('#weekEndPDF',    makeFpOptions('left',  '#selectColegioPDF', '#modalReportesPDF .modal-content', 0, true,  '#weekStartPDF'));
+    // Excel: igual
+    const fpStartXLS  = flatpickr('#weekStartExcel', makeFpOptions('right', '#selectColegioExcel', '#modalReportesExcel .modal-content', 0, false, '#weekEndExcel'));
+    const fpEndXLS    = flatpickr('#weekEndExcel',   makeFpOptions('left',  '#selectColegioExcel', '#modalReportesExcel .modal-content', 0, true,  '#weekStartExcel'));
+
+    // Refuerzo: limitar también el input nativo para evitar fechas futuras
+    (function(){
+      const today = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+      ['#weekStartPDF','#weekEndPDF','#weekStartExcel','#weekEndExcel'].forEach(sel=>{
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute('max', todayStr);
+      });
+    })();
 
     function linkRange($startSel, $endSel){
       const $s = $($startSel), $e = $($endSel);
