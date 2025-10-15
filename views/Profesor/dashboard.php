@@ -20,19 +20,20 @@
       $nombre_usuario = htmlspecialchars($_SESSION['usuario']['nombres']);
 
       if ($tip_contrato === 'contratista') {
-          $saludo = "Bienvenid@, Facilitador $nombre_usuario";
+          $saludo = "Bienvenido, Facilitador $nombre_usuario";
       } elseif ($tip_contrato === 'instructor') {
-          $saludo = "Bienvenid@, Instructor $nombre_usuario";
+          $saludo = "Bienvenido, Instructor $nombre_usuario";
       } else {
           $saludo = "Bienvenido, $nombre_usuario";
       }
     ?>
-    <h2><?= $saludo ?></h2>
+    <span><?= $saludo ?></span>
 
   </div>
 </div>
 
-
+    <!-- Contenedor principal para tarjetas y filtros -->
+    <div class="contenedor-principal-tarjetas">
         <!-- Filtros para las trajetas de fichas -->
       <div class="filtros-cursos"> 
         <div class="filtro">Todos</div> 
@@ -46,6 +47,7 @@
         <div id="estudiantesContainer"></div>
         <!-- Registro de asistencia  -->
         <div id="calendarioAsistencia" class="calendario-wrapper"></div>
+    </div>
 
     </div>
 

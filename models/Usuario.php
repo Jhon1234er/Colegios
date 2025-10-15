@@ -129,4 +129,23 @@ class Usuario {
         
         return true;
     }
+
+    /**
+     * MÉTODO AGREGADO: actualizarPassword()
+     * 
+     * Propósito: Actualizar únicamente el campo password_hash del usuario
+     * 
+     * Parámetros:
+     * @param int $id - ID del usuario a actualizar
+     * @param string $passwordHash - Hash de la nueva contraseña (ya procesado con password_hash())
+     * 
+     * @return bool - true si la actualización fue exitosa, false en caso contrario
+     * 
+     * Este método es utilizado por PerfilController para cambios de contraseña seguros
+     */
+    public function actualizarPassword($id, $passwordHash) {
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("UPDATE usuarios SET password_hash = ? WHERE id = ?");
+        return $stmt->execute([$passwordHash, $id]);
+    }
 }
