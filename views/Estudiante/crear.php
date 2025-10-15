@@ -9,20 +9,15 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Registro de Aprendiz</title>
-  <link rel="stylesheet" href="/css/Estudiante/crear.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="/css/Estudiante/crear.css?v=2">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-  <style>
-    .form-step { display: none; }
-    .form-step.active { display: block; }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-  <div class="container">
+  <div class="container estudiante-crear">
     <h2>Registro de Aprendiz</h2>
 
     <!-- Stepper visual -->
@@ -43,13 +38,13 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
 
       <!-- Paso 1: Estudiante -->
       <div class="form-step active">
-        <h5>Información del Estudiante</h5>
         <div class="row">
           <div class="col-md-6">
             <label>Nombres</label>
             <input type="text" name="nombres" required>
           </div>
-          <div class="col-md-6">
+    
+      <div class="col-md-6">
             <label>Apellidos</label>
             <input type="text" name="apellidos" required>
           </div>
@@ -66,8 +61,18 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
             <input type="text" name="numero_documento" required>
           </div>
           <div class="col-md-6">
-            <label>Fecha de Nacimiento</label>
-            <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" required>
+            <label for="fecha_nacimiento">
+              Fecha de Nacimiento
+              <div class="date-wrap">
+                <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" placeholder="dd/mm/aaaa" required>
+                <svg class="date-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="3" y="5" width="18" height="16" rx="4" ry="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                  <line x1="8" y1="3" x2="8" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="16" y1="3" x2="16" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </label>
           </div>
           <div class="col-md-6">
             <label>Correo Electrónico</label>
@@ -262,8 +267,10 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script> <!-- Español -->
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+<script src="/js/crearE.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script src="/js/crearE.js"></script>
   <script>
@@ -272,13 +279,23 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
       const steps = Array.from(document.querySelectorAll('.form-step'));
       steps.forEach((s,i)=>{ s.classList.toggle('active', i===0); });
     })();
-    // Inicializar Choices.js en todos los selects marcados
+    // Inicializar Choices.js en TODOS los selects (estilo unificado)
     (function(){
       if (typeof Choices === 'undefined') return;
       const options = { searchEnabled: false, shouldSort: false, itemSelectText: '' };
       const instances = new Map();
-      document.querySelectorAll('select.js-choice').forEach(el => {
+      document.querySelectorAll('select').forEach(el => {
         instances.set(el, new Choices(el, options));
+      });
+
+      // Forzar despliegue hacia ARRIBA en EPS y Estrato
+      ['eps','estrato'].forEach(name => {
+        const el = document.querySelector(`select[name="${name}"]`);
+        if (!el) return;
+        const prev = instances.get(el);
+        try { prev && prev.destroy(); } catch (_) {}
+        const topOpts = Object.assign({}, options, { position: 'top' });
+        instances.set(el, new Choices(el, topOpts));
       });
 
       // Refrescar cuando grado/jornada cambian sus opciones dinámicamente
