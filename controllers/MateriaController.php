@@ -24,7 +24,7 @@ class MateriaController {
         $materias = $this->materiaModel->obtenerPaginadoConFiltros($q, $estado, $linea, $perPage, $offset);
         $lineas = $this->materiaModel->obtenerLineasDistinct();
 
-        require __DIR__ . '/../views/Materia/index.php';
+        require __DIR__ . '/../views/Materia/tabla.php';
     }
 
     public function crear() {

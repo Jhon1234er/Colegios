@@ -1,0 +1,482 @@
+/* ================================
+   Layout / Contenedor
+==================================*/
+:root { --page-spacing: 32px; }
+.tabla-cursos {
+    max-width: 1400px; /* más ancho */
+    margin-left: auto;           /* centrado horizontal */
+    margin-right: auto;
+    margin-block: var(--page-spacing); /* misma separación arriba/abajo respecto a header/footer */
+    padding: 24px 20px 32px; /* un poco más de padding inferior para respiro */
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  }
+  @media (min-width: 1600px) {
+    :root { --page-spacing: 40px; }
+    .tabla-cursos { max-width: 1680px; }
+  }
+  
+  /* Card contenedora con sombra */
+  .tabla-cursos .card-widget {
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.14),
+      0 6px 12px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(15, 23, 42, 0.04);
+    transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .tabla-cursos .card-widget:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 18px 36px rgba(0, 0, 0, 0.16),
+      0 8px 16px rgba(0, 0, 0, 0.10),
+      0 0 0 1px rgba(15, 23, 42, 0.05);
+  }
+  
+  /* ================================
+     Tipografías solicitadas
+  ==================================*/
+  .tabla-cursos .section-title {
+    font-family: 'Myriad Pro', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+    font-weight: 700 !important; /* Bold */
+    font-size: 32px !important;
+    line-height: 100% !important;
+    letter-spacing: 0 !important;
+    margin: 0;
+  }
+  /* Labels de filtros: Buscar, Estado, Línea */
+  .tabla-cursos form label {
+    font-family: 'Myriad Pro', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+    font-weight: 700 !important; /* Bold */
+    font-size: 16px !important;
+    line-height: 100% !important;
+    letter-spacing: 0 !important;
+  }
+  /* Texto Total cursos: */
+  .tabla-cursos .total-cursos {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: 300; /* más delgado */
+    font-size: 14px;
+    line-height: 100%;
+    letter-spacing: 0;
+    color: #475569;
+  }
+  
+  /* ================================
+     Contenedor de tabla + Scrollbar
+  ==================================*/
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+      0 14px 32px rgba(0,0,0,0.14),
+      0 8px 16px rgba(0,0,0,0.10),
+      0 0 0 1px rgba(15,23,42,0.04);
+  }
+  .table-responsive:hover {
+    box-shadow:
+      0 18px 40px rgba(0,0,0,0.16),
+      0 10px 20px rgba(0,0,0,0.12),
+      0 0 0 1px rgba(15,23,42,0.05);
+  }
+  
+  /* Scrollbar personalizado */
+  .table-responsive { scrollbar-width: thin; scrollbar-color: #b9c0c7 #f1f3f5; }
+  .table-responsive::-webkit-scrollbar { height: 10px; width: 10px; }
+  .table-responsive::-webkit-scrollbar-track { background: #f1f3f5; border-radius: 999px; }
+  .table-responsive::-webkit-scrollbar-thumb { background: #b9c0c7; border-radius: 999px; border: 2px solid #f1f3f5; }
+  .table-responsive::-webkit-scrollbar-thumb:hover { background: #9aa3ac; }
+  
+  /* ================================
+     Filtros: Inputs/Select con sombra
+  ==================================*/
+  .tabla-cursos .form-control {
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    color: #0f172a;
+    outline: none;
+    box-shadow:
+      0 1px 3px rgba(0,0,0,.12),
+      0 1px 1px rgba(0,0,0,.04);
+    transition: box-shadow .2s ease, border-color .2s ease, transform .1s ease;
+  }
+  .tabla-cursos .form-control:hover {
+    box-shadow:
+      0 3px 8px rgba(0,0,0,.16),
+      0 1px 1px rgba(0,0,0,.06);
+  }
+  .tabla-cursos .form-control:focus {
+    border-color: #39A900;
+    box-shadow:
+      0 4px 12px rgba(0,0,0,.18),
+      0 0 0 3px rgba(57,169,0,.15);
+  }
+  .tabla-cursos .form-control:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    box-shadow: none;
+  }
+  .tabla-cursos select.form-control {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, #64748b 50%),
+      linear-gradient(135deg, #64748b 50%, transparent 50%),
+      linear-gradient(#e2e8f0, #e2e8f0);
+    background-position:
+      calc(100% - 20px) 50%,
+      calc(100% - 15px) 50%,
+      calc(100% - 36px) 50%;
+    background-size: 6px 6px, 6px 6px, 1px 60%;
+    background-repeat: no-repeat;
+    padding-right: 40px;
+  }
+
+  /* Sombras por tipo por si algún input no usa la clase form-control */
+  .tabla-cursos input[type="text"],
+  .tabla-cursos input[type="search"],
+  .tabla-cursos select {
+    box-shadow:
+      0 1px 3px rgba(0,0,0,.12),
+      0 1px 1px rgba(0,0,0,.04);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  /* ================================
+     Tabla base (línea por FILA)
+  ==================================*/
+  .tabla-lista {
+    width: 100%;
+    min-width: 1000px;
+    background: #fff;
+    table-layout: auto;
+    border-radius: 16px;
+    overflow: hidden;
+  
+    /* CLAVE: colapsar bordes para dibujar UNA sola línea por fila */
+    border-collapse: collapse;
+  }
+  
+  /* Sin bordes por celda */
+  .tabla-lista th,
+  .tabla-lista td {
+    border: 0;
+    padding: 4px 10px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  
+  /* Cuerpo: tipografía */
+  .tabla-lista tbody td {
+    font-size: 11px;          /* un poco más grande para mejor lectura */
+    line-height: 120%;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #374151;
+  }
+  
+  /* Encabezado (sticky) */
+  .tabla-lista thead th {
+    position: sticky; top: 0; z-index: 10;
+    background: #39A900; color: #fff;
+    font-family: 'Myriad Pro','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    font-weight: 800; font-size: 16px; line-height: 100%;
+    text-transform: uppercase; text-align: center;
+    padding: 12px 15px; white-space: nowrap;
+  }
+  .tabla-lista thead th:nth-child(5){ white-space: nowrap; }
+  
+  /* Sin borde inferior bajo el encabezado (para que no haya línea sobre la primera fila) */
+  .tabla-lista thead tr { border-bottom: 0; }
+  
+  /* Encabezado redondo en todas las puntas */
+  .tabla-lista thead { overflow: hidden; }
+  .tabla-lista thead th:first-child{
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+  }
+  .tabla-lista thead th:last-child {
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+  
+  /* ==== UNA SOLA LÍNEA por cada FILA ==== */
+  .tabla-lista tbody tr { border-bottom: 1px solid #000; }
+  
+  /* Última fila sin línea para cerrar visualmente */
+  .tabla-lista tbody tr:last-child { border-bottom: 0; }
+  
+  /* Zebra/hover */
+  .tabla-lista tbody tr:nth-child(odd) { background: #fafcfd; }
+  .tabla-lista tbody tr:hover { background: #f0f7f3; transition: background .2s ease; }
+  
+  /* Redondeado inferior (opcional) */
+  .tabla-lista tbody tr:last-child td:first-child { border-bottom-left-radius: 16px; }
+  .tabla-lista tbody tr:last-child td:last-child  { border-bottom-right-radius: 16px; }
+  
+  /* ================================
+     Padding / alineación por columnas
+  ==================================*/
+  .tabla-lista th:first-child,
+  .tabla-lista td:first-child { padding-left: 20px; }
+  
+  /* Columna de ACCIONES recta/estable */
+  .tabla-lista th:last-child,
+  .tabla-lista td:last-child {
+    text-align: center;
+    padding-left: 10px; padding-right: 10px;
+    width: 280px;                 /* sube a 300 si hay wrap */
+    white-space: nowrap;
+  }
+  
+  /* ================================
+     Celda de acciones
+  ==================================*/
+  .acciones-celda {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+  
+  /* Enlaces/botones uniformes y sin subrayados que “corten” la línea */
+  .tabla-lista td:last-child a,
+  .tabla-lista td:last-child .btn,
+  .tabla-lista td:last-child .btn-accion {
+    margin: 0;
+    line-height: 1;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    text-decoration: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #FFFFFF !important;         /* letra siempre blanca */
+    font-size: 10px;
+    line-height: 100%;
+    letter-spacing: 0;
+    border-radius: 10px;
+    padding: 6px 10px;
+  }
+  .tabla-lista td:last-child a:hover { text-decoration: underline; }
+
+  /* --- Botones de acciones con colores solicitados --- */
+  .tabla-lista td:last-child .btn-accion.btn-danger { /* Suspender */
+    background: #FF0000 !important;
+  }
+  .tabla-lista td:last-child .btn-accion.btn-activar { /* Activar */
+    background: #39A900 !important;
+  }
+  .tabla-lista td:last-child .btn-accion.btn-warning { /* Editar */
+    background: #00304D !important;
+  }
+  /* Íconos dentro de botones: mismo color de texto (blanco) y separación */
+  .tabla-lista td:last-child .btn-accion i { color: #FFFFFF; margin-right: 6px; }
+
+  /* Hover sutil oscureciendo 10% */
+  .tabla-lista td:last-child .btn-accion.btn-danger:hover { background: #e00000 !important; }
+  .tabla-lista td:last-child .btn-accion.btn-activar:hover { background: #2f8f00 !important; }
+  .tabla-lista td:last-child .btn-accion.btn-warning:hover { background: #00263d !important; }
+  
+  /* Altura visual uniforme por fila (opcional) */
+  .tabla-lista tbody tr { min-height: 44px; }
+
+  /* ================================
+     Badges de estado (Activa / Suspendida)
+     Tipografía Inter 10px, line-height 100%, letter-spacing 0
+  ==================================*/
+  .tabla-lista .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 10px;
+    line-height: 100%;
+    letter-spacing: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 0;
+    min-width: 110px;        /* mismo ancho visual para Activa y Suspendida */
+    white-space: nowrap;
+  }
+  .tabla-lista .badge-danger { /* Suspendida */
+    color: #A50000;                  /* letra más nítida */
+    background: rgba(255, 0, 0, 0.18); /* fondo más claro */
+    border: 1px solid rgba(165, 0, 0, 0.28);
+  }
+  .tabla-lista .badge-success { /* Activa */
+    color: #39A900;                  /* letra más nítida */
+    background: rgba(57, 169, 0, 0.18); /* fondo más claro */
+    border: 1px solid rgba(57, 169, 0, 0.28);
+  }
+  
+  /* ================================
+     Botones coherentes (toolbar)
+  ==================================*/
+  .tabla-cursos .btn.btn-primary {
+    background-color: #39A900;
+    border-color: #39A900;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+
+  /* Estilos específicos para los botones de Filtrar y Limpiar */
+  .tabla-cursos form .btn.btn-warning.btn-size,
+  .tabla-cursos form .btn.btn-light.btn-size {
+    background-color: #ced4da; /* Gris claro */
+    color: #212529;
+    border-color: #ced4da;
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    transition: transform .15s ease, box-shadow .15s ease, background-color .2s, border-color .2s;
+  }
+
+  .tabla-cursos form .btn.btn-warning.btn-size:hover,
+  .tabla-cursos form .btn.btn-warning.btn-size:active,
+  .tabla-cursos form .btn.btn-light.btn-size:hover,
+  .tabla-cursos form .btn.btn-light.btn-size:active {
+    background-color: #00304D !important;
+    color: #fff !important;
+    border-color: #00304D !important;
+  }
+
+  .tabla-cursos .btn.btn-warning.btn-size,
+  .tabla-cursos .btn.btn-light.btn-size {
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .tabla-cursos .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  }
+  
+  /* Estilo para el texto 'Mostrando de...' */
+.dataTables_info,
+.tabla-cursos span[style*="color:#64748b"] {
+    font-weight: 300 !important; /* Mismo grosor que 'Total cursos' */
+    color: #475569 !important;
+    font-size: 14px;
+}
+
+/* ================================
+     Responsive
+  ==================================*/
+  @media (min-width: 1600px) {
+    .tabla-lista { min-width: auto; width: 100%; }
+    .tabla-lista th, .tabla-lista td { white-space: normal; padding: 12px 15px; }
+    .tabla-lista th:last-child,
+    .tabla-lista td:last-child { width: 300px; }
+  }
+  @media (max-width: 768px) {
+    .tabla-lista th, .tabla-lista td { font-size: 13px; }
+  }
+
+/* ================================
+   Modal de Confirmación
+==================================*/
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  z-index: 2001;
+  position: relative;
+  text-align: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: transparent; /* No debe ser negro */
+  z-index: -1;
+}
+
+.modal-title {
+  font-family: 'Myriad Pro', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.modal-card p {
+  font-size: 16px;
+  color: #475569;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.modal-actions .btn {
+  min-width: 120px;
+  border-radius: 999px !important; /* Forzar redondeo */
+  transition: background-color .2s, border-color .2s, transform .15s, box-shadow .15s;
+}
+
+/* Botón Activar (verde) */
+.modal-actions .btn-activar {
+  background-color: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #fff !important;
+}
+
+/* Botón Suspender (rojo) - ya usa btn-danger de Bootstrap, pero podemos asegurar */
+.modal-actions .btn-danger {
+  background-color: #FF0000 !important;
+  border-color: #FF0000 !important;
+  color: #fff !important;
+}
+
+/* Hover para Cancelar: se vuelve azul oscuro */
+.modal-actions .btn-light:hover {
+  background-color: #00304D !important;
+  border-color: #00304D !important;
+  color: #fff !important;
+}
+
+/* Hover para Activar: se oscurece un poco */
+.modal-actions .btn-activar:hover {
+  background-color: #2f8f00 !important;
+  border-color: #2f8f00 !important;
+}
+
+/* Hover para Suspender: se oscurece un poco */
+.modal-actions .btn-danger:hover {
+  background-color: #e00000 !important;
+  border-color: #e00000 !important;
+}
+
+  

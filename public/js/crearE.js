@@ -16,11 +16,13 @@ document.addEventListener("DOMContentLoaded", function () {
       try { choicesInstances[id].destroy(); } catch (_) {}
       delete choicesInstances[id];
     }
+    const openUp = element && (element.name === 'eps' || element.name === 'estrato');
     choicesInstances[id] = new Choices(element, {
       searchEnabled: true,
       shouldSort: false,
       placeholder: true,
-      itemSelectText: ''
+      itemSelectText: '',
+      position: openUp ? 'top' : 'auto'
     });
   }
 
@@ -205,11 +207,21 @@ document.addEventListener("DOMContentLoaded", function () {
   // Flatpickr
   // ────────────────────────────────────────────────────────────
   if (typeof flatpickr !== "undefined") {
-    flatpickr("#fecha_nacimiento", {
-      dateFormat: "Y-m-d",
-      maxDate: "today",
-      locale: "es"
-    });
+    const el = document.querySelector('#fecha_nacimiento');
+    if (el) {
+      flatpickr(el, {
+        dateFormat: 'd/m/Y',
+        maxDate: 'today',
+        locale: 'es',
+        disableMobile: true,
+        monthSelectorType: 'dropdown',
+        yearSelectorType: 'dropdown',
+        appendTo: document.querySelector('.estudiante-crear') || undefined,
+      });
+      // Abrir al pulsar el icono
+      const icon = document.querySelector('.date-icon');
+      if (icon) icon.addEventListener('click', ()=> el._flatpickr && el._flatpickr.open());
+    }
   }
 
   // ────────────────────────────────────────────────────────────
@@ -230,7 +242,9 @@ document.addEventListener("DOMContentLoaded", function () {
       ind.classList.toggle("active", i <= index);
       ind.classList.toggle("current", i === index);
     });
-    steps[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Evitar animaciones: posicionar sin desplazamiento suave
+    // Si se requiere garantizar visibilidad en pantallas pequeñas, usar 'auto'
+    // steps[index]?.scrollIntoView({ behavior: "auto", block: "nearest" });
   }
 
   function validateCurrentStep() {

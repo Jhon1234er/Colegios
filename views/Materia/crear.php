@@ -3,6 +3,9 @@
 
 <div class="container">
     <div class="card-widget">
+        <a href="/?page=materias" class="btn-back" title="Volver a la tabla">
+          <i class="fas fa-arrow-left"></i>
+        </a>
         <h2 class="section-title"><?= isset($materia) ? 'Actualizar Curso' : 'Registrar Cursos' ?></h2>
 
     <?php if (isset($error)): ?>
@@ -55,12 +58,12 @@
                 <label>Código</label>
                 <input type="text" name="codigo[]" class="form-control" placeholder="Ej: 83930184">
               </div>
-              <div class="field field-wide">
+              <div class="field">
                 <label>Denominación</label>
                 <input type="text" name="denominacion[]" class="form-control" placeholder="Denominación">
               </div>
             </div>
-            <div class="card-row">
+            <div class="card-row row-duracion-version">
               <div class="field">
                 <label>Duración</label>
                 <input type="text" name="duracion[]" class="form-control" placeholder="Ej: 144 horas">
@@ -69,7 +72,9 @@
                 <label>Versión</label>
                 <input type="number" name="version[]" class="form-control" placeholder="Ej: 1">
               </div>
-              <div class="field field-wide">
+            </div>
+            <div class="card-row row-linea">
+              <div class="field">
                 <label>Línea Tecnoacademia</label>
                 <input type="text" name="linea_tecnoacademia[]" class="form-control" placeholder="Ej: ELECTRÓNICA Y ROBÓTICA">
               </div>
@@ -86,12 +91,23 @@
     </form>
     </div>
 </div>
+<?php include __DIR__ . '/../Componentes/footer.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   const grid = document.getElementById('course-grid');
   const btnAgregarCurso = document.getElementById('btnAgregarCurso');
   if (!grid || !btnAgregarCurso) return;
+
+  function updateGridLayout() {
+    const count = grid.querySelectorAll('.course-card').length;
+    grid.classList.remove('item-count-1', 'item-count-2', 'item-count-3', 'item-count-4');
+    if (count > 0 && count <= 4) {
+      grid.classList.add('item-count-' + count);
+    } else if (count > 4) {
+      grid.classList.add('item-count-4'); // Mantener el layout de 4 para más de 4
+    }
+  }
 
   function crearCard() {
     const card = document.createElement('div');
@@ -102,12 +118,12 @@ document.addEventListener('DOMContentLoaded', function(){
           <label>Código</label>
           <input type="text" name="codigo[]" class="form-control" placeholder="Ej: 83930184">
         </div>
-        <div class="field field-wide">
+        <div class="field">
           <label>Denominación</label>
           <input type="text" name="denominacion[]" class="form-control" placeholder="Denominación">
         </div>
       </div>
-      <div class="card-row">
+      <div class="card-row row-duracion-version">
         <div class="field">
           <label>Duración</label>
           <input type="text" name="duracion[]" class="form-control" placeholder="Ej: 144 horas">
@@ -116,7 +132,9 @@ document.addEventListener('DOMContentLoaded', function(){
           <label>Versión</label>
           <input type="number" name="version[]" class="form-control" placeholder="Ej: 1">
         </div>
-        <div class="field field-wide">
+      </div>
+      <div class="card-row row-linea">
+        <div class="field">
           <label>Línea Tecnoacademia</label>
           <input type="text" name="linea_tecnoacademia[]" class="form-control" placeholder="Ej: ELECTRÓNICA Y ROBÓTICA">
         </div>
@@ -130,14 +148,21 @@ document.addEventListener('DOMContentLoaded', function(){
 
   btnAgregarCurso.addEventListener('click', function(){
     grid.appendChild(crearCard());
+    updateGridLayout();
   });
 
   grid.addEventListener('click', function(e){
     if (e.target && e.target.classList.contains('btnEliminarCurso')) {
       const card = e.target.closest('.course-card');
       const cards = grid.querySelectorAll('.course-card');
-      if (cards.length > 1) card.remove();
+      if (cards.length > 1) {
+        card.remove();
+        updateGridLayout();
+      }
     }
   });
+
+  // Initial state
+  updateGridLayout();
 });
 </script>

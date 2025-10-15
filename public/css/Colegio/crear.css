@@ -50,18 +50,19 @@ body{
 
 .formulario-registro-colegio label {
   font-size: 14px;
-  color: #536387;
+  color: #0f1d2b;
   margin-bottom: 6px; /* margen uniforme */
+  font-weight: 700; /* negrilla */
 }
 
 .formulario-registro-colegio input {
   padding: 12px 16px;
-  border: 1px solid #dde3ec;
-  border-radius: 50px;
+  border: 2px solid rgba(0,48,77,.65); /* borde visible */
+  border-radius: 999px; /* píldora */
   background-color: #fff;
   font-size: 16px;
-  color: #333;
-  height: 48px; /* altura más cómoda */
+  color: #111;
+  min-height: 48px; /* altura más cómoda */
   box-sizing: border-box;
   margin: 0; /* evitar diferencias con márgenes por defecto */
 }
@@ -72,11 +73,11 @@ body{
   width: 100%;
   padding: 12px 16px; /* acorde a nueva altura */
   padding-right: 40px; /* espacio para el caret */
-  border: 1px solid #dde3ec;
-  border-radius: 50px;
+  border: 2px solid rgba(0,48,77,.65);
+  border-radius: 999px; /* píldora */
   background-color: #fff;
   font-size: 16px;
-  color: #333;
+  color: #111;
   height: 48px; /* nueva altura */
   line-height: 24px; /* centrado vertical del texto */
   box-sizing: border-box;
@@ -91,57 +92,54 @@ body{
 
 .formulario-registro-colegio select:focus,
 .formulario-registro-colegio .form-select:focus {
-  border-color: #4c7840;
+  border-color: #00304D;
   outline: none;
-  box-shadow: 0 0 6px rgba(76, 120, 64, 0.2);
+  box-shadow: 0 0 0 3px rgba(0,48,77,.12);
 }
 
 .formulario-registro-colegio input:focus {
-  border-color: #4c7840;
+  border-color: #00304D;
   outline: none;
-  box-shadow: 0 0 6px rgba(76, 120, 64, 0.2);
+  box-shadow: 0 0 0 3px rgba(0,48,77,.12);
 }
 
 /* Choices.js: el borde visible está en .choices__inner y el contenedor añade .is-focused */
-.formulario-registro-colegio .choices{
-  width: 100%;
-  overflow: hidden; /* sincroniza bordes */
-  border-radius: 50px;
-  margin: 0; /* Choices trae margin-bottom por defecto */
-}
+.formulario-registro-colegio .choices{ width:100%; overflow:hidden; border-radius:999px; margin:0 }
 .formulario-registro-colegio .choices__inner{
-  border-radius: 50px; /* igual que los inputs */
-  border: 1px solid #dde3ec;
-  height: 48px; /* nueva altura */
-  padding: 0 16px;
+  border-radius: 999px; /* igual que los inputs */
+  border: 2px solid rgba(0,48,77,.65);
+  min-height: 48px; /* nueva altura */
+  padding: 12px 16px;
   display: flex;
   align-items: center; /* centrar contenido */
 }
+.formulario-registro-colegio .choices__list--dropdown{ border-radius:16px !important }
 
 .formulario-registro-colegio .choices.is-focused .choices__inner,
 .formulario-registro-colegio .choices.is-open .choices__inner{
-  border-color: #4c7840;
+  border-color: #00304D;
   outline: none;
-  box-shadow: 0 0 6px rgba(76, 120, 64, 0.2);
+  box-shadow: 0 0 0 3px rgba(0,48,77,.12);
 }
 
 .formulario-registro-colegio button[type="submit"] {
   margin-top: 30px;
-  background-color: #00304D;
-  color: white;
-  padding: 12px 24px;
-  font-size: 16px;
+  background-color: #39A900; /* verde SENA */
+  color: #fff;
+  height: 58px;
+  padding: 0 34px;
+  font-size: 20px; /* letra grande */
   border: none;
-  border-radius: 8px;
+  border-radius: 999px; /* píldora */
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 800; /* más negrilla */
   align-self: center;
-  transition: background-color 0.3s ease;
+  transition: transform .03s ease, box-shadow .2s ease, filter .15s ease;
+  box-shadow: 0 10px 26px rgba(0,0,0,.10);
 }
 
-.formulario-registro-colegio button[type="submit"]:hover {
-  background-color: #2d6d94;
-}
+.formulario-registro-colegio button[type="submit"]:hover { filter: brightness(1.05); box-shadow: 0 14px 30px rgba(0,0,0,.12) }
+.formulario-registro-colegio button[type="submit"]:active{ transform: translateY(1px) }
 
 @media (max-width: 900px) {
   .formulario-registro-colegio .row {
