@@ -4,12 +4,20 @@
 $est = $data['est'] ?? [];
 $ficha = $data['ficha'] ?? [];
 $fecha = $data['fecha'] ?? date('Y-m-d');
+// Fallbacks desde la URL por si los SELECT no devolvieron filas
+$reqFichaId = isset($_GET['ficha_id']) ? (int)$_GET['ficha_id'] : 0;
+$reqEstId   = isset($_GET['estudiante_id']) ? (int)$_GET['estudiante_id'] : 0;
+
 $aprendiz = trim(($est['nombres'] ?? '') . ' ' . ($est['apellidos'] ?? ''));
 $telAcud = $est['telefono_acudiente'] ?? '';
 $nomAcud = $est['nombre_completo_acudiente'] ?? '';
-$fichaNumero = $ficha['numero'] ?? ($ficha['id'] ?? '');
+$fichaIdHidden = (int)($ficha['id'] ?? $reqFichaId);
+$estIdHidden   = (int)($est['id'] ?? $reqEstId);
+$fichaNumero = $ficha['numero'] ?? ($ficha['id'] ?? ($reqFichaId ?: ''));
 $fichaNombre = $ficha['nombre'] ?? '';
 ?>
+<?php require __DIR__ . '/../Componentes/encabezado.php'; ?>
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -21,7 +29,7 @@ $fichaNombre = $ficha['nombre'] ?? '';
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <style>
     body { background:#f5f7fb; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Open Sans', 'Helvetica Neue', Arial, sans-serif; }
-    .wrap { max-width: 920px; margin: 24px auto; padding: 0 16px; }
+    .wrap { max-width: 920px; margin: 12px auto; padding: 0 16px; }
     .card { background:#fff; border:1px solid #e9edf2; border-radius:10px; box-shadow: 0 4px 18px rgba(0,0,0,0.05); }
     .card-header { padding:16px 20px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content: space-between; }
     .card-title { margin:0; font-weight:700; color:#162447; font-size:20px; }
@@ -77,8 +85,8 @@ $fichaNombre = $ficha['nombre'] ?? '';
         </div>
 
         <form method="post" action="/?page=seguimiento_ausencia_guardar" style="margin-top:16px;">
-          <input type="hidden" name="ficha_id" value="<?= (int)($ficha['id'] ?? 0) ?>">
-          <input type="hidden" name="estudiante_id" value="<?= (int)($est['id'] ?? 0) ?>">
+          <input type="hidden" name="ficha_id" value="<?= $fichaIdHidden ?>">
+          <input type="hidden" name="estudiante_id" value="<?= $estIdHidden ?>">
           <input type="hidden" name="fecha" value="<?= htmlspecialchars($fecha) ?>">
 
           <div class="section-title">Datos de contacto</div>
@@ -188,6 +196,8 @@ $fichaNombre = $ficha['nombre'] ?? '';
       </div>
     </div>
   </div>
+<?php require __DIR__ . '/../Componentes/footer.php'; ?>
+
   <!-- JS: jQuery, Select2 y jQuery UI -->
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

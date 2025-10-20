@@ -34,7 +34,7 @@ if (isset($_GET['token'])) {
 <head>
   <meta charset="UTF-8">
   <title>Registro de Aprendiz</title>
-  <link rel="stylesheet" href="/css/crear.css">
+  <link rel="stylesheet" href="/css/Estudiante/crear.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 </head>

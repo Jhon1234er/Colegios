@@ -51,12 +51,12 @@ class NotificacionController {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notificacion_id'])) {
                 $id = intval($_POST['notificacion_id']);
 
-                $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE id = ? AND usuario_id = ? AND tipo_usuario = ?");
-                $stmt->execute([$id, $usuario_id, $tipo_usuario]);
+                $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE id = ? AND usuario_id = ? AND rol_id = ?");
+                $stmt->execute([$id, $usuario_id, $rol_id]);
 
                 // Consultar cuántas no leídas quedan
-                $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND tipo_usuario = ? AND estado = 'no_leida'");
-                $stmtCount->execute([$usuario_id, $tipo_usuario]);
+                $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND rol_id = ? AND estado = 'no_leida'");
+                $stmtCount->execute([$usuario_id, $rol_id]);
                 $restantes = (int) $stmtCount->fetchColumn();
 
                 echo json_encode([
@@ -67,8 +67,8 @@ class NotificacionController {
                 exit;
             } else {
                 // No se envió ID: marcar todas como leídas (opcional)
-                $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE usuario_id = ? AND tipo_usuario = ?");
-                $stmt->execute([$usuario_id, $tipo_usuario]);
+                $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE usuario_id = ? AND rol_id = ?");
+                $stmt->execute([$usuario_id, $rol_id]);
 
                 echo json_encode([
                     'success' => true,

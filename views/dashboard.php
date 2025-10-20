@@ -147,6 +147,13 @@ function formatearNombreColegio($nombre) {
         </div>
     </div>
     
+    <!-- Barra estática para volver al Dashboard (fuera del contenedor de resultados) -->
+    <div id="dashboard-backbar" class="indicaciones-column" style="display:none; margin:10px 0;">
+        <div class="div1" style="display:flex; align-items:center; justify-content:center;">
+            <button id="back-to-dashboard-global" class="btn" type="button">← Volver al Dashboard</button>
+        </div>
+    </div>
+
     <!-- Panel dinámico para resultados de búsqueda -->
     <div id="dashboard-resultados" style="display: none;"></div>
     
@@ -177,7 +184,7 @@ function formatearNombreColegio($nombre) {
     </div>
     
     <!-- Overlay para oscurecer el dashboard normal -->
-    <div id="dashboard-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); z-index: 1;"></div>
+    <div id="dashboard-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: 1;"></div>
 
     <?php include 'Componentes/footer.php'; ?> 
 

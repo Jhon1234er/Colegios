@@ -305,12 +305,95 @@ body{
 
 /* ===== PANELES DINÁMICOS ===== */
 #dashboard-resultados{
-  position:fixed; top:80px; left:20px; right:20px; bottom:20px;
-  background:rgba(255,255,255,.96); backdrop-filter:blur(8px);
-  border-radius:24px; box-shadow:var(--sh-lg); border:1px solid var(--line);
-  overflow-y:auto; z-index:1000; max-height:calc(100vh - 100px);
+  top: 160px; 
+  bottom: 110px;
+  left: 31px;
+  transform: none;
+  width: 50%;
+  max-width: 1000px;
+  background: #ffffff; /* blanco puro para evitar gris */
+  backdrop-filter: none;
+  border-radius: 24px;
+  box-shadow: var(--sh-lg);
+  border: 1px solid var(--line);
+  overflow-y: auto;               /* scroll interno si hay overflow */
+  z-index: 900;
+  height: calc(100vh - 270px);    /* alto fijo: 100vh - (top + bottom) */
+  min-height: calc(100vh - 270px);
+  overscroll-behavior: contain;   /* evita scroll anidado molesto */
 }
-#dashboard-overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:none}
+#dashboard-overlay{position:fixed; inset:0; background:transparent; z-index:899; display:none}
+
+/* Responsive: en pantallas pequeñas, usar casi todo el ancho */
+@media (max-width: 992px){
+  #dashboard-resultados{
+    width: calc(100% - 40px);
+    left: 20px;
+    transform: none;
+    bottom: 120px; /* un poco más en móviles */
+    height: calc(100vh - (160px + 120px)); /* recalcular alto en responsive */
+    min-height: calc(100vh - (160px + 120px));
+  }
+}
+
+/* Botón Volver al Dashboard (inyectado por JS) */
+.back-to-dashboard-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  background:#39A900; color:#fff; /* fondo verde, letra blanca */
+  border:2px solid #39A900;
+  border-radius:14px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-family:'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-weight:700; /* Peso 700 */
+  font-size:18px;  /* Tamaño 18px */
+  line-height:100%;
+  letter-spacing:0;
+  transition: transform .15s ease, filter .15s ease;
+  position: absolute; /* dentro del contenedor */
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  pointer-events: auto;
+}
+.back-to-dashboard-btn:hover{ transform: translateY(-1px); filter:brightness(0.98) }
+
+/* Contenedor de resultados fijo */
+#dashboard-resultados{ position:fixed }
+
+/* El botón vive dentro de .back-btn-hero, no dentro de #dashboard-resultados */
+
+/* ===== Backbar (barra del botón Volver) ===== */
+#dashboard-backbar.backbar{
+  position: relative; /* Posicionado por JS con margin-left + max-width */
+  align-items: center;           /* centrado vertical */
+  justify-content: flex-start;   /* alineado a la izquierda */
+  gap: 14px;
+  padding: 16px 22px;            /* más alto/espaciado */
+  min-height: 72px;              /* hacer el contenedor más largo (alto) */
+  margin: 14px 0;
+  background: rgba(57,169,0,0.12); /* más claro que 20% */
+  border-radius: 15px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.05);
+}
+
+#dashboard-backbar .backbar__btn{
+  display: inline-flex;
+  align-items: center; gap: .6rem;
+  padding: 12px 18px;
+  border: 0; border-radius: 999px;
+  background: #39A900;           /* botón verde */
+  color: #ffffff;                 /* texto blanco */
+  font-weight: 800; font-size: 1rem; line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06) inset;
+  transition: transform .06s ease, filter .15s ease;
+}
+#dashboard-backbar .backbar__btn:hover{ filter: brightness(.95); }
+#dashboard-backbar .backbar__btn:active{ transform: translateY(1px); }
+
+#dashboard-backbar .backbar__icon{ display:inline-block; font-size:1.1rem; line-height:1; transform: translateY(-1px); }
 
 
 /* =========================================================

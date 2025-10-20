@@ -47,6 +47,22 @@
         <div id="estudiantesContainer"></div>
         <!-- Registro de asistencia  -->
         <div id="calendarioAsistencia" class="calendario-wrapper"></div>
+
+        <!-- Historial de asistencias: contenedores no intrusivos -->
+        <section class="historial-wrapper" aria-label="Historial de asistencias">
+          <div class="historial-card" aria-labelledby="hist-pend-title">
+            <h4 id="hist-pend-title">No asistieron (pendientes de proceso)</h4>
+            <div id="historial-pendientes" class="historial-list">
+              <!-- Items pendientes se cargarán aquí -->
+            </div>
+          </div>
+          <div class="historial-card" aria-labelledby="hist-proc-title">
+            <h4 id="hist-proc-title">No asistieron (proceso realizado)</h4>
+            <div id="historial-procesados" class="historial-list">
+              <!-- Items procesados se cargarán aquí -->
+            </div>
+          </div>
+        </section>
     </div>
 
     </div>

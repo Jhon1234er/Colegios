@@ -1,0 +1,767 @@
+  /* ================================
+    SISTEM SCHOOL – DASHBOARD (PALETA: #00304D, #39A900, BLANCO/NEGRO)
+    ================================ */
+
+  /* ---- Tokens mínimos (solo tu paleta) ---- */
+  :root{
+    --blue:#00304D;                 /* azul principal */
+    --green:#39A900;                /* verde SENA */
+    --white:#ffffff;
+    --black:#000000;
+
+    /* derivados en OPACIDAD (no nuevos colores) */
+    --blue-10: rgba(0,48,77,.10);
+    --blue-20: rgba(0,48,77,.20);
+    --blue-70: rgba(0,48,77,.70);
+    --green-08: rgba(57,169,0,.08);
+    --green-12: rgba(57,169,0,.12);
+    --green-18: rgba(57,169,0,.18);
+
+    --line:#E6EAEF;                 /* línea suave neutra */
+    --muted:#6B6B6B;                /* texto secundario (gris neutro) */
+
+    --r:16px; --r-lg:20px; --r-xl:24px; --r-pill:999px;
+    --sh:0 6px 14px rgba(0,0,0,.08);
+    --sh-lg:0 14px 28px rgba(0,0,0,.10);
+    --tr:all .25s ease;
+    /* offset vertical para alinear columnas con títulos externos (.section-title) */
+    --title-offset: 52px;
+  }
+
+  /* ---- Reset / base ---- */
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--white);     /* sin degradados */
+    color: var(--black);
+    line-height:1.45;
+  }
+
+  /* ===== LAYOUT GENERAL ===== */
+  .dashboard-panel{padding:20px; width:100%; min-height:100vh}
+  .parent{
+    display:grid;
+    grid-template-columns:1fr 2.2fr 1.1fr;
+    grid-template-rows: auto auto 1fr auto; /* Sin fila explícita para el botón */
+    gap:20px;
+    grid-template-areas:
+      "bienvenida bienvenida bienvenida"
+      "indicaciones grafico contadores"
+      "tabla tabla tabla";
+    animation:fadeIn .45s ease-out;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ===== BARRA “BIENVENIDO” (píldora azul) ===== */
+  .div9{
+    grid-area:bienvenida;
+    background:var(--blue);
+    color:#fff;
+    border-radius:var(--r-pill);
+    padding:18px 26px;
+    box-shadow:var(--sh);
+    display:flex; align-items:center; justify-content:space-between;
+    gap: 24px; /* separación visible entre "Bienvenido" y "Rol" */
+    font-weight:800; letter-spacing:.02em;
+  }
+  .div9 p{color:#fff; font-size:1.05rem; margin:0}
+  /* saludo central entre Bienvenido y Rol */
+  .welcome-center{
+    color:#fff; font-weight:900; letter-spacing:.04em;
+    font-size:1.05rem; display:flex; align-items:center; gap:8px;
+  }
+  .hand-wave{ display:inline-block; transform-origin: 70% 70%; animation: wave 1.4s ease-in-out infinite; }
+  @keyframes wave{ 0%{transform:rotate(0)} 15%{transform:rotate(18deg)} 30%{transform:rotate(-10deg)} 45%{transform:rotate(14deg)} 60%{transform:rotate(-6deg)} 75%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
+  /* versión SVG en verde */
+  .hand-wave-svg{ display:inline-block; transform-origin: 70% 70%; animation: wave 1.4s ease-in-out infinite; fill: var(--green); color: var(--green); }
+  .hand-wave-svg path{ fill: currentColor; }
+  /* personita saludando */
+  .person-wave{ display:inline-block; margin-left: 6px; }
+  .pw-head{ fill: var(--green); }
+  .pw-body{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round; stroke-linejoin:round }
+  .pw-arm-fixed{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round }
+  .pw-arm-line{ fill:none; stroke: var(--green); stroke-width:3; stroke-linecap:round; transform-origin: 0 0 }
+  .pw-hand{ fill: var(--green) }
+  /* animación del brazo derecho */
+  .person-wave .pw-arm{ transform-origin: 0 0; animation: armwave 1.4s ease-in-out infinite }
+  @keyframes armwave{ 0%{transform:rotate(0)} 20%{transform:rotate(-18deg)} 40%{transform:rotate(12deg)} 60%{transform:rotate(-14deg)} 80%{transform:rotate(10deg)} 100%{transform:rotate(0)} }
+
+  /* Mano de contorno verde */
+  .hand-outline{ display:inline-block; margin-left:8px; }
+  .hand-outline path{ fill:none; stroke: var(--green); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round }
+  .hand-outline .ho-accent{ stroke-width:2; opacity:.8 }
+  .hand-outline{ transform-origin: 24px 28px; animation: handwave 1.4s ease-in-out infinite }
+  @keyframes handwave{ 0%{transform:rotate(0)} 20%{transform:rotate(-12deg)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-10deg)} 80%{transform:rotate(8deg)} 100%{transform:rotate(0)} }
+
+  /* ===== COLUMNA IZQUIERDA ===== */
+  .indicaciones-column{
+    grid-area:indicaciones;
+    display:flex; flex-direction:column; gap:18px;
+    /* sin borde: cada bloque (.div1 y .div2) tiene su propio borde */
+  }
+
+  /* ===== TARJETA TIPO MAQUETA  ===== */
+  /* Contenedor verde con borde grueso y sombra suave */
+  .div1, .div2{
+    background:#fff;
+    border: 2px solid #39A900; /* borde verde delgado (mismo estilo que contadores) */
+    border-radius:22px;            /* igual que .div5..div11 */
+    padding:14px 16px;             /* igual que contadores */
+    box-shadow: var(--sh);         /* sombra sutil, no tan grande */
+    min-height: 220px;             /* asegurar que el borde se vea aun sin contenido */
+    max-height: 320px;             /* mismo alto que ya tenías */
+    overflow: hidden;              /* evita que crezca */
+    display:flex; flex-direction:column; gap:10px;
+  }
+
+  /* Título centrado y fuerte (Facilitadores/Aprendices) */
+  .div1 .block-title, .div2 .block-title{
+    font-weight:900;
+    font-size:1.15rem;
+    text-align:center;
+    margin:2px 0 10px;
+  }
+
+  /* Barra de filtros como píldora verde (Ficha + Buscar + botón) */
+  .filter-bar{
+    display:flex; align-items:center; gap:8px;
+    background: var(--green-12);
+    border:3px solid var(--green);
+    border-radius:14px;
+    padding:8px 10px;
+    margin-bottom:10px;
+  }
+  .filter-bar .filter-select{
+    border:0; outline:0;
+    background:#fff; font-weight:700;
+    padding:6px 10px; border-radius:10px;
+    border:2px solid var(--green);
+  }
+  .filter-bar .filter-input{
+    flex:1; border:2px solid var(--green);
+    border-radius:10px; padding:7px 10px; outline:0;
+  }
+  .filter-bar .filter-btn{
+    width:38px; height:38px; border-radius:50%;
+    border:2px solid var(--green); background:#fff; cursor:pointer;
+    display:grid; place-items:center; transition:transform .15s ease;
+  }
+  .filter-bar .filter-btn:hover{ transform: translateY(-1px); }
+
+  /* Contenido con scroll sin romper el layout */
+  .list-scroll{ flex:1; overflow:auto; padding-right:6px; }
+  .list-scroll::-webkit-scrollbar{ width:10px }
+  .list-scroll::-webkit-scrollbar-track{ background: var(--green-08); border-radius: 10px }
+  .list-scroll::-webkit-scrollbar-thumb{ background: var(--green); border-radius: 10px }
+
+  /* Caja interna blanca con borde AZUL (como maqueta) */
+  .mockup-box{
+    background:#fff;
+    border:3px solid var(--blue);
+    border-radius:18px;
+    padding:12px;
+    box-shadow: 0 12px 24px rgba(0,0,0,.10);
+  }
+
+  /* Cada item dentro de la caja: limpio, tipografía fuerte en el nombre */
+  .person-card, .student-card{
+    background:transparent;
+    border:0; padding:0; box-shadow:none;
+  }
+  .pc-name, .student-name{
+    font-weight:800; color:#000; margin:0 0 8px; border:0; padding:0;
+  }
+  .pc-inner, .student-details{
+    border:0; padding:0; box-shadow:none; color:var(--muted);
+    font-size:.95rem; line-height:1.35;
+  }
+
+  /* Separador fino entre items (opcional) */
+  .mockup-box .item + .item{
+    margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+  }
+  .div1:hover,.div2:hover{transform:translateY(-2px); box-shadow:var(--sh-lg)}
+  .div1 h3,.div2 h3{
+    text-align:center; font-weight:800; font-size:1.05rem; color:var(--black); margin-bottom:12px;
+  }
+
+  .profesor-container,.students-container{display:flex; flex-direction:column; gap:14px}
+  .profesor-card,.student-card{
+    background:var(--white);
+    border:2px solid var(--green-18);
+    border-radius:20px;
+    padding:14px;
+    box-shadow:0 1px 2px rgba(0,0,0,.05);
+    transition:var(--tr);
+  }
+  .profesor-card:hover,.student-card:hover{transform:translateY(-2px); box-shadow:var(--sh)}
+  .profesor-name,.student-name{
+    font-weight:700; color:var(--black);
+    margin-bottom:8px; border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .profesor-card p,.student-details{color:var(--muted); font-size:.92rem}
+
+  /* ===== GRÁFICO ===== */
+  .div3{
+    grid-area:grafico;
+    position: relative; /* Contexto para el botón */
+    background:var(--white);
+    border: 2px solid var(--green); /* borde verde delgado */
+    border-radius:var(--r-xl);
+    padding:16px;
+    box-shadow:var(--sh-lg);
+    display:flex; flex-direction:column; min-height:auto; /* evitar espacio blanco extra */
+  }
+  .div3 h3{color:var(--black); margin-bottom:12px; text-align:center; font-weight:800; font-size:1.05rem}
+
+  #chart-container{
+    height:560px; width:100%;
+    display:block; /* evitar expansión por flex */
+    position: relative;
+    overflow: hidden; /* no permitir que el lienzo sobresalga */
+    background: var(--green-12);            /* verde muy claro */
+    border:2px solid var(--green-18);
+    border-radius:18px;
+  }
+
+  /* ===== ALERTAS ===== */
+  .alertas{
+    background: rgba(0,0,0,.02);
+    border:1px solid var(--line);
+    border-radius:18px; padding:16px; margin-top:auto;
+  }
+  .alertas h4{color:#b00000; font-weight:800; margin-bottom:10px}
+  .alertas li{background:var(--white); border:1px solid #f0d3d3; border-radius:12px; padding:10px 12px; color:var(--black)}
+
+  /* ===== CONTADORES (píldoras blancas con borde verde) ===== */
+  .contadores-column{grid-area:contadores; display:flex; flex-direction:column; gap:14px}
+  .div5,.div6,.div7,.div8,.div10,.div11{
+    background:var(--white);
+    border:2px solid var(--green);
+    border-radius:22px;
+    padding:14px 16px;
+    text-align:center;
+    box-shadow:var(--sh);
+    transition:var(--tr);
+  }
+  .div5:hover,.div6:hover,.div7:hover,.div8:hover,.div10:hover,.div11:hover{transform:translateY(-2px)}
+  .contadores-column h3{font-size:.85rem; font-weight:700; color:var(--black); margin-bottom:6px}
+  .contadores-column p{font-size:2rem; font-weight:800; color:var(--black)}
+
+  /* ===== BOTONES ===== */
+  .btn{
+    display:inline-block;
+    padding:10px 16px;
+    background: var(--green);
+    color:#fff; border:none; border-radius:18px;
+    font-weight:700; font-size:.85rem; cursor:pointer;
+    transition:var(--tr); box-shadow:0 2px 6px rgba(0,0,0,.12);
+  }
+  .btn:hover{filter:brightness(.9)}
+
+  /* Botones especiales dentro de contadores (PDF/Excel) */
+  .div10 .btn{background: var(--green)}
+  .div11 .btn{background: var(--green)}
+
+  /* ===== TABLA ===== */
+  .div4{
+    grid-area:tabla;
+    background:var(--white);
+    border-radius:var(--r-xl);
+    padding:18px;
+    box-shadow:var(--sh-lg);
+    overflow:hidden;
+  }
+  #tabla-title{
+    text-align: center;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: .02em;
+    padding: 10px 14px;
+    border-radius: 33px; /* estilo píldora */
+    margin: 0 auto 10px; /* centrar y separar ligeramente de la tabla */
+    width: 34%;
+  }
+  #tabla-colegios{
+    width:96%; /* un poco más angosta para separarla visualmente del título */
+    margin: 0 auto; /* centrar debajo del título */
+    border-collapse:separate; border-spacing:0; border-radius:0 0 14px 14px; overflow:hidden; /* pegada al título */
+    box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  #tabla-colegios thead{background: var(--blue)}
+  #tabla-colegios th{
+    color:#fff; font-weight:700; text-align:left; padding:12px; font-size:.85rem; letter-spacing:.02em;
+  }
+  #tabla-colegios tbody tr{border-bottom:1px solid var(--line); transition:var(--tr)}
+  #tabla-colegios tbody tr:nth-child(even){background: var(--blue-10)}
+  #tabla-colegios tbody tr:hover{background: var(--green-08)}
+  #tabla-colegios td{padding:12px; color:var(--black); font-size:.92rem}
+  .btn-ver-colegio{background:var(--green); color:#fff; border:none; padding:8px 12px; border-radius:14px; font-weight:700; font-size:.8rem}
+  .btn-ver-colegio:hover{filter:brightness(.9)}
+
+  /* ===== PANELES DINÁMICOS ===== */
+  #dashboard-resultados{
+    position:fixed; top:80px; left:20px; right:20px; bottom:20px;
+    background:rgba(255,255,255,.96); backdrop-filter:blur(8px);
+    border-radius:24px; box-shadow:var(--sh-lg); border:1px solid var(--line);
+    overflow-y:auto; z-index:1000; max-height:calc(100vh - 100px);
+  }
+  #dashboard-overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:none}
+
+
+  /* =========================================================
+    MODALES DE REPORTES (coinciden con la maqueta)
+    ========================================================= */
+
+  /* Dialog y contenedor */
+  .modal.fade .modal-dialog{
+    transform: translateY(-8px);
+    transition: transform .25s ease, opacity .25s ease;
+  }
+  .modal.show .modal-dialog{ transform: translateY(0); }
+
+  .modal-content{
+    border: 2px solid var(--blue);
+    border-radius: 18px;
+    box-shadow: 0 14px 28px rgba(0,0,0,.12);
+    overflow: visible; /* no cortar flatpickr */
+  }
+
+  /* Header azul con título centrado y botón cerrar blanco */
+  .modal-header{
+    background: var(--blue);
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+    border-top-left-radius: 16px; border-top-right-radius: 16px;
+  }
+  .modal-title{
+    font-weight: 800; letter-spacing: .02em;
+    width: 100%; text-align: center; color:#fff;
+  }
+  .modal-header .btn-close{
+    filter: invert(1); opacity: .9;
+  }
+  .modal-header .btn-close:focus{ box-shadow: none; }
+
+  /* Cuerpo */
+  .modal-body{ background:#fff; }
+  .modal-body .form-label{
+    font-weight: 700; color:#000; margin-bottom: 6px;
+  }
+
+  /* Selects e inputs con borde verde (focus también) */
+  .modal-body .form-select,
+  .modal-body .form-control{
+    border: 2px solid var(--green);
+    border-radius: 14px;
+    padding: 10px 12px;
+    outline: none;
+    box-shadow: none;
+  }
+  .modal-body .form-select:focus,
+  .modal-body .form-control:focus{
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(57,169,0,.15);
+  }
+
+  /* Flatpickr: selección en VERDE y acentos de marca */
+  .flatpickr-calendar{
+    background: rgba(255,255,255,.85) !important; /* más transparente */
+    backdrop-filter: blur(4px);
+    border: 2px solid var(--green-18) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,.16) !important;
+  }
+  /* Variante aún más translúcida (usada en Semana fin) */
+  .fp-more-transparent{
+    background: rgba(255,255,255,.80) !important;
+  }
+  .flatpickr-calendar .flatpickr-day.selected,
+  .flatpickr-calendar .flatpickr-day.startRange,
+  .flatpickr-calendar .flatpickr-day.endRange,
+  .flatpickr-calendar .flatpickr-day.selected:hover{
+    background: var(--green) !important;
+    border-color: var(--green) !important;
+    color: #fff !important;
+  }
+  .flatpickr-calendar .flatpickr-day.inRange{
+    background: rgba(57,169,0,.12) !important;
+    border-color: rgba(57,169,0,.18) !important;
+  }
+  .flatpickr-calendar .flatpickr-day.today{
+    background-color: #39A900 !important;
+  }
+
+  /* Grupo de fichas: check tipo “chip” */
+  #fichasContainerPDF,
+  #fichasContainerExcel{
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px 12px;
+  }
+  #fichasContainerPDF .form-check,
+  #fichasContainerExcel .form-check{
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 0; /* el gap del grid se encarga del espacio */
+    padding: 8px 12px;
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    background: #fff;
+    transition: .2s ease;
+    width: 100%;
+  }
+  #fichasContainerPDF .form-check:hover,
+  #fichasContainerExcel .form-check:hover{
+    background: rgba(57,169,0,.06);
+  }
+
+  /* Checkbox cuadrado con borde verde; activo relleno verde */
+  #fichasContainerPDF .form-check-input,
+  #fichasContainerExcel .form-check-input{
+    width: 20px; height: 20px;
+    margin-top: 0; margin-left: 0;
+    border: 2px solid var(--green);
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  #fichasContainerPDF .form-check-input:checked,
+  #fichasContainerExcel .form-check-input:checked{
+    background-color: var(--green);
+    border-color: var(--green);
+  }
+  #fichasContainerPDF .form-check-label,
+  #fichasContainerExcel .form-check-label{
+    color:#000; font-weight: 600; cursor: pointer;
+  }
+
+  /* “Seleccionar todas” alineado limpio */
+  #checkAllFichasPDF,
+  #checkAllFichasExcel{
+    width: 18px; height: 18px; border-radius: 6px;
+    border: 2px solid var(--green);
+    box-shadow: none;
+  }
+  #checkAllFichasPDF:checked,
+  #checkAllFichasExcel:checked{
+    background: var(--green); border-color: var(--green);
+  }
+
+  /* Vista previa: tabla con borde verde y cabeceras tipo cápsula */
+  .table.table-bordered{
+    border-color: var(--green) !important;
+  }
+  .table.table-bordered thead th{
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid var(--green) !important;
+    border-radius: 10px;             /* efecto pastilla en cabeceras */
+    font-weight: 800; font-size: .9rem;
+    text-align: center;
+  }
+  .table.table-bordered tbody td{
+    border: 1.8px solid var(--green) !important;
+  }
+
+  /* Footer: dos botones AZULES (como en la maqueta) */
+  .modal-footer{
+    border-top: 1px solid #eef1f4;
+    background: #fff;
+    display: flex; gap: 12px; justify-content: center;
+  }
+
+  /* Forzar azul a los botones del modal (PDF y Excel) */
+  #modalReportesPDF .btn,
+  #modalReportesExcel .btn{
+    background: var(--blue) !important;
+    color:#fff !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: 10px 18px !important;
+    font-weight: 800 !important;
+    box-shadow: 0 8px 20px rgba(0,48,77,.18);
+    transition: transform .15s ease, filter .2s ease;
+  }
+  #modalReportesPDF .btn:hover,
+  #modalReportesExcel .btn:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+  #modalReportesPDF .btn:active,
+  #modalReportesExcel .btn:active{
+    transform: translateY(0);
+  }
+
+  /* Responsive modal */
+  @media (max-width: 576px){
+    .modal-dialog{ margin: .75rem; }
+    .modal-title{ font-size: 1rem; }
+    .modal-footer{ flex-direction: column; }
+    #fichasContainerPDF .form-check,
+    #fichasContainerExcel .form-check{ width: 100%; }
+  }
+
+  /* Ensanchar el modal grande para acomodar 4 fichas y el calendario */
+  .modal-lg{ max-width: 1000px; }
+  @media (max-width: 992px){
+    .modal-lg{ max-width: 95%; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:1200px){
+    .parent{
+      grid-template-columns:1fr 1.6fr;
+      grid-template-areas:
+        "bienvenida bienvenida"
+        "indicaciones contadores"
+        "grafico grafico"
+        "tabla tabla";
+    }
+  }
+  @media (max-width:768px){
+    .parent{
+      grid-template-columns:1fr; gap:14px;
+      grid-template-areas:
+        "bienvenida"
+        "indicaciones"
+        "contadores"
+        "grafico"
+        "tabla";
+    }
+    .div3{min-height:520px}
+    #chart-container{height:440px}
+  }
+
+  /* ===== TARJETAS BÁSICAS (para estudiantes y facilitadores) ===== */
+  .cards-scroll{ flex:1; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:12px }
+  .tarjeta{
+    background: var(--white);
+    border: 2px solid var(--green);   /* lados y base delgados */
+    border-top-width: 8px;            /* parte superior más ancha */
+    border-radius: 28px;
+    padding: 12px;                    /* espacio interior del contenedor */
+    box-shadow: none;                 /* sin sombra para evitar doble caja */
+  }
+  .tarjeta.tarjeta--mini{ max-height:none }
+  .mockup{ background: transparent; border: none; border-radius: 0; padding: 0; box-shadow: none }
+  .mockup__header{ border: none; border-bottom: 1px solid var(--black); border-radius: 0; padding: 6px 0 8px; font-weight: 800; color: var(--black); margin-bottom: 10px; background: transparent }
+
+  /* ===== TÍTULOS DE SECCIÓN (fuera del contenedor) ===== */
+  .section-title{
+    font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: 700; /* Bold */
+    font-style: normal;
+    font-size: 23.75px;
+    line-height: 100%;
+    letter-spacing: 0;
+    color: var(--black);
+    text-align: center;
+    display: block;
+    margin: 0 0 10px 0;
+  }
+
+  /* ===== Filtros dentro del contenedor (selects e input) ===== */
+  .tarjeta__filters{ display:flex; align-items:center; gap:8px; background: var(--green-12); border:3px solid var(--green); border-radius:14px; padding:8px 10px }
+
+  /* Select tipo chip con flecha personalizada */
+  .chip-select{
+    appearance:none;
+    background: var(--green);
+    color:#fff;
+    font-weight:800;
+    border:none;
+    border-radius:10px;
+    padding:8px 34px 8px 12px; /* espacio para la flecha */
+    cursor:pointer; outline:none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat:no-repeat; background-position: right 10px center; background-size:16px 16px;
+  }
+  .chip-select:focus{ box-shadow: 0 0 0 3px rgba(57,169,0,.28); }
+
+  /* Input buscar con fondo verde claro y lupa interna */
+  .input-buscar{
+    flex:1;
+    background: var(--green-12);
+    border: 2px solid var(--green);
+    border-radius: 10px;
+    padding: 8px 10px; /* sin icono interno */
+    outline: none; color: var(--black); font-weight: 600;
+  }
+  .input-buscar::placeholder{ color:#2f5a1d; opacity:.8; font-weight:600 }
+
+  /* Botón de búsqueda: círculo verde con icono blanco */
+  .btn-icon{
+    width:38px; height:38px; min-width:38px;
+    display:grid; place-items:center;
+    background: var(--green);
+    color: #fff; /* el SVG usa currentColor */
+    border:2px solid var(--green);
+    border-radius:50%;
+    cursor:pointer;
+    transition: transform .15s ease, filter .15s ease;
+  }
+  .btn-icon:hover{ transform: translateY(-1px); filter: brightness(.95) }
+
+  /* ===== TARJETAS BÁSICAS (para estudiantes y facilitadores) ===== */
+  .cards-scroll{ flex:1; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:12px }
+  /* Los contenedores principales tienen borde delgado y
+    cada tarjeta también conserva su borde verde con parte superior más ancha */
+  .tarjeta{
+    background: var(--white);
+    border: 2px solid var(--green);   /* lados y base delgados */
+    border-top-width: 8px;            /* parte superior más ancha */
+    border-radius: 28px;
+    padding: 12px;                    /* espacio interior del contenedor */
+    box-shadow: none;                 /* sin sombra para evitar doble caja */
+  }
+
+  /* ===== LÓGICA DE TRANSICIÓN DE VISTAS ===== */
+  .view-main, .view-secondary {
+      transition: opacity 300ms ease, transform 300ms ease;
+  }
+
+  .view-secondary {
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+      display: none; /* Ocultar completamente */
+  }
+
+  .parent.show-secondary .view-main {
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+      display: none;
+  }
+
+  .parent.show-secondary .view-secondary {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      display: flex; /* O el valor que corresponda (flex, block, etc.) */
+  }
+  .tarjeta.tarjeta--mini{ max-height:none }
+  /* El contenido NO lleva borde ni sombra ni color distinto para que no se note separación */
+  .mockup{ background: transparent; border: none; border-radius: 0; padding: 0; box-shadow: none }
+  /* Encabezado: solo una línea negra muy fina como separador */
+  .mockup__header{ border: none; border-bottom: 1px solid var(--black); border-radius: 0; padding: 6px 0 8px; font-weight: 800; color: var(--black); margin-bottom: 10px; background: transparent }
+
+  /* ===== TÍTULOS DE SECCIÓN (fuera del contenedor) ===== */
+  .section-title{
+    font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: 700; /* Bold */
+    font-style: normal;
+    font-size: 23.75px;
+    line-height: 100%;
+    letter-spacing: 0;
+    color: var(--black);
+    text-align: center;
+    display: block;
+    margin: 0 0 10px 0;
+  }
+
+  /* ===== Filtros dentro del contenedor (selects e input) ===== */
+  .tarjeta__filters{ display:flex; align-items:center; gap:8px; background: var(--green-12); border:3px solid var(--green); border-radius:14px; padding:8px 10px }
+
+  /* Select tipo chip con flecha personalizada */
+  .chip-select{
+    appearance:none;
+    background: var(--green);
+    color:#fff;
+    font-weight:800;
+    border:none;
+    border-radius:10px;
+    padding:8px 34px 8px 12px; /* espacio para la flecha */
+    cursor:pointer; outline:none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat:no-repeat; background-position: right 10px center; background-size:16px 16px;
+  }
+  .chip-select:focus{ box-shadow: 0 0 0 3px rgba(57,169,0,.28); }
+
+  /* Input buscar con fondo verde claro y lupa interna */
+  .input-buscar{
+    flex:1;
+    background: var(--green-12);
+    border: 2px solid var(--green);
+    border-radius: 10px;
+    padding: 8px 10px; /* sin icono interno */
+    outline: none; color: var(--black); font-weight: 600;
+  }
+  .input-buscar::placeholder{ color:#2f5a1d; opacity:.8; font-weight:600 }
+
+  /* ===== Contenedor del botón de transición (mantener centrado en la fila) ===== */
+.view-toggle-container {
+  position: absolute;
+  top: -30px; /* Mitad del alto del botón */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* ===== Botón circular: contenedor de posicionamiento ===== */
+#view-toggle-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+  background-color: var(--blue);
+  border: 2px solid rgba(255,255,255,.5);
+  cursor: pointer;
+  transition: background-color .3s ease, transform .2s ease;
+  transform: translateZ(0);
+}
+
+#view-toggle-btn:hover {
+  transform: translateZ(0) scale(1.1);
+}
+
+/* ===== Capas de iconos que se alternan ===== */
+#view-toggle-btn span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transition: transform 300ms ease, opacity 300ms ease;
+}
+
+#view-toggle-btn svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  stroke: var(--green);
+  transition: stroke .3s ease;
+}
+
+/* Estado base: se ve la cuadrícula */
+#view-toggle-btn .icon-grid {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+#view-toggle-btn .icon-eye {
+  transform: rotate(-90deg) scale(0);
+  opacity: 0;
+}
+
+/* Estado alterno cuando .parent tiene .show-secondary */
+.parent.show-secondary #view-toggle-btn {
+  background-color: var(--green);
+  transform: translateZ(0) rotate(180deg);
+}
+.parent.show-secondary #view-toggle-btn svg {
+  stroke: var(--blue);
+}
+.parent.show-secondary #view-toggle-btn .icon-grid {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+.parent.show-secondary #view-toggle-btn .icon-eye {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}

@@ -25,16 +25,11 @@ html, body {
 .container {
   background: var(--blanco);
   max-width: 860px;
-  margin: 0 auto;
+  margin: 120px auto 32px; /* Margen superior para espacio, y auto para centrar */
   padding: 32px; /* más aire interno para no pegarse a los bordes */
   border-radius: 12px;
   border: 1px solid rgba(0, 48, 77, 0.12); /* basado en #00304D */
   box-shadow: 0 6px 24px rgba(0, 48, 77, 0.08);
-  /* Fijar contenedor para que no genere scroll por márgenes grandes */
-  position: fixed;
-  top: 250px; /* misma ubicación deseada */
-  left: 50%;
-  transform: translateX(-50%);
   width: calc(100% - 48px);
 }
 
@@ -351,6 +346,7 @@ select {
 .next-btn:hover,
 .submit-btn:hover { filter: brightness(0.95); }
 
+
 .prev-btn,
 .btn.btn-secondary {
   background: var(--blanco);
@@ -363,6 +359,28 @@ select {
 
 .prev-btn:hover,
 .btn.btn-secondary:hover { background: rgba(0, 48, 77, 0.05); }
+
+.acudiente-item {
+  position: relative;
+  padding-top: 20px; /* Espacio para el botón de eliminar */
+}
+
+.btn-eliminar-acudiente {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 10;
+}
 
 /* ===== Input fecha (igual estilo modal dashboard) ===== */
 /* Ajuste: contenedor más ancho solo para la vista de Estudiante */

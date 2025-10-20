@@ -149,7 +149,8 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
         <h5>Familiares / Acudientes</h5>
         <p>Este acudiente será contactado en caso de emergencia. Puedes añadir más.</p>
         <div id="acudientes-container">
-          <div class="acudiente-item" data-index="0">
+                    <div class="acudiente-item" data-index="0">
+            <button type="button" class="btn-eliminar-acudiente" style="display:none;">&times;</button>
             <div class="row">
               <div class="col-md-6"><label>Nombres</label><input type="text" name="acudientes[0][nombres]" required></div>
               <div class="col-md-6"><label>Apellidos</label><input type="text" name="acudientes[0][apellidos]" required></div>
@@ -341,24 +342,39 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
     bindToggle('fm_med','fm_med_det');
     bindToggle('fm_disc','fm_disc_det');
 
+    // Guardar una copia limpia del template ANTES de que Choices.js lo modifique
+    const acudienteTemplate = document.querySelector('.acudiente-item').cloneNode(true);
+
     // Añadir otro acudiente
-    document.getElementById('btnAddAcudiente')?.addEventListener('click', function(){
-      const cont = document.getElementById('acudientes-container');
-      const items = cont.querySelectorAll('.acudiente-item');
-      const idx = items.length;
-      const tpl = items[0].cloneNode(true);
-      tpl.setAttribute('data-index', idx);
-      tpl.querySelectorAll('input,select').forEach(el=>{
-        el.value='';
-        const name = el.getAttribute('name');
-        if(name){ el.setAttribute('name', name.replace(/\[0\]/, '['+idx+']')); }
-        if(el.classList.contains('gen-acu-otro')){ el.style.display='none'; el.required=false; }
-      });
-      // toggle genero Otro dentro de cada item
-      const selGen = tpl.querySelector('.gen-acu');
-      const inpGenOtro = tpl.querySelector('.gen-acu-otro');
-      selGen.addEventListener('change', ()=>{ const show = selGen.value==='Otro'; inpGenOtro.style.display=show?'block':'none'; inpGenOtro.required=show; if(!show) inpGenOtro.value=''; });
-      cont.appendChild(tpl);
+    document.getElementById('btnAddAcudiente')?.addEventListener('click', function() {
+        const container = document.getElementById('acudientes-container');
+        const index = container.children.length;
+        const newItem = acudienteTemplate.cloneNode(true);
+
+        // Actualizar nombres de los campos en el nuevo item
+        newItem.querySelectorAll('input, select').forEach(el => {
+            const name = el.getAttribute('name');
+            if (name) {
+                el.name = name.replace(/\\[0\\]/, `[${index}]`);
+            }
+        });
+
+        // Mostrar el botón de eliminar
+        newItem.querySelector('.btn-eliminar-acudiente').style.display = 'block';
+
+        container.appendChild(newItem);
+
+        // Inicializar Choices.js en los nuevos selects del item recién agregado
+        newItem.querySelectorAll('select.js-choice').forEach(select => {
+            new Choices(select, { searchEnabled: false, shouldSort: false, itemSelectText: '' });
+        });
+    });
+
+    // Delegación de eventos para eliminar acudientes
+    document.getElementById('acudientes-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-eliminar-acudiente')) {
+            e.target.closest('.acudiente-item').remove();
+        }
     });
     // Primer item: enlazar cambio de género Otro
     (function(){

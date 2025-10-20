@@ -28,6 +28,8 @@ try {
             e.jornada,
             e.fecha_ingreso,
             e.estado,
+            e.ficha_id,
+            f.numero AS numero_ficha,
             c.nombre AS colegio_nombre,
             f.nombre AS ficha_nombre,
             e.nombre_completo_acudiente,
