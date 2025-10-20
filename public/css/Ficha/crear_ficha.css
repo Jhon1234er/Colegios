@@ -1,15 +1,67 @@
+/* Alinear el label de Días de clases con Seleccione Curso (más a la derecha) */
+.alinear-label-dias {
+    display: block;
+    margin-left: 400px;
+    /* igual a .ficha-select-container max-width */
+}
+@media (max-width: 900px) {
+    .alinear-label-dias {
+        margin-left: 10px;
+    }
+}
+/* Alinear el label de Días de clases con Seleccione Curso */
+.alinear-label-dias {
+    display: block;
+    margin-left: 0;
+}
+
+@media (min-width: 900px) {
+    .alinear-label-dias {
+        margin-left: 220px;
+        /* igual a .ficha-select-container min-width */
+    }
+}
+/* Borde verde en todo el select cuando está abierto (focus) */
+.choices[data-type*=select-one].is-open {
+    border: 0.1px solid #3ebb00 !important;
+    box-shadow: 0 0 0 2px #3ebb0033 !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+/* Igualar altura del contenedor del select con el item seleccionado */
+.choices[data-type*=select-one] .choices__inner {
+    min-height: unset;
+    height: auto;
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.choices__list--single .choices__item {
+    line-height: 1.5;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+/* Centrar el texto informativo debajo de los checkbox */
+.form-text.text-muted {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    margin-bottom: 0;
+    width: 100%;
+    font-size: 1rem;    
+    color: #000000 !important;
+}
 /* CSS moderno y limpio para formulario de fichas */
 
 /* Container principal con diseño card moderno */
 .container {
-    max-width: 500px;
-    margin: 40px auto;
+    max-width: 1200px;
+    min-height: 900px;
+    margin: 20px auto;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 70px;
     padding: 32px;
-    box-shadow: 
-        0 10px 25px rgba(0, 0, 0, 0.08),
-        0 4px 10px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.20) !important;
     border: 1px solid rgba(0, 0, 0, 0.05);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     position: relative;
@@ -25,6 +77,7 @@
     letter-spacing: -0.025em;
 }
 
+
 /* Formulario con espaciado limpio */
 .container form {
     display: flex;
@@ -32,22 +85,98 @@
     gap: 24px;
 }
 
-.container form > div:first-of-type {
+/* Nuevo contenedor para los datos principales de la ficha */
+.datos-ficha-container {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-direction: row;
+    gap: 32px;
     margin-bottom: 0;
+    justify-content: space-between;
 }
 
-.container form > div:first-of-type > div {
+.datos-ficha-container > div {
+    flex: 1 1 0;
     margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.ficha-select-container {
+    flex: 0 0 220px;
+    max-width: 220px;
+    min-width: 220px;
+}
+
+.ficha-select-container .choices {
+    width: 400px;
+    max-width: 400px;
+    min-width: 300px;
+    height: auto;
+    min-height: 0;
+}
+/* Ajuste para los inputs dentro del contenedor */
+.datos-ficha-container label {
+    margin-bottom: 12px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #222;
+}
+
+.datos-ficha-container input,
+.datos-ficha-container select {
+    background: #f6f5f5;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: none;
+    font-size: 1.1rem;
+    padding: 18px 20px;
+    margin-bottom: 0;
+    color: #222;
+    transition: box-shadow 0.2s;
+}
+
+.datos-ficha-container input:focus,
+.datos-ficha-container select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #3b82f633;
+}
+
+/* Espaciado entre los campos */
+.datos-ficha-container > div:not(:last-child) {
+    margin-right: 16px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 900px) {
+    .datos-ficha-container {
+        flex-direction: column;
+        gap: 18px;
+    }
+    .datos-ficha-container > div:not(:last-child) {
+        margin-right: 0;
+    }
+    .datos-ficha-container label {
+        font-size: 1rem;
+    }
+    .datos-ficha-container input,
+    .datos-ficha-container select {
+        font-size: 1rem;
+        padding: 14px 14px;
+    }
+}
+
+/* Elimina separación vertical y borde de los campos principales */
+.container form > .datos-ficha-container > div {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 /* Labels modernos */
 .container label {
     display: block;
     font-weight: 500;
-    color: #374151;
+    color: #000000;
     margin-bottom: 6px;
     font-size: 0.875rem;
     letter-spacing: 0.025em;
@@ -57,7 +186,7 @@
 .container input[type="text"],
 .container input[type="number"] {
     width: 100%;
-    padding: 12px 16px;
+    padding: 10px 16px;
     border: 1.5px solid #e5e7eb;
     border-radius: 8px;
     font-size: 16px;
@@ -67,11 +196,12 @@
     color: #111827;
     font-family: inherit;
     box-sizing: border-box;
+    height: 40px;
 }
 
 .container input[type="text"]:focus,
 .container input[type="number"]:focus {
-    border-color: #3b82f6;
+    border-color: #38bb01;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     background: #fefefe;
 }
@@ -98,26 +228,27 @@
 }
 
 .container .btn-primary {
-    background: #3b82f6;
-    color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: #39A900;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border-radius: 14px;
+    border: none;
 }
 
 .container .btn-primary:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-}
-
-.container .btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: #38bb01;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(57,185,0,0.18);
 }
 
 /* Estados de validación sutiles */
 .container input:invalid:not(:focus):not(:placeholder-shown) {
-    border-color: #ef4444;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    border-color:#00304D;
+
+    box-shadow: 0 0 0 3px rgb(0, 48, 77, 0.1);
 }
 
 .container input:valid:not(:focus):not(:placeholder-shown) {
@@ -133,6 +264,65 @@
 .container input[type="text"]:focus::placeholder,
 .container input[type="number"]:focus::placeholder {
     color: #d1d5db;
+}
+
+/* Estilos para Choices.js select para igualar inputs modernos */
+.choices {
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 0;
+    display: block;
+}
+.choices__inner {
+    background: #fff;
+    border-radius: 8px !important;
+}
+
+/* Borde verde solo cuando el select está abierto (focus) */
+.choices[data-type*=select-one].is-open .choices__inner {
+    border-color: #3ebb00 !important;
+    box-shadow: 0 0 0 2px #3ebb0033 !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Mantener el border-radius cuando el select está abierto */
+.choices[data-type*=select-one].is-open .choices__inner {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Border-radius para el desplegable */
+.choices__list--dropdown, .choices__list[aria-expanded] {
+    border-radius: 0 0 12px 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    border: 1.5px solid #e5e7eb;
+    margin-top: -2px;
+}
+
+.choices__inner:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #3b82f633;
+}
+.choices__input {
+    border: none;
+    box-shadow: none;
+    outline: none;
+    font-size: 16px;
+    background: transparent;
+    color: #111827;
+    padding: 0;
+}
+.choices__list--dropdown {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border: 1.5px solid #e5e7eb;
+    font-size: 16px;
+}
+.choices__item--selectable {
+    padding: 10px 16px;
+    border-radius: 6px;
+}
+.choices__item--selectable.is-highlighted {
+    background: #e5e7eb;
 }
 
 /* Responsive design limpio */
@@ -182,16 +372,9 @@
         gap: 14px;
     }
 }
-
 /* Accesibilidad mejorada */
-.container input[type="text"]:focus-visible,
-.container input[type="number"]:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
-
 .container .btn:focus-visible {
-    outline: 2px solid #1d4ed8;
+    outline: 2px solid #3ebb00;
     outline-offset: 2px;
 }
 
@@ -229,10 +412,19 @@
     border-bottom: 1px solid #f3f4f6;
     padding-bottom: 16px;
     margin-bottom: 4px;
+    max-width: 400px;
+    min-width: 300px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .container form > div:first-of-type > div:last-child {
     padding-bottom: 0;
+    max-width: 220px;
+    min-width: 180px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Estado disabled por si lo necesitas */
@@ -258,10 +450,17 @@
 }
 
 .checkbox-group {
+    max-width: 700px;
+    max-height: 400px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 32px 24px;
     margin-top: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .checkbox-item {
@@ -270,14 +469,56 @@
     cursor: pointer;
     padding: 8px 12px;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 20px;
     transition: all 0.3s ease;
     background: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.checkbox-item span.dia-nombre {
+    font-size: 25px !important;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #000000;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.checkbox-item select.select-jornada {
+    display: block;
+    margin: 0 auto 0 auto;
+    margin-top: 18px;
+    font-size: 15px;
+    font-weight: 700;
+    background: #F4F2F2;
+    border-radius: 6px;
+    border: none;
+    padding: 10px 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.20);
+    color: #222;
+    font-family: inherit;
+    text-align: center;
+}
+
+.checkbox-item select.select-jornada:focus {
+    outline: 1px solid #39A900 !important;
+    border: 1px solid #39A900 !important;
+    box-shadow: 0 0 0 1px #39A90033 !important;
+}
+
+
+.checkbox-item input[type="checkbox"]:disabled + .checkmark + span.dia-nombre + select.select-jornada {
+    opacity: 0.5;
 }
 
 .checkbox-item:hover {
-    border-color: #007bff;
-    background: #f8f9fa;
+    border-color: #3ebb00;
+    background: #f8f9fa;    
 }
 
 .checkbox-item input[type="checkbox"] {
@@ -285,20 +526,22 @@
 }
 
 .checkbox-item .checkmark {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     border: 2px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-right: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.20);
+
 }
 
 .checkbox-item input[type="checkbox"]:checked + .checkmark {
-    background: #007bff;
-    border-color: #007bff;
+    background: #39A900;
+    border-color: #39A900;
     color: white;
 }
 
@@ -310,5 +553,20 @@
 
 .checkbox-item input[type="checkbox"]:checked ~ span:last-child {
     font-weight: 600;
-    color: #007bff;
+    color: #0dff00;
+}
+
+/* Contenedor para centrar el botón principal */
+.btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 32px;
+}
+
+.btn-container .btn {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
 }

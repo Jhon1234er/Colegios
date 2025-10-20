@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div><strong>NO TIENEN CLASE</strong></div>
                 <div class="no-clase-msg">Para registrar asistencias y mantener historial, crea las clases de esta ficha en el calendario.</div>
                 <div class="no-clase-cta">
-                  <a href="${urlCal}" class="btn-ir-calendario" style="display:inline-block;padding:6px 12px;background:#0d6efd;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Ir al calendario</a>
+                  <a href="${urlCal}" class="btn-ir-calendario" style="display:inline-block;padding:6px 12px;background: #39A900;color:#fff;border-radius:20px;text-decoration:none;font-weight:600;">Ir al calendario</a>
                 </div>
               </td>`;
             }
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <input type="hidden" name="ficha_id" value="${fichaSeleccionada.id}">
         ${esSemanaActual ? `<input type="hidden" name="fecha" value="${formatYMD(hoy())}">` : ''}
         <table>
-          <thead><tr><th>ESTUDIANTES</th>${thDias}<th>PRÓXIMAMENTE</th></tr></thead>
+          <thead><tr class="th-container"><th>ESTUDIANTES</th>${thDias}<th>PRÓXIMAMENTE</th></tr></thead>
           <tbody>${filas}</tbody>
         </table>
         <div class="cal-actions">
@@ -467,7 +467,9 @@ async function cargarFichas() {
         </div>
         ${badgeCompartida}
         <div class="menu-container">
-          <button class="menu" type="button"></button>
+          <button class="menu" type="button">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
           <div class="menu-dropdown">
             <a href="/?page=fichas&action=ver&id=${ficha.id}" class="ver-ficha" data-ficha-id="${ficha.id}" data-ficha-nombre="${ficha.nombre}">Ver Ficha</a>
             ${ficha.tipo !== 'compartida' ? '<a href="#" class="compartir-ficha" data-ficha-id="' + ficha.id + '" data-ficha-nombre="' + ficha.nombre + '">Compartir</a>' : ''}
