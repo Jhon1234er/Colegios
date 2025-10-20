@@ -25,10 +25,10 @@ $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
     <div class="container">
         <h2>Registrar Nueva Ficha</h2>
         <form method="POST" action="/?page=fichas&action=guardar">
-            <?= csrf_input(); ?> <!-- ✅ Token CSRF correcto -->
 
-            <div class="">
-                <div class="">
+            <?= csrf_input(); ?> <!-- ✅ Token CSRF correcto -->
+            <div class="datos-ficha-container">
+                                    <div class="ficha-select-container">
                     <label for="curso_id">Seleccione Curso</label>
                     <select name="curso_id" id="curso_id" required>
                         <option value="" selected disabled>-- Seleccione --</option>
@@ -50,57 +50,57 @@ $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
                     <label for="cupo_total">Cupo total de registros</label>
                     <input type="number" name="cupo_total" id="cupo_total" required>
                 </div>
-
-                <div class="">
-                    <label>Días de clases</label>
-                    <div class="dias-semana-container">
-                        <div class="checkbox-group">
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="lunes" checked data-dia="lunes">
-                                <span class="checkmark"></span>
-                                Lunes
-                                <select name="jornadas[lunes]" class="select-jornada">
-                                  <option value="mañana">Mañana</option>
-                                  <option value="tarde">Tarde</option>
-                                </select>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="martes" checked data-dia="martes">
-                                <span class="checkmark"></span>
-                                Martes
-                                <select name="jornadas[martes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="miercoles" checked data-dia="miercoles">
-                                <span class="checkmark"></span>
-                                Miércoles
-                                <select name="jornadas[miercoles]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="jueves" checked data-dia="jueves">
-                                <span class="checkmark"></span>
-                                Jueves
-                                <select name="jornadas[jueves]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="viernes" checked data-dia="viernes">
-                                <span class="checkmark"></span>
-                                Viernes
-                                <select name="jornadas[viernes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
-                            </label>
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="dias_semana[]" value="sabado" data-dia="sabado">
-                                <span class="checkmark"></span>
-                                Sábado
-                                <select name="jornadas[sabado]" class="select-jornada" disabled><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
-                            </label>
-                        </div>
-                    </div>
-                    <small class="form-text text-muted">Selecciona los días en que se impartirán las clases y la jornada por día</small>
-                </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Crear Ficha</button>
+            <div class="">
+                <label class="alinear-label-dias">Días de clases</label>
+                <div class="dias-semana-container">
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                                                        <input type="checkbox" name="dias_semana[]" value="lunes" checked data-dia="lunes">
+                                                        <span class="checkmark"></span>
+                                                        <span class="dia-nombre">Lunes</span>
+                                                        <select name="jornadas[lunes]" class="select-jornada">
+                                                            <option value="mañana">Mañana</option>
+                                                            <option value="tarde">Tarde</option>
+                                                        </select>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="dias_semana[]" value="martes" checked data-dia="martes">
+                            <span class="checkmark"></span>
+                            <span class="dia-nombre">Martes</span>
+                            <select name="jornadas[martes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="dias_semana[]" value="miercoles" checked data-dia="miercoles">
+                            <span class="checkmark"></span>
+                            <span class="dia-nombre">Miércoles</span>
+                            <select name="jornadas[miercoles]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="dias_semana[]" value="jueves" checked data-dia="jueves">
+                            <span class="checkmark"></span>
+                            <span class="dia-nombre">Jueves</span>
+                            <select name="jornadas[jueves]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="dias_semana[]" value="viernes" checked data-dia="viernes">
+                            <span class="checkmark"></span>
+                            <span class="dia-nombre">Viernes</span>
+                            <select name="jornadas[viernes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="dias_semana[]" value="sabado" data-dia="sabado">
+                            <span class="checkmark"></span>
+                            <span class="dia-nombre">Sábado</span>
+                            <select name="jornadas[sabado]" class="select-jornada" disabled><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                        </label>
+                    </div>
+                </div>
+                <small class="form-text text-muted">Selecciona los días en que se impartirán las clases y la jornada por día</small>
+            </div>
+            <div class="btn-container">
+                <button type="submit" class="btn btn-primary">Crear Ficha</button>
+            </div>
         </form>
     </div>
 </div>

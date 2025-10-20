@@ -7,30 +7,40 @@
   <input type="hidden" id="csrf_token" value="<?= csrf_token() ?>">
   <div class="parent">
     
-    <!-- div1: Panel secciones -->
-    <div class="div1">
-      <div class="panel-secciones">Mis Fichas / Secciones / Calendario</div>
+    <!-- Bienvenida (barra azul superior) -->
+    <div class="div9">
+      <?php 
+        $tip_contrato = strtolower($tip_contrato ?? '');
+        $nombre_usuario = htmlspecialchars($_SESSION['usuario']['nombres'] . ' ' . ($_SESSION['usuario']['apellidos'] ?? ''));
+
+        if ($tip_contrato === 'contratista') {
+            $rol = 'Facilitador';
+        } elseif ($tip_contrato === 'instructor') {
+            $rol = 'Instructor';
+        } else {
+            $rol = 'Profesor';
+        }
+      ?>
+      <p><strong>Bienvenido</strong> <?= $nombre_usuario ?></p>
+      <div class="welcome-center">
+        <span id="greeting-text">¡Qué bueno verte, <?= htmlspecialchars($_SESSION['usuario']['nombres']) ?>!</span>
+        <!-- Mano de contorno en verde (saludando) -->
+        <svg class="hand-outline" width="32" height="32" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <!-- contorno mano -->
+          <path d="M14 22 V9 a2 2 0 1 1 4 0v11
+                   M18 21 V7 a2 2 0 1 1 4 0v16
+                   M22 21 V8 a2 2 0 1 1 4 0v15
+                   M26 23 V12 a2 2 0 1 1 4 0v14
+                   M30 26 V16 a2 2 0 1 1 4 0v13
+                   C34 36 28 42 21 42
+                   C15 42 12 37 12 32
+                   V27" />
+          <!-- líneas de énfasis (movimiento) -->
+          <path d="M36 10 l4 -4 M38 16 l6 -2" class="ho-accent" />
+        </svg>
+      </div>
+      <p><strong>Rol:</strong> <?= $rol ?></p>
     </div>
-
-    <!-- div2: Bienvenida -->
-<div class="div2">
-  <div class="panel-secciones">
-<?php 
-      $tip_contrato = strtolower($tip_contrato ?? '');
-      $nombre_usuario = htmlspecialchars($_SESSION['usuario']['nombres']);
-
-      if ($tip_contrato === 'contratista') {
-          $saludo = "Bienvenido, Facilitador $nombre_usuario";
-      } elseif ($tip_contrato === 'instructor') {
-          $saludo = "Bienvenido, Instructor $nombre_usuario";
-      } else {
-          $saludo = "Bienvenido, $nombre_usuario";
-      }
-    ?>
-    <span><?= $saludo ?></span>
-
-  </div>
-</div>
 
     <!-- Contenedor principal para tarjetas y filtros -->
     <div class="contenedor-principal-tarjetas">
@@ -64,9 +74,6 @@
           </div>
         </section>
     </div>
-
-    </div>
-
   </div>
 </main>
 
