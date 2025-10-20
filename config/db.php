@@ -12,13 +12,14 @@ class Database {
             
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
         } else {
-            // Configuración local
-            $host = getenv('DB_HOST') ?: 'localhost';
+            // Configuración local para XAMPP
+            $host = getenv('DB_HOST') ?: '127.0.0.1';
+            $port = getenv('DB_PORT') ?: '3306';
             $db   = getenv('DB_NAME') ?: 'sistema_escolar';
             $user = getenv('DB_USER') ?: 'root';
             $pass = getenv('DB_PASS') ?: '1234';
             
-            $dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
+            $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
         }
 
         $opt = [

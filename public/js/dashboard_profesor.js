@@ -471,7 +471,6 @@ async function cargarFichas() {
           <div class="menu-dropdown">
             <a href="/?page=fichas&action=ver&id=${ficha.id}" class="ver-ficha" data-ficha-id="${ficha.id}" data-ficha-nombre="${ficha.nombre}">Ver Ficha</a>
             ${ficha.tipo !== 'compartida' ? '<a href="#" class="compartir-ficha" data-ficha-id="' + ficha.id + '" data-ficha-nombre="' + ficha.nombre + '">Compartir</a>' : ''}
-            <a href="/?page=reportes" class="ir-reportes">Reportes</a>
           </div>
         </div>
       `;
