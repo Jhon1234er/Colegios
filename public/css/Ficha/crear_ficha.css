@@ -1,25 +1,5 @@
-/* Alinear el label de Días de clases con Seleccione Curso (más a la derecha) */
-.alinear-label-dias {
-    display: block;
-    margin-left: 400px;
-    /* igual a .ficha-select-container max-width */
-}
-@media (max-width: 900px) {
-    .alinear-label-dias {
-        margin-left: 10px;
-    }
-}
-/* Alinear el label de Días de clases con Seleccione Curso */
-.alinear-label-dias {
-    display: block;
-    margin-left: 0;
-}
-
-@media (min-width: 900px) {
-    .alinear-label-dias {
-        margin-left: 220px;
-        /* igual a .ficha-select-container min-width */
-    }
+.alinear-label-dias-custom {
+    margin-left: 10px;
 }
 /* Borde verde en todo el select cuando está abierto (focus) */
 .choices[data-type*=select-one].is-open {

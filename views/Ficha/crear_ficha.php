@@ -52,7 +52,7 @@ $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
                 </div>
             </div>
             <div class="">
-                <label class="alinear-label-dias">Días de clases</label>
+                <label class="alinear-label-dias alinear-label-dias-custom">Días de clases</label>
                 <div class="dias-semana-container">
                     <div class="checkbox-group">
                         <label class="checkbox-item">
