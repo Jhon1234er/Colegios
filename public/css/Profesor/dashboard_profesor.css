@@ -1,3 +1,44 @@
+/* ===== MODAL COMPARTIR FICHA: FOOTER PERSONALIZADO ===== */
+#modalCompartirFicha .modal-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 0 8px 0;
+  background: transparent;
+  border-top: none;
+  width: 100%;
+}
+#modalCompartirFicha .modal-footer .btn {
+  min-width: 120px;
+  padding: 12px 28px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  font-weight: 700;
+}
+#modalCompartirFicha .modal-footer .btn-primary {
+  background: #39A900;
+  color: #fff;
+  border: none;
+}
+
+#modalCompartirFicha .modal-footer .btn-secondary {
+  background: #00304D;
+  color: #ffffff;
+  border: none;
+}
+
+/* ===== MODAL COMPARTIR FICHA: CONTENIDO PERSONALIZADO ===== */
+#modalCompartirFicha .modal-content {
+  background: #ffffff;
+  border-radius: 40px;
+  padding: 40px 48px 32px 48px;
+  max-width: 1500px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
 /* ===== VARIABLES CSS ===== */
 :root {
   --color-primary: #2563eb;
@@ -1224,11 +1265,41 @@ h3::after {
 }
 
 /* ===== MODAL COMPARTIR FICHA ===== */
+/* Estilo personalizado para .profesores-grid dentro del modal de compartir ficha */
+/* Ajuste para mayor tamaño horizontal y mejor distribución */
+#modalCompartirFicha .profesores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+  background: #fefefe;
+  border-radius: 16px;
+  padding: 32px 48px;
+  margin-bottom: 18px;
+  place-items: center;
+  max-width: 1400px;
+}
+/* Estilo personalizado para .profesor-card p dentro del modal de compartir ficha */
+#modalCompartirFicha .profesor-card p {
+  color: #424242;
+  font-size: 15px;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.2px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
 /* Estilo personalizado para .profesor-card dentro del modal de compartir ficha */
 #modalCompartirFicha .profesor-card {
   background: #ffffff;
   border: 2px solid #39A900;
   border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.20);
+  align-items: center;
+  max-width: 420px;
+  min-width: 340px;
+  width: 100%;
+  padding: 32px 28px;
+  margin: 0 auto;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
 /* Estilo personalizado para .text-muted dentro del modal de compartir ficha */
@@ -1241,7 +1312,8 @@ h3::after {
   color: #000000;
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 15px;
+  margin-top: 15px;
 }
 /* Estilo personalizado para el título del modal de compartir ficha */
 #modalCompartirFicha .modal-title {
@@ -1250,6 +1322,9 @@ h3::after {
   font-weight: 750;
   letter-spacing: 1px;
   padding: 8px 0;
+  text-align: center;
+  width: 100%;
+  display: block;
 }
 .profesores-grid {
   display: grid;
