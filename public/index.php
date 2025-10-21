@@ -793,10 +793,71 @@ if ($page === 'calendario') {
     exit;
 }
 
+// ====== CALENDARIO COLABORATIVO (Asistente + Admin) ======
+if ($page === 'calendario_colaborativo') {
+    require_login();
+    require_role([1, 4]); // Admin y Asistente
+    include '../views/Calendario/colaborativo.php';
+    exit;
+}
+
+// Endpoints JSON del Calendario Colaborativo
+if ($page === 'calcolab_instructores') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->instructores();
+    exit;
+}
+
+// Calcolab: crear clase (POST)
+if ($page === 'calcolab_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->crear();
+    exit;
+}
+
+if ($page === 'calcolab_eventos') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->eventos();
+    exit;
+}
+
+// Calcolab: disponibilidad por ficha
+if ($page === 'calcolab_disponibilidad_ficha') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->disponibilidadFicha();
+    exit;
+}
+
+// Calcolab: fichas por instructor
+if ($page === 'calcolab_fichas_por_instructor') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->fichasPorInstructor();
+    exit;
+}
+
+// Calcolab: instructores por ficha
+if ($page === 'calcolab_instructores_por_ficha') {
+    require_login();
+    require_role([1, 4]);
+    require_once '../controllers/CalendarioColaborativoController.php';
+    (new CalendarioColaborativoController())->instructoresPorFicha();
+    exit;
+}
+
 // ====== DASHBOARDS SEGÚN ROL ======
 if (!empty($_SESSION['usuario'])) {
     $rol_id = (int)$_SESSION['usuario']['rol_id'];
-    if ($rol_id === 1) { include '../views/dashboard.php'; exit; }
+    if ($rol_id === 1) { include '../views/Administrador/dashboard.php'; exit; }
     if ($rol_id === 2) { include '../views/Profesor/dashboard.php'; exit; }
     if ($rol_id === 4) { include '../views/Asistente/dashboard.php'; exit; }
 }

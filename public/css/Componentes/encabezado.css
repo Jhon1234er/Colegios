@@ -31,6 +31,28 @@
     --shadow: 0 6px 20px rgba(0,0,0,.12);
     --shadow-lg: 0 12px 34px rgba(0,0,0,.16);
   }
+
+  /* View toggle button (Asistente) - mismo estilo que notificaciones */
+  .view-toggle-btn{
+    background: var(--c-white); color: var(--c-primary);
+    border: 1px solid var(--c-primary-20);
+    width:40px; height:40px; border-radius:50%;
+    display:grid; place-items:center; cursor:pointer; transition:var(--t);
+    padding:0; line-height:1;
+  }
+  .view-toggle-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+  .view-toggle-btn svg{ width:18px; height:18px; stroke: currentColor; }
+  /* Spin animation */
+  @keyframes headerSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .view-toggle-btn:hover svg{ animation: headerSpin 1s linear infinite; }
+  .view-toggle-btn:active svg{ animation: headerSpin .6s var(--ease); }
+  @media (prefers-reduced-motion: reduce){
+    .view-toggle-btn:hover svg,
+    .view-toggle-btn:active svg{ animation: none; }
+  }
   
   /* =========================================================
      RESET BÁSICO
