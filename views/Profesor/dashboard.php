@@ -21,9 +21,13 @@
             $rol = 'Profesor';
         }
       ?>
-      <p><strong>Bienvenido</strong> <?= $nombre_usuario ?></p>
+      <?php 
+        $genero = strtolower(trim((string)($_SESSION['usuario']['genero'] ?? '')));
+        $bienvenida = (in_array($genero, ['f','femenino','mujer'], true)) ? 'Bienvenida' : 'Bienvenido';
+      ?>
+      <p><strong><?= $bienvenida ?></strong> <?= $nombre_usuario ?></p>
       <div class="welcome-center">
-        <span id="greeting-text">¡Qué bueno verte, <?= htmlspecialchars($_SESSION['usuario']['nombres']) ?>!</span>
+        <span id="greeting-text">¡HOLA!</span>
         <!-- Mano de contorno en verde (saludando) -->
         <svg class="hand-outline" width="32" height="32" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
           <!-- contorno mano -->
@@ -58,21 +62,7 @@
         <!-- Registro de asistencia  -->
         <div id="calendarioAsistencia" class="calendario-wrapper"></div>
 
-        <!-- Historial de asistencias: contenedores no intrusivos -->
-        <section class="historial-wrapper" aria-label="Historial de asistencias">
-          <div class="historial-card" aria-labelledby="hist-pend-title">
-            <h4 id="hist-pend-title">No asistieron (pendientes de proceso)</h4>
-            <div id="historial-pendientes" class="historial-list">
-              <!-- Items pendientes se cargarán aquí -->
-            </div>
-          </div>
-          <div class="historial-card" aria-labelledby="hist-proc-title">
-            <h4 id="hist-proc-title">No asistieron (proceso realizado)</h4>
-            <div id="historial-procesados" class="historial-list">
-              <!-- Items procesados se cargarán aquí -->
-            </div>
-          </div>
-        </section>
+        
     </div>
   </div>
 </main>
@@ -108,4 +98,59 @@
 </div>
 
 <?php require __DIR__ . '/../Componentes/footer.php'; ?>
-<script src="/js/dashboard_profesor.js"></script>
+<script src="/js/Profesor/dashboard_profesor.js"></script>
+<script>
+  // Saludo dinámico (mismo comportamiento que Admin)
+  (function(){
+    const el = document.getElementById('greeting-text');
+    if (!el) return;
+    const nombre = <?= json_encode(explode(' ', trim($_SESSION['usuario']['nombres'] ?? ''))[0] ?? '') ?>;
+    const RETURN_THRESHOLD = 120000; // 2 min
+    const RETURN_GREETINGS = [
+      '¡Hola de nuevo!',
+      `¡Qué bueno verte, ${nombre}!`,
+      '¡Listo para continuar!',
+      '¡Seguimos!'
+    ];
+    function saludoPorHora(){
+      try {
+        const tz = 'America/Bogota';
+        const parts = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', hour12: false, timeZone: tz }).formatToParts(new Date());
+        const hourPart = parts.find(p=>p.type==='hour');
+        const h = hourPart ? parseInt(hourPart.value,10) : new Date().getHours();
+        if (h < 12) return '¡Buenos días!';
+        if (h < 19) return '¡Buenas tardes!';
+        return '¡Buenas noches!';
+      } catch(_) {
+        const h = new Date().getHours();
+        if (h < 12) return '¡Buenos días!';
+        if (h < 19) return '¡Buenas tardes!';
+        return '¡Buenas noches!';
+      }
+    }
+    function siguienteSaludo(){
+      let idx = Number(localStorage.getItem('prof_greetIdx')||0);
+      const txt = RETURN_GREETINGS[idx % RETURN_GREETINGS.length];
+      localStorage.setItem('prof_greetIdx', String((idx+1) % RETURN_GREETINGS.length));
+      return txt;
+    }
+    function setSaludoInicial(){
+      const last = Number(localStorage.getItem('prof_lastActiveTs')||0);
+      const now = Date.now();
+      if (last && (now - last) > RETURN_THRESHOLD) el.textContent = siguienteSaludo();
+      else el.textContent = saludoPorHora();
+      localStorage.setItem('prof_lastActiveTs', String(now));
+    }
+    function handleVisibility(){
+      if (!document.hidden){
+        const last = Number(localStorage.getItem('prof_lastActiveTs')||0);
+        const now = Date.now();
+        if (last && (now - last) > RETURN_THRESHOLD) el.textContent = siguienteSaludo();
+        localStorage.setItem('prof_lastActiveTs', String(now));
+      }
+    }
+    setSaludoInicial();
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('beforeunload', () => localStorage.setItem('prof_lastActiveTs', String(Date.now())));
+  })();
+</script>

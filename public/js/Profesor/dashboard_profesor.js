@@ -232,7 +232,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <option value="presente">Presente</option>
               <option value="no_asistio">No asistió</option>
               <option value="tarde">Tarde</option>
-              <option value="justificado">Justificado</option>
             </select>
             <input type="hidden" name="asistencias[${e.id}][estudiante_id]" value="${e.id}">
           </td>`;

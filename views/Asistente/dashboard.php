@@ -19,8 +19,16 @@ $usuario = $_SESSION['usuario'];
 
         <!-- Bienvenida -->
         <div class="div9">
-            <p><strong>Bienvenido</strong> <?= htmlspecialchars($usuario['nombres'] . ' ' . $usuario['apellidos']) ?></p>
-            <div class="welcome-center"><span>¡HOLA!</span>
+            <?php 
+              $nombre_usuario = htmlspecialchars($usuario['nombres'] . ' ' . ($usuario['apellidos'] ?? ''));
+              $genero = strtolower(trim((string)($usuario['genero'] ?? '')));
+              $bienvenida = (in_array($genero, ['f','femenino','mujer'], true)) ? 'Bienvenida' : 'Bienvenido';
+              $h = (int)date('H');
+              $saludo = $h < 12 ? '¡Buenos días' : ($h < 18 ? '¡Buenas tardes' : '¡Buenas noches');
+            ?>
+            <p><strong><?= $bienvenida ?></strong> <?= $nombre_usuario ?></p>
+            <div class="welcome-center">
+                <span id="greeting-text"><?= $saludo ?>, <?= htmlspecialchars($usuario['nombres']) ?>!</span>
                 <svg class="hand-outline" width="32" height="32" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
                     <path d="M14 22 V9 a2 2 0 1 1 4 0v11 M18 21 V7 a2 2 0 1 1 4 0v16 M22 21 V8 a2 2 0 1 1 4 0v15 M26 23 V12 a2 2 0 1 1 4 0v14 M30 26 V16 a2 2 0 1 1 4 0v13 C34 36 28 42 21 42 C15 42 12 37 12 32 V27" />
                     <path d="M36 10 l4 -4 M38 16 l6 -2" class="ho-accent" />
@@ -29,13 +37,6 @@ $usuario = $_SESSION['usuario'];
             <p><strong>Rol:</strong> Asistente</p>
         </div>
 
-        <!-- Botón de cambio de vista -->
-        <div class="view-toggle-container">
-            <button id="view-toggle-btn" class="view-toggle-btn" title="Cambiar vista">
-                <span class="icon-grid"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-                <span class="icon-eye"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            </button>
-        </div>
 
         <!-- VISTA PRINCIPAL -->
         <div class="indicaciones-column view-main">
@@ -131,7 +132,7 @@ $usuario = $_SESSION['usuario'];
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Generar Reporte de Asistencias (PDF)</h5>
+        <h5 class="modal-title">Generar Reporte de Asistencias </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -170,6 +171,7 @@ $usuario = $_SESSION['usuario'];
       <div class="modal-footer">
         <button type="button" id="btnPreviewPDF" class="btn btn-preview">Vista previa</button>
         <button type="button" id="btnDownloadPDF" class="btn btn-pdf">Descargar PDF</button>
+        <button type="button" id="btnDownloadExcel" class="btn btn-excel">Descargar Excel</button>
       </div>
     </div>
   </div>
@@ -187,6 +189,61 @@ $usuario = $_SESSION['usuario'];
 
     <script src="/js/Asistente/dashboard.js"></script>
     <script src="/js/Asistente/view-toggle.js"></script>
+    <script>
+      // Saludo dinámico (alineado con Admin), usando zona horaria de Bogotá
+      (function(){
+        const el = document.getElementById('greeting-text');
+        if (!el) return;
+        const nombre = <?= json_encode(explode(' ', trim($usuario['nombres']))[0] ?? '') ?>;
+        const RETURN_THRESHOLD = 120000; // 2 min
+        const RETURN_GREETINGS = [
+          '¡Hola de nuevo!',
+          `¡Qué bueno verte, ${nombre}!`,
+          '¡Listo para continuar!',
+          '¡Seguimos!'
+        ];
+        function saludoPorHora(){
+          try {
+            const tz = 'America/Bogota';
+            const parts = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', hour12: false, timeZone: tz }).formatToParts(new Date());
+            const hourPart = parts.find(p=>p.type==='hour');
+            const h = hourPart ? parseInt(hourPart.value,10) : new Date().getHours();
+            if (h < 12) return '¡Buenos días!';
+            if (h < 19) return '¡Buenas tardes!';
+            return '¡Buenas noches!';
+          } catch(_) {
+            const h = new Date().getHours();
+            if (h < 12) return '¡Buenos días!';
+            if (h < 19) return '¡Buenas tardes!';
+            return '¡Buenas noches!';
+          }
+        }
+        function siguienteSaludo(){
+          let idx = Number(localStorage.getItem('asist_greetIdx')||0);
+          const txt = RETURN_GREETINGS[idx % RETURN_GREETINGS.length];
+          localStorage.setItem('asist_greetIdx', String((idx+1) % RETURN_GREETINGS.length));
+          return txt;
+        }
+        function setSaludoInicial(){
+          const last = Number(localStorage.getItem('asist_lastActiveTs')||0);
+          const now = Date.now();
+          if (last && (now - last) > RETURN_THRESHOLD) el.textContent = siguienteSaludo();
+          else el.textContent = saludoPorHora();
+          localStorage.setItem('asist_lastActiveTs', String(now));
+        }
+        function handleVisibility(){
+          if (!document.hidden){
+            const last = Number(localStorage.getItem('asist_lastActiveTs')||0);
+            const now = Date.now();
+            if (last && (now - last) > RETURN_THRESHOLD) el.textContent = siguienteSaludo();
+            localStorage.setItem('asist_lastActiveTs', String(now));
+          }
+        }
+        setSaludoInicial();
+        document.addEventListener('visibilitychange', handleVisibility);
+        window.addEventListener('beforeunload', () => localStorage.setItem('asist_lastActiveTs', String(Date.now())));
+      })();
+    </script>
     <!-- Lógica del Dashboard del Asistente -->
     <script>
     async function cargarResumen() {

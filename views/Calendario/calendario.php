@@ -395,7 +395,7 @@ if (isset($_GET['profesor_id']) && !empty($_GET['profesor_id'])) {
         // Preselección de ficha desde querystring (?ficha_id=...)
         window.fichaPreseleccionada = '<?php echo htmlspecialchars((string)($_GET['ficha_id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>';
     </script>
-    <script src="/js/calendario_nuevo.js"></script>
+    <script src="/js/Calendario/calendario_nuevo.js"></script>
     <script>
     // Botón Duplicar semana: usa la vista actual del calendario (lunes de la semana)
     document.addEventListener('DOMContentLoaded', function(){

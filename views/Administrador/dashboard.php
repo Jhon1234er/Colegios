@@ -6,11 +6,11 @@ $usuario = $_SESSION['usuario'];
 $isAdmin = ($usuario['rol_id'] == 1);
 
 // ===== Modelos =====
-require_once __DIR__ . '/../models/Ficha.php';
-require_once __DIR__ . '/../models/Estudiante.php';
-require_once __DIR__ . '/../models/Profesor.php';
-require_once __DIR__ . '/../models/Materia.php';
-require_once __DIR__ . '/../models/Colegio.php';
+require_once __DIR__ . '/../../models/Ficha.php';
+require_once __DIR__ . '/../../models/Estudiante.php';
+require_once __DIR__ . '/../../models/Profesor.php';
+require_once __DIR__ . '/../../models/Materia.php';
+require_once __DIR__ . '/../../models/Colegio.php';
 
 // Totales
 $totalFichas     = (new Ficha())->contarFichas();
@@ -45,7 +45,7 @@ function formatearNombreColegio($nombre) {
 
 </head>
 <body>
-    <?php include 'Componentes/encabezado.php'; ?>
+    <?php include __DIR__ . '/../Componentes/encabezado.php'; ?>
     
     <div id="dashboard-normal" class="dashboard-panel">
         <div class="parent">
@@ -186,7 +186,7 @@ function formatearNombreColegio($nombre) {
     <!-- Overlay para oscurecer el dashboard normal -->
     <div id="dashboard-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: 1;"></div>
 
-    <?php include 'Componentes/footer.php'; ?> 
+    <?php include __DIR__ . '/../Componentes/footer.php'; ?> 
 
 <!-- Modal Reporte PDF -->
 <div class="modal fade" id="modalReportesPDF" tabindex="-1">
@@ -350,10 +350,20 @@ function formatearNombreColegio($nombre) {
         ];
 
         function saludoPorHora(){
-          const h = new Date().getHours();
-          if (h < 12) return '¡Buenos días!';
-          if (h < 19) return '¡Buenas tardes!';
-          return '¡Buenas noches!';
+          try {
+            const tz = 'America/Bogota';
+            const parts = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', hour12: false, timeZone: tz }).formatToParts(new Date());
+            const hourPart = parts.find(p=>p.type==='hour');
+            const h = hourPart ? parseInt(hourPart.value,10) : new Date().getHours();
+            if (h < 12) return '¡Buenos días!';
+            if (h < 19) return '¡Buenas tardes!';
+            return '¡Buenas noches!';
+          } catch(_) {
+            const h = new Date().getHours();
+            if (h < 12) return '¡Buenos días!';
+            if (h < 19) return '¡Buenas tardes!';
+            return '¡Buenas noches!';
+          }
         }
 
         function siguienteSaludo(){

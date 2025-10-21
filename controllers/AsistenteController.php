@@ -366,13 +366,14 @@ class AsistenteController {
             $stmt->execute($paramsClases);
             $totalClases = (int)$stmt->fetchColumn();
 
-            // en curso
+            // en curso (derivado por tiempo): ahora entre inicio y fin, excluye suspendidos
             $sqlEnCurso = "SELECT COUNT(*)
                            FROM horarios_fichas hf
                            JOIN fichas f ON hf.ficha_id = f.id
                            " . ($colegio_id>0 ? "JOIN profesor_ficha pf ON f.id = pf.ficha_id
                            JOIN profesores p ON pf.profesor_id = p.id" : "") . "
-                           WHERE hf.estado='en_curso' AND NOW() BETWEEN hf.fecha_inicio AND hf.fecha_fin" . ($colegio_id>0 ? " AND p.colegio_id = ?" : "");
+                           WHERE NOW() BETWEEN hf.fecha_inicio AND hf.fecha_fin
+                             AND (hf.estado IS NULL OR LOWER(hf.estado) <> 'suspendido')" . ($colegio_id>0 ? " AND p.colegio_id = ?" : "");
             $stmt = $this->pdo->prepare($sqlEnCurso);
             if ($colegio_id>0) { $stmt->execute([$colegio_id]); $enCurso = (int)$stmt->fetchColumn(); }
             else { $stmt->execute(); $enCurso = (int)$stmt->fetchColumn(); }
