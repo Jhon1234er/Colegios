@@ -122,7 +122,9 @@ class Colegio {
             $colegio['materias']   = $this->obtenerMateriasPorColegio($id);
             $colegio['jornada']    = $this->normalizarCampo($colegio['jornada']);
             $colegio['grados']     = $this->normalizarCampo($colegio['grados']);
-            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
+            // Evitar json_decode(null) (deprecado en PHP 8.1+)
+            $cal = $colegio['calendario'] ?? '';
+            $colegio['calendario'] = ($cal !== '' && $cal !== null) ? (json_decode($cal, true) ?? []) : [];
         }
 
         return $colegio;
@@ -145,7 +147,9 @@ class Colegio {
             $colegio['materias']   = $this->obtenerMateriasPorColegio($colegio['id']);
             $colegio['jornada']    = $this->normalizarCampo($colegio['jornada']);
             $colegio['grados']     = $this->normalizarCampo($colegio['grados']);
-            $colegio['calendario'] = json_decode($colegio['calendario'], true) ?? [];
+            // Evitar json_decode(null) (deprecado en PHP 8.1+)
+            $cal = $colegio['calendario'] ?? '';
+            $colegio['calendario'] = ($cal !== '' && $cal !== null) ? (json_decode($cal, true) ?? []) : [];
         }
 
         return $colegios;

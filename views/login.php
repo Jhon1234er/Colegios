@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - SENA</title>
+    <!-- Favicon (con cache-busting) -->
+    <link rel="icon" type="image/x-icon" href="/icons/logo.ico?v=3">
+    <link rel="icon" href="/favicon.ico?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/logo-32.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/logo-16.png?v=3">
+    <link rel="apple-touch-icon" href="/icons/logo-180.png?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">

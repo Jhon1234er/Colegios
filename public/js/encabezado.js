@@ -456,6 +456,43 @@ document.addEventListener('DOMContentLoaded', function () {
   // ============================================
   // FUNCIONALIDAD DE BÚSQUEDA PARA ADMINISTRADORES
   // ============================================
+
+  // Helper: cerrar paneles de detalles y resetear botones/estados
+  function resetAllDetailsPanels(){
+    try{
+      const stu = document.getElementById('student-details-sidebar');
+      if (stu) stu.style.display = 'none';
+      const prof = document.getElementById('professor-details-sidebar');
+      if (prof) prof.style.display = 'none';
+
+      // Reset botones estudiantes
+      document.querySelectorAll('.btn-ver-detalles').forEach(b=>{
+        b.textContent = 'Ver Detalles';
+        b.classList.add('btn-primary');
+        b.classList.remove('btn-secondary');
+        b.disabled = false;
+      });
+      // Reset botones facilitadores
+      document.querySelectorAll('.btn-ver-detalles-profesor').forEach(b=>{
+        b.textContent = 'Ver Detalles';
+        b.classList.add('btn-primary');
+        b.classList.remove('btn-secondary');
+        b.disabled = false;
+      });
+      // Deshabilitar botones Editar en tarjetas
+      document.querySelectorAll('.btn-editar').forEach(btn=>{
+        btn.style.opacity = '0.5';
+        btn.style.pointerEvents = 'none';
+        btn.classList.remove('enabled');
+      });
+    }catch(_e){}
+  }
+
+  // Cerrar paneles al cambiar el filtro del buscador
+  const filtroSelectEl = document.getElementById('filtro-busqueda');
+  if (filtroSelectEl){
+    filtroSelectEl.addEventListener('change', resetAllDetailsPanels);
+  }
   
   const buscador = document.getElementById('buscador-global');
   if (buscador) {
@@ -469,6 +506,8 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Por favor ingresa un término de búsqueda');
         return;
       }
+      // Antes de buscar, cerrar cualquier panel abierto y limpiar estados
+      resetAllDetailsPanels();
       
       // Mostrar indicador de carga
       const searchBtn = buscador.querySelector('.search-btn');
@@ -490,20 +529,58 @@ document.addEventListener('DOMContentLoaded', function () {
             dashboardResultados.innerHTML = html;
             dashboardResultados.style.display = 'block';
             overlay.style.display = 'block';
-            
-            // Agregar botón para volver
-            const backBtn = document.createElement('button');
-            backBtn.className = 'back-to-dashboard-btn';
-            backBtn.innerHTML = '← Volver al Dashboard';
-            backBtn.onclick = function() {
-              dashboardNormal.style.display = 'block';
-              dashboardResultados.style.display = 'none';
-              overlay.style.display = 'none';
-              // Limpiar formulario
-              document.getElementById('input-busqueda').value = '';
-            };
-            
-            dashboardResultados.insertBefore(backBtn, dashboardResultados.firstChild);
+
+            // Si el HTML de resultados incluyó una backbar inline, muévela fuera del contenedor
+            // y elimina cualquier barra previa para evitar duplicados cuando se busca varias veces.
+            const inlineBackBar = document.getElementById('backbar-inline');
+            if (inlineBackBar) {
+              const parent = dashboardResultados.parentNode;
+              if (parent) {
+                // 1) Eliminar cualquier barra existente ya montada
+                const existingBar = document.getElementById('dashboard-backbar');
+                if (existingBar && existingBar.parentNode) {
+                  existingBar.parentNode.removeChild(existingBar);
+                }
+
+                // 2) Insertar la barra INMEDIATAMENTE ANTES del contenedor de resultados
+                parent.insertBefore(inlineBackBar, dashboardResultados);
+                inlineBackBar.id = 'dashboard-backbar';
+                inlineBackBar.style.display = 'flex';
+
+                const backBtn = inlineBackBar.querySelector('#back-to-dashboard');
+                const syncBackBar = () => {
+                  const rect = dashboardResultados.getBoundingClientRect();
+                  inlineBackBar.style.maxWidth = `${rect.width}px`;
+                  inlineBackBar.style.marginLeft = `${rect.left}px`;
+                  // Separación solicitada respecto al encabezado
+                  inlineBackBar.style.marginBottom = '0px';
+                  inlineBackBar.style.marginTop = '35px';
+                };
+                syncBackBar();
+                window.addEventListener('resize', syncBackBar);
+
+                // 3) Acción de volver al dashboard y limpieza
+                if (backBtn) {
+                  backBtn.onclick = () => {
+                    dashboardNormal.style.display = 'block';
+                    dashboardResultados.style.display = 'none';
+                    overlay.style.display = 'none';
+                    // Cerrar paneles de detalles y resetear botones/estados
+                    try { if (typeof resetAllDetailsPanels === 'function') resetAllDetailsPanels(); } catch(_e) {}
+                    // Quitar la barra del DOM para no dejar residuos
+                    const currentBar = document.getElementById('dashboard-backbar');
+                    if (currentBar && currentBar.parentNode) {
+                      currentBar.parentNode.removeChild(currentBar);
+                    }
+                    // Eliminar la hoja de estilos de resultados para que no altere el dashboard
+                    const resStyles = Array.from(document.querySelectorAll('link[rel="stylesheet"][href*="/css/Componentes/resultados.css"]'));
+                    resStyles.forEach(l => l.parentNode && l.parentNode.removeChild(l));
+                    const input = document.getElementById('input-busqueda');
+                    if (input) input.value = '';
+                  };
+                }
+              }
+            }
             
             // INICIALIZAR FUNCIONALIDAD DE BOTONES "VER DETALLES" DESPUÉS DE CARGAR AJAX
             try { initializeStudentDetailsButtons(); } catch(e) { console.warn(e); }
@@ -542,22 +619,18 @@ function initializeStudentDetailsButtons() {
       
       const resultCard = this.closest('.result-card');
       
-      // PRIMERO: Resetear TODOS los botones (incluyendo este)
-      buttons.forEach(btn => {
-        // Verificar que el botón aún existe en el DOM
-        if (!btn || !btn.parentNode) {
-          return; // Saltar botones que ya no existen
-        }
-        
+      // PRIMERO: Resetear TODOS los botones (incluyendo este) usando lista ACTUAL
+      document.querySelectorAll('.btn-ver-detalles').forEach(btn => {
+        if (!btn || !btn.parentNode) return; // solo los que siguen en el DOM
         btn.textContent = 'Ver Detalles';
         btn.classList.remove('btn-secondary');
         btn.classList.add('btn-primary');
         btn.disabled = false;
-        
-        // Deshabilitar todos los botones de editar
-        const resultCard = btn.closest('.result-card');
-        if (resultCard) {
-          const editBtn = resultCard.querySelector('.btn-editar');
+
+        // Deshabilitar botón Editar de su tarjeta
+        const card = btn.closest('.result-card');
+        if (card) {
+          const editBtn = card.querySelector('.btn-editar');
           if (editBtn) {
             editBtn.style.opacity = '0.5';
             editBtn.style.pointerEvents = 'none';
@@ -578,8 +651,75 @@ function initializeStudentDetailsButtons() {
       // Obtener datos del estudiante desde la tarjeta
       const studentData = extractStudentData(resultCard);
       
-      // Mostrar el sidebar
+      // Mostrar el sidebar de detalles (profesor)
       sidebar.style.display = 'block';
+
+      // Posicionar pegado al límite derecho del panel de resultados
+      const placeProfSidebar = () => {
+        const panel = document.getElementById('dashboard-resultados');
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+        const gutter = 24;   // separación visual al borde
+        // Top pegado al encabezado
+        const header = document.querySelector('.header-unified');
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 68;
+        const top = Math.max(0, Math.round(headerBottom) + 16);
+        const left = rect.right + gutter;  // justo al borde derecho del panel + gutter
+        const rightPadding = gutter;       // mismo gutter al borde derecho de la ventana
+        const width = Math.max(320, window.innerWidth - left - rightPadding);
+        const bottomPadding = gutter;
+        // No sobrepasar el footer
+        const footer = document.querySelector('.footer');
+        const footerTop = footer ? footer.getBoundingClientRect().top : window.innerHeight;
+        const maxHeightByViewport = window.innerHeight - top - bottomPadding;
+        const maxHeightByFooter = footerTop - top - bottomPadding;
+        const height = Math.max(200, Math.min(maxHeightByViewport, maxHeightByFooter));
+        Object.assign(sidebar.style, {
+          position: 'fixed',
+          left: left + 'px',
+          top: top + 'px',
+          width: width + 'px',
+          height: height + 'px',
+          borderRadius: '29px',
+          zIndex: 900
+        });
+      };
+      placeProfSidebar();
+      window.addEventListener('resize', placeProfSidebar);
+      window.addEventListener('scroll', placeProfSidebar, { passive: true });
+
+      // Misma lógica de pegado para estudiantes (misma UI)
+      const placeStudentSidebar = () => {
+        const panel = document.getElementById('dashboard-resultados');
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+        const gutter = 24;
+        // Top pegado al encabezado
+        const header = document.querySelector('.header-unified');
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 68;
+        const top = Math.max(0, Math.round(headerBottom) + 8);
+        const left = rect.right + gutter;
+        const rightPadding = gutter;
+        const width = Math.max(320, window.innerWidth - left - rightPadding);
+        const bottomPadding = gutter;
+        const footer = document.querySelector('.footer');
+        const footerTop = footer ? footer.getBoundingClientRect().top : window.innerHeight;
+        const maxHeightByViewport = window.innerHeight - top - bottomPadding;
+        const maxHeightByFooter = footerTop - top - bottomPadding;
+        const height = Math.max(200, Math.min(maxHeightByViewport, maxHeightByFooter));
+        Object.assign(sidebar.style, {
+          position: 'fixed',
+          left: left + 'px',
+          top: top + 'px',
+          width: width + 'px',
+          height: height + 'px',
+          borderRadius: '29px',
+          zIndex: 900
+        });
+      };
+      placeStudentSidebar();
+      window.addEventListener('resize', placeStudentSidebar);
+      window.addEventListener('scroll', placeStudentSidebar, { passive: true });
       
       // Mostrar detalles en el sidebar
       showStudentDetails(detailsContainer, studentData);
@@ -630,23 +770,20 @@ function extractStudentData(resultCard) {
   
   return data;
 }
-
 function showStudentDetails(container, studentData) {
   const detailsHTML = `
     <div class="student-details-content">
-      <!-- Nombres del Aprendiz -->
-      <div class="data-container">
-        <div class="section-title">Nombres del Aprendiz</div>
-        <div class="names-container" style="text-align: center; padding: 20px;">
-          <div class="student-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">
-            Cargando información del aprendiz...
-          </div>
+      <!-- Perfil del Aprendiz: Iniciales + Nombre -->
+      <div class="data-container profile-card student-profile-block">
+        <div class="profile" style="display:flex; align-items:center; gap:12px;">
+          <div class="profile-avatar student-initials" aria-hidden="true">AP</div>
+          <div class="profile-name student-name" style="font-size: 1.5rem; font-weight:700; color:#1e293b;">Cargando...</div>
         </div>
       </div>
       
-      <!-- Detalles del Aprendiz -->
+      <!-- Datos del Aprendiz -->
       <div class="data-container">
-        <div class="section-title">Detalles del Aprendiz</div>
+        <div class="section-title">Datos del Aprendiz</div>
         <div class="data-grid" id="student-data-grid">
           <div class="data-item">
             <div class="data-label">Cargando...</div>
@@ -655,19 +792,24 @@ function showStudentDetails(container, studentData) {
         </div>
       </div>
       
-      <!-- Nombres del Acudiente -->
-      <div class="data-container acudiente-container">
-        <div class="section-title">Nombres del Acudiente</div>
-        <div class="names-container" style="text-align: center; padding: 20px;">
-          <div class="acudiente-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">
-            Cargando información del acudiente...
-          </div>
+      <!-- Título de Detalles del Acudiente en contenedor propio (sin .data-container para igualar ancho) -->
+      <div class="acudiente-title-container">
+        <div class="details-header">
+          <h2>Detalles del Acudiente</h2>
         </div>
       </div>
-      
-      <!-- Detalles del Acudiente -->
+
+      <!-- Perfil del Acudiente: Iniciales + Nombre (contenedor aparte) -->
+      <div class="data-container profile-card guardian-profile-block">
+        <div class="profile" style="display:flex; align-items:center; gap:12px;">
+          <div class="profile-avatar guardian-initials" aria-hidden="true">AC</div>
+          <div class="profile-name acudiente-name" style="font-size: 1.2rem; font-weight:700; color:#1e293b;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Contenedor de grid del Acudiente -->
       <div class="data-container acudiente-container">
-        <div class="section-title">Detalles del Acudiente</div>
+        <div class="section-title">Datos del Acudiente</div>
         <div class="data-grid" id="guardian-data-grid">
           <div class="data-item">
             <div class="data-label">Cargando...</div>
@@ -701,75 +843,97 @@ function loadStudentCompleteData(studentId, container) {
       if (data.success) {
         const student = data.student;
         
-        // Actualizar nombre del aprendiz
+        // Actualizar nombre e iniciales del aprendiz
         const studentNameElement = container.querySelector('.student-name');
-        if (studentNameElement) {
-          studentNameElement.textContent = student.nombre_completo || 'No disponible';
+        const initialsEl = container.querySelector('.student-initials');
+        const nombre = student.nombre_completo || `${student.nombres||''} ${student.apellidos||''}`.trim();
+        if (studentNameElement) studentNameElement.textContent = nombre || 'No disponible';
+        if (initialsEl) {
+          const parts = (nombre || '').trim().split(/\s+/).filter(Boolean);
+          let ini = '';
+          if (parts.length) ini += (parts[0].charAt(0) || '').toUpperCase();
+          if (parts.length > 1) ini += (parts[1].charAt(0) || '').toUpperCase();
+          initialsEl.textContent = ini || 'AP';
         }
         
         // Actualizar detalles del aprendiz usando data-grid
         const studentDataGrid = container.querySelector('#student-data-grid');
         if (studentDataGrid) {
-          let studentItems = '';
-          
-          if (student.tipo_documento && student.numero_documento) {
-            studentItems += `
+          // Preparar cada bloque y concatenar en el orden solicitado
+          try { console.debug('[Detalles Aprendiz] Payload estudiante:', student); } catch(e) {}
+          const blocks = {
+            documento: (student.tipo_documento && student.numero_documento) ? `
               <div class="data-item">
                 <div class="data-label">Documento</div>
                 <div class="data-value">${student.tipo_documento} ${student.numero_documento}</div>
-              </div>`;
-          }
-          
-          if (student.email) {
-            studentItems += `
-              <div class="data-item">
-                <div class="data-label">Email</div>
-                <div class="data-value">${student.email}</div>
-              </div>`;
-          }
-          
-          if (student.telefono) {
-            studentItems += `
-              <div class="data-item">
-                <div class="data-label">Teléfono</div>
-                <div class="data-value">${student.telefono}</div>
-              </div>`;
-          }
-          
-          if (student.ficha_nombre) {
-            studentItems += `
-              <div class="data-item">
-                <div class="data-label">Ficha</div>
-                <div class="data-value">${student.ficha_nombre}</div>
-              </div>`;
-          }
-          
-          if (student.colegio_nombre) {
-            studentItems += `
+              </div>` : '',
+            ficha: (function(){
+              // Buscar el CÓDIGO de ficha en múltiples variantes comunes
+              const candidates = [
+                student.numero_ficha,
+                student.num_ficha,
+                student.numeroFicha,
+                student.ficha_codigo,
+                student.codigo_ficha,
+                student.codigoFicha,
+                student.codigo,
+                student.ficha,
+                student.ficha_id,
+                student.id_ficha
+              ];
+              const codigo = (candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '') || '').toString().trim();
+              try { console.debug('[Detalles Aprendiz] Ficha candidatos:', candidates, '=> elegido:', codigo || '—'); } catch(e) {}
+              const value = codigo || '—';
+              return `
+                <div class="data-item">
+                  <div class="data-label">Ficha</div>
+                  <div class="data-value">${value}</div>
+                </div>`;
+            })(),
+            colegio: student.colegio_nombre ? `
               <div class="data-item">
                 <div class="data-label">Colegio</div>
                 <div class="data-value">${student.colegio_nombre}</div>
-              </div>`;
-          }
-          
-          if (student.jornada) {
-            studentItems += `
-              <div class="data-item">
-                <div class="data-label">Jornada</div>
-                <div class="data-value">${student.jornada}</div>
-              </div>`;
-          }
-          
-          if (student.estado) {
-            studentItems += `
+              </div>` : '',
+            estado: student.estado ? `
               <div class="data-item">
                 <div class="data-label">Estado</div>
-                <div class="data-value">
-                  <span class="status-badge">${student.estado}</span>
-                </div>
-              </div>`;
-          }
-          
+                <div class="data-value"><span class="status-badge">${student.estado}</span></div>
+              </div>` : '',
+            email: student.email ? `
+              <div class="data-item">
+                <div class="data-label">Email</div>
+                <div class="data-value">${student.email}</div>
+              </div>` : '',
+            telefono: student.telefono ? `
+              <div class="data-item">
+                <div class="data-label">Teléfono</div>
+                <div class="data-value">${student.telefono}</div>
+              </div>` : '',
+            jornada: (function(){
+              const raw = (student.jornada || '').toString();
+              const clean = raw.replace(/^\s*["']|["']\s*$/g, ''); // quitar comillas al inicio/fin
+              return clean ? `
+                <div class="data-item">
+                  <div class="data-label">Jornada</div>
+                  <div class="data-value">${clean}</div>
+                </div>` : '';
+            })()
+          };
+
+          const studentItems = [
+            // Fila 1 (subir Teléfono)
+            blocks.documento,
+            blocks.ficha,
+            blocks.colegio,
+            blocks.telefono,
+            // Fila 2 (Estado donde estaba Jornada)
+            blocks.email,
+            blocks.estado,
+            blocks.jornada
+          ].filter(Boolean).join('\n');
+          try { console.debug('[Detalles Aprendiz] HTML items generado:', studentItems); } catch(e) {}
+
           studentDataGrid.innerHTML = studentItems || `
             <div class="data-item">
               <div class="data-label">Sin información</div>
@@ -777,10 +941,19 @@ function loadStudentCompleteData(studentId, container) {
             </div>`;
         }
         
-        // Actualizar nombre del acudiente
+        // Actualizar nombre e iniciales del acudiente
         const guardianNameElement = container.querySelector('.acudiente-name');
         if (guardianNameElement) {
           guardianNameElement.textContent = student.nombre_completo_acudiente || 'No disponible';
+        }
+        const guardianInitials = container.querySelector('.guardian-initials');
+        if (guardianInitials) {
+          const gname = (student.nombre_completo_acudiente || '').trim();
+          const gparts = gname.split(/\s+/).filter(Boolean);
+          let gini = '';
+          if (gparts.length) gini += (gparts[0].charAt(0) || '').toUpperCase();
+          if (gparts.length > 1) gini += (gparts[1].charAt(0) || '').toUpperCase();
+          guardianInitials.textContent = gini || 'AC';
         }
         
         // Actualizar detalles del acudiente usando data-grid
@@ -955,29 +1128,44 @@ function initializeProfessorDetailsButtons() {
         return;
       }
 
-      // Esqueleto inicial del panel
+      // Esqueleto inicial del panel (igual estilo que Aprendiz)
       detailsContainer.innerHTML = `
         <div class="student-details-content">
-          <div class="data-container">
-            <div class="section-title">Nombre del Instructor/Facilitador</div>
-            <div class="names-container" style="text-align: center; padding: 20px;">
-              <div class="prof-name" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">Cargando...</div>
-            </div>
-            <div class="actions-bar" style="display:flex; gap:8px; justify-content:flex-end; padding: 0 10px 10px 10px;">
-              <button class="btn btn-sm btn-primary" id="btnVerCalendarioProf">Ver Calendario</button>
-              <button class="btn btn-sm btn-secondary" id="btnExportarCSVProf">Exportar CSV</button>
+          <!-- Perfil del Facilitador: Iniciales + Nombre -->
+          <div class="data-container profile-card professor-profile-block">
+            <div class="profile" style="display:flex; align-items:center; gap:12px; justify-content:space-between; width:100%;">
+              <!-- Bloque centrado visualmente -->
+              <div style="flex:1; display:flex; justify-content:center; align-items:center; gap:12px;">
+                <div class="profile-avatar prof-initials" aria-hidden="true">PF</div>
+                <div class="profile-name prof-name" style="font-size: 1.5rem; font-weight:700; color:#1e293b;">Cargando...</div>
+              </div>
+              <!-- Acciones a la derecha, una sobre otra -->
+              <div class="actions-bar" style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                <button class="btn" id="btnVerCalendarioProf" style="background:#39A900; color:#fff; min-width:180px; width:180px;">Ver Calendario</button>
+                <button class="btn" id="btnExportarExcelProf" style="background:#00304D; color:#fff; min-width:180px; width:180px;">Exportar Excel</button>
+              </div>
             </div>
           </div>
           <div class="data-container">
-            <div class="section-title">Datos del Instructor/Facilitador</div>
+            <div class="section-title" id="prof-datos-title">Datos del Instructor/Facilitador</div>
             <div class="data-grid" id="professor-data-grid">
               <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
             </div>
           </div>
           <div class="data-container">
             <div class="section-title">Fichas y Próximas Clases</div>
-            <div class="data-grid" id="professor-fichas-grid">
-              <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+            <!-- Filtros internos para alternar -->
+            <div class="fp-filters" style="display:flex; gap:8px; justify-content:flex-end; margin-bottom:8px;">
+              <button type="button" id="tabFichas" class="btn fp-tab active" data-tab="fichas" style="background:#39A900; color:#fff;">Fichas</button>
+              <button type="button" id="tabClases" class="btn fp-tab" data-tab="clases" style="background:#00304D; color:#fff;">Clases</button>
+            </div>
+            <div class="fp-wrapper" style="position:relative; min-height: 80px;">
+              <div class="data-grid" id="professor-fichas-grid">
+                <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+              </div>
+              <div class="data-grid" id="professor-clases-grid" style="display:none;">
+                <div class="data-item"><div class="data-label">Cargando...</div><div class="data-value">—</div></div>
+              </div>
             </div>
           </div>
           <div class="data-container">
@@ -990,6 +1178,38 @@ function initializeProfessorDetailsButtons() {
 
       // Mostrar panel
       sidebar.style.display = 'block';
+
+      // Posicionar el sidebar del facilitador pegado al panel de resultados (igual al de Aprendiz)
+      const placeProfessorSidebar = () => {
+        const panel = document.getElementById('dashboard-resultados');
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+        const gutter = 24;
+        const header = document.querySelector('.header-unified');
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 68;
+        const top = Math.max(0, Math.round(headerBottom) + 8);
+        const left = rect.right + gutter;
+        const rightPadding = gutter;
+        const width = Math.max(320, window.innerWidth - left - rightPadding);
+        const bottomPadding = gutter;
+        const footer = document.querySelector('.footer');
+        const footerTop = footer ? footer.getBoundingClientRect().top : window.innerHeight;
+        const maxHeightByViewport = window.innerHeight - top - bottomPadding;
+        const maxHeightByFooter = footerTop - top - bottomPadding;
+        const height = Math.max(200, Math.min(maxHeightByViewport, maxHeightByFooter));
+        Object.assign(sidebar.style, {
+          position: 'fixed',
+          left: left + 'px',
+          top: top + 'px',
+          width: width + 'px',
+          height: height + 'px',
+          borderRadius: '29px',
+          zIndex: 900
+        });
+      };
+      placeProfessorSidebar();
+      window.addEventListener('resize', placeProfessorSidebar);
+      window.addEventListener('scroll', placeProfessorSidebar, { passive: true });
 
       const id = this.getAttribute('data-id');
       if (!id) return;
@@ -1016,7 +1236,7 @@ function loadProfessorCompleteData(profId, container) {
 
       // Wire acciones
       const btnCal = container.querySelector('#btnVerCalendarioProf');
-      const btnExport = container.querySelector('#btnExportarCSVProf');
+      const btnExport = container.querySelector('#btnExportarExcelProf');
       
       // Configurar botón de exportación
       if (btnExport) {
@@ -1049,60 +1269,131 @@ function loadProfessorCompleteData(profId, container) {
           window.location.href = `/?page=calendario&profesor_id=${encodeURIComponent(profId)}`;
         });
       }
-      const btnCSV = container.querySelector('#btnExportarCSVProf');
-      if (btnCSV) {
-        btnCSV.addEventListener('click', () => exportarCSVClasesProfesor(prof, clases));
+      const btnExcel = container.querySelector('#btnExportarExcelProf');
+      if (btnExcel) {
+        // Mantener compatibilidad si existe una función específica; de lo contrario, usar la descarga por URL
+        if (typeof exportarExcelClasesProfesor === 'function') {
+          btnExcel.addEventListener('click', () => exportarExcelClasesProfesor(prof, clases));
+        }
       }
 
       // Nombre
       const nameEl = container.querySelector('.prof-name');
       if (nameEl) nameEl.textContent = (prof.nombres && prof.apellidos) ? `${prof.nombres} ${prof.apellidos}` : 'Sin nombre';
 
-      // Datos principales
-      const grid = container.querySelector('#professor-data-grid');
-      if (grid) {
-        grid.innerHTML = '';
-        const rows = [];
-        const push = (l,v)=>{ if (v && String(v).trim() !== '') rows.push(`<div class=\"data-item\"><div class=\"data-label\">${l}</div><div class=\"data-value\">${v}</div></div>`); };
-        push('Documento', `${prof.tipo_documento || ''} ${prof.numero_documento || ''}`.trim());
-        push('Email', prof.correo_electronico);
-        push('Email Institucional', prof.correo_institucional);
-        push('Teléfono', prof.telefono);
-        push('Especialidad', prof.especialidad);
-        push('Tipo de Contrato', prof.tip_contrato);
-        push('Fecha Ingreso', prof.fecha_ingreso);
-        push('Colegio', prof.colegio_nombre);
-        grid.innerHTML = rows.join('') || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin datos</div></div>';
+      // Iniciales
+      const initialsEl = container.querySelector('.prof-initials');
+      if (initialsEl) {
+        const n = (prof.nombres || '').trim();
+        const a = (prof.apellidos || '').trim();
+        let ini = '';
+        if (n) ini += (n.charAt(0) || '').toUpperCase();
+        if (a) ini += (a.charAt(0) || '').toUpperCase();
+        initialsEl.textContent = ini || 'PF';
       }
 
-      // Fichas y próximas clases
+      // Ajustar título 'Datos del ...' según tipo de contrato
+      const contrato = ((prof.tip_contrato || prof.tipo_contrato || '') + '').toLowerCase().trim();
+      const rolLabel = (contrato === 'planta' || contrato === 'instructor') ? 'Instructor' : 'Facilitador';
+      const datosTitle = container.querySelector('#prof-datos-title');
+      if (datosTitle) datosTitle.textContent = `Datos del ${rolLabel}`;
+
+      // Datos principales (filas horizontales: 4 por fila)
+      const grid = container.querySelector('#professor-data-grid');
+      if (grid) {
+        const titleCase = (str) => {
+          if (!str) return '';
+          const s = String(str).toLowerCase();
+          return s.replace(/\b([a-záéíóúñü])([a-záéíóúñü]*)/gi, (m, p1, p2) => p1.toUpperCase() + p2);
+        };
+        const item = (label, value) => {
+          const v = (value ?? '').toString().trim();
+          if (!v) return '';
+          return `<div class=\"data-item\"><div class=\"data-label\">${label}</div><div class=\"data-value\">${v}</div></div>`;
+        };
+        const contratoTxt = prof.tip_contrato || prof.tipo_contrato || '';
+        const itemsHtml = [
+          // Orden solicitado
+          item('Documento', `${prof.tipo_documento || ''} ${prof.numero_documento || ''}`.trim()),
+          item('Email', prof.correo_electronico),
+          item('Email Institucional', prof.correo_institucional),
+          item('Teléfono', prof.telefono),
+          item('Especialidad', prof.especialidad),
+          item('Tipo de Contrato', contratoTxt),
+          item('Fecha Ingreso', prof.fecha_ingreso),
+          item('Colegio', titleCase(prof.colegio_nombre))
+        ].filter(Boolean).join('');
+        grid.innerHTML = itemsHtml;
+        if (!itemsHtml) {
+          grid.innerHTML = '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin datos</div></div>';
+        }
+      }
+
+      // Fichas y próximas clases (con filtro)
       const fichasGrid = container.querySelector('#professor-fichas-grid');
+      const clasesGrid = container.querySelector('#professor-clases-grid');
+      const fpWrapper  = container.querySelector('.fp-wrapper');
       if (fichasGrid) {
-        let html = '';
-        if (fichas.length) {
-          html += fichas.map(f=>`<div class=\"data-item\"><div class=\"data-label\">Ficha</div><div class=\"data-value\">${(f.numero_ficha||f.numero||f.id)} - ${f.nombre||''}</div></div>`).join('');
+        const fh = fichas.length
+          ? fichas.map(f=>`<div class=\"data-item\"><div class=\"data-label\">Ficha</div><div class=\"data-value\">${(f.numero_ficha||f.numero||f.id)} - ${f.nombre||''}</div></div>`).join('')
+          : '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin fichas</div></div>';
+        fichasGrid.innerHTML = fh;
+      }
+      if (clasesGrid) {
+        const ch = clases.length
+          ? clases.map(c=>`<div class=\"data-item\"><div class=\"data-label\">Clase</div><div class=\"data-value\">${c.fecha_inicio} → ${c.fecha_fin} ${c.aula?('| '+c.aula):''} ${c.estado?('| '+c.estado):''}</div></div>`).join('')
+          : '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin clases próximas</div></div>';
+        clasesGrid.innerHTML = ch;
+      }
+
+      // Estado inicial: mostrar solo fichas (usar 'grid' explícito)
+      if (fichasGrid) fichasGrid.style.display = 'grid';
+      if (clasesGrid) clasesGrid.style.display = 'none';
+      const tabF = container.querySelector('#tabFichas');
+      const tabC = container.querySelector('#tabClases');
+      const setActive = (isFichas) => {
+        if (isFichas) {
+          if (fichasGrid) fichasGrid.style.display = 'grid';
+          if (clasesGrid) clasesGrid.style.display = 'none';
+          if (tabF) tabF.classList.add('active');
+          if (tabC) tabC.classList.remove('active');
+        } else {
+          if (fichasGrid) fichasGrid.style.display = 'none';
+          if (clasesGrid) clasesGrid.style.display = 'grid';
+          if (tabC) tabC.classList.add('active');
+          if (tabF) tabF.classList.remove('active');
         }
-        if (clases.length) {
-          html += clases.map(c=>`<div class=\"data-item\"><div class=\"data-label\">Clase</div><div class=\"data-value\">${c.fecha_inicio} → ${c.fecha_fin} | ${c.aula||''} | ${c.estado||''}</div></div>`).join('');
-        }
-        fichasGrid.innerHTML = html || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin fichas/clases próximas</div></div>';
+      };
+      if (tabF) tabF.addEventListener('click', (e)=>{ e.preventDefault(); setActive(true); });
+      if (tabC) tabC.addEventListener('click', (e)=>{ e.preventDefault(); setActive(false); });
+
+      // Fallback por delegación dentro del sidebar del profesor
+      const profSidebar = document.getElementById('professor-details-sidebar');
+      if (profSidebar) {
+        profSidebar.addEventListener('click', (e) => {
+          const tab = e.target.closest('.fp-tab');
+          if (!tab) return;
+          const target = tab.getAttribute('data-tab');
+          if (target === 'fichas') setActive(true); else if (target === 'clases') setActive(false);
+        });
       }
 
       // Materias / otros
       const otros = container.querySelector('#professor-otros-grid');
       if (otros) {
         let html = '';
-        // Contadores
-        html += `<div class="data-item"><div class="data-label">Resumen</div><div class="data-value">Fichas: ${fichas.length} • Materias: ${materias.length} • Clases semana: ${clases.length}</div></div>`;
+        html += `<div class="data-item"><div class="data-label">Fichas</div><div class="data-value">${fichas.length}</div></div>`;
+        html += `<div class="data-item"><div class="data-label">Materias</div><div class="data-value">${materias.length}</div></div>`;
+        html += `<div class="data-item"><div class="data-label">Clases semana</div><div class="data-value">${clases.length}</div></div>`;
         if (materias.length) {
-          html += `<div class=\"data-item\"><div class=\"data-label\">Materias</div><div class=\"data-value\">${materias.join(', ')}</div></div>`;
+          html += `<div class=\"data-item\"><div class=\"data-label\">Listado de Materias</div><div class=\"data-value\">${materias.join(', ')}</div></div>`;
         }
-        otros.innerHTML = html || '<div class="data-item"><div class="data-label">—</div><div class="data-value">Sin datos adicionales</div></div>';
+        otros.innerHTML = html;
       }
     })
     .catch(err => {
       console.error('Error cargando facilitador:', err);
       const grids = container.querySelectorAll('.data-grid');
-      grids.forEach(g=> g.innerHTML = '<div class="data-item"><div class="data-label">Error</div><div class="data-value">No se pudieron cargar los datos</div></div>');
+      grids.forEach(g=> g.style.display = 'none');
     });
 }

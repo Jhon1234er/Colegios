@@ -234,6 +234,16 @@ if (empty($iniciales)) $iniciales = 'US';
                                 <input type="email" class="edit-input" value="<?= htmlspecialchars($usuario['correo_institucional'] ?? '') ?>" style="display: none;">
                             </span>
                         </div>
+                        <div class="info-row password-row">
+                            <span class="info-label">Contraseña:</span>
+                            <span class="info-value">
+                                *****
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">&nbsp;</span>
+                            <span class="info-value">&nbsp;</span>
+                        </div>
                         
                         <?php if ($rolId == 2): ?>
                         <!-- 

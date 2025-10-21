@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <select class="chip-select" id="prof-tipo">
           <option value="">Todos</option>
           <option value="facilitador">Facilitador</option>
-          <option value="contratista">Contratista</option>
+          <option value="instructor">Instructor</option>
         </select>
         <input class="input-buscar" id="prof-q" type="text" placeholder="Buscar por nombre" />
         <button class="btn-icon" id="prof-btn" aria-label="Buscar" type="button">
@@ -131,13 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const filtered = list.filter(p=>{
         const contrato = norm(p.tip_contrato);
         const nombre = norm(p.nombre ?? ((p.nombres||'') + ' ' + (p.apellidos||'')));
-        // Aceptar variantes: facilitador(a), contratista, etc.
-        let byTipo = true;
-        if (tipoSel){
-          if (tipoSel === 'facilitador') byTipo = /facilitador/.test(contrato);
-          else if (tipoSel === 'contratista') byTipo = /contratista/.test(contrato);
-          else byTipo = contrato.includes(tipoSel);
-        }
+        // Mapear a rol visible: planta/instructor => instructor; otros => facilitador
+        const role = (contrato.includes('planta') || contrato.includes('instructor')) ? 'instructor' : 'facilitador';
+        const byTipo = !tipoSel || role === tipoSel;
         const byQ = !q || nombre.includes(q);
         return byTipo && byQ;
       });

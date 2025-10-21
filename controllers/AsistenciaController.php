@@ -543,10 +543,9 @@ class AsistenciaController {
                 $stRol = $pdo->prepare("SELECT rol_id FROM usuarios WHERE id = ? LIMIT 1");
                 $stRol->execute([(int)$uId]);
                 $rolId = (int)($stRol->fetchColumn() ?: 0);
-                $tipoUsuario = ($rolId === 1) ? 'administrador' : (($rolId === 2) ? 'profesor' : 'rector');
                 try {
-                    $stmtN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, tipo_usuario, mensaje, fecha, estado) VALUES (?, ?, ?, NOW(), 'no_leida')");
-                    $stmtN->execute([(int)$uId, $tipoUsuario, $titulo . ' - ' . strip_tags($mensaje)]);
+                    $stmtN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, rol_id, mensaje, fecha, estado) VALUES (?, ?, ?, NOW(), 'no_leida')");
+                    $stmtN->execute([(int)$uId, $rolId, $titulo . ' - ' . strip_tags($mensaje)]);
                 } catch (Exception $ex) {
                     // Fallback a esquema simple
                     try {

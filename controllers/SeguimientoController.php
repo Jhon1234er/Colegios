@@ -29,7 +29,27 @@ class SeguimientoController {
         $pdo = Database::conectar();
         $ficha_id = isset($_GET['ficha_id']) ? (int)$_GET['ficha_id'] : 0;
         $estudiante_id = isset($_GET['estudiante_id']) ? (int)$_GET['estudiante_id'] : 0;
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        $fecha = $_GET['fecha'] ?? '';
+        // Fallback: si falta ficha_id pero tenemos estudiante, obtener su ficha actual
+        if ($estudiante_id > 0 && $ficha_id <= 0) {
+            try {
+                $stmtFx = $pdo->prepare("SELECT ficha_id FROM estudiantes WHERE id = ? LIMIT 1");
+                $stmtFx->execute([$estudiante_id]);
+                $ficha_id = (int)($stmtFx->fetchColumn() ?: 0);
+            } catch (Exception $e) { /* noop */ }
+        }
+        // Fallback: si falta fecha, tomar la última fecha con ausencia registrada
+        if ($estudiante_id > 0 && $fecha === '') {
+            try {
+                $stFec = $pdo->prepare("SELECT DATE(a.fecha) FROM asistencias a WHERE a.estudiante_id = ? "
+                    . ($ficha_id>0 ? " AND a.ficha_id = ?" : "")
+                    . " AND LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio') ORDER BY a.fecha DESC LIMIT 1");
+                $params = [$estudiante_id]; if ($ficha_id>0) $params[] = $ficha_id; 
+                $stFec->execute($params);
+                $fecha = $stFec->fetchColumn() ?: '';
+            } catch (Exception $e) { /* noop */ }
+        }
+        if ($fecha === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$fecha)) { $fecha = date('Y-m-d'); }
         if ($ficha_id <= 0 || $estudiante_id <= 0) {
             http_response_code(400);
             echo 'Parámetros inválidos';
@@ -82,9 +102,14 @@ class SeguimientoController {
     public function guardar() {
         header('Content-Type: text/html; charset=utf-8');
         $pdo = Database::conectar();
+        // Tomar primero de POST; si faltan, intentar leer de GET (fallback desde botón/URL)
         $ficha_id = isset($_POST['ficha_id']) ? (int)$_POST['ficha_id'] : 0;
+        if ($ficha_id <= 0) { $ficha_id = isset($_GET['ficha_id']) ? (int)$_GET['ficha_id'] : 0; }
         $estudiante_id = isset($_POST['estudiante_id']) ? (int)$_POST['estudiante_id'] : 0;
-        $fecha = $_POST['fecha'] ?? date('Y-m-d');
+        if ($estudiante_id <= 0) { $estudiante_id = isset($_GET['estudiante_id']) ? (int)$_GET['estudiante_id'] : 0; }
+        // Fecha de inasistencia: si no llega, tomar hoy; normalizar a YYYY-MM-DD
+        $fecha = $_POST['fecha'] ?? ($_GET['fecha'] ?? date('Y-m-d'));
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) { $fecha = date('Y-m-d'); }
         $via = $_POST['via'] ?? 'Llamada';
         $contacto = $_POST['contacto'] ?? 'Acudiente';
         $telefono = $_POST['telefono'] ?? '';
@@ -93,7 +118,11 @@ class SeguimientoController {
 
         if ($ficha_id <= 0 || $estudiante_id <= 0) {
             http_response_code(400);
-            echo 'Parámetros inválidos';
+            echo '<div style="max-width:680px;margin:24px auto;font-family:system-ui;">'
+               . '<h3>Parámetros inválidos</h3>'
+               . '<p>Faltan identificadores de ficha o aprendiz. Intenta abrir el seguimiento desde el listado (botón Iniciar) para que se pasen correctamente.</p>'
+               . '<p><a href="/?page=asistente" style="color:#0d6efd;">Volver al asistente</a></p>'
+               . '</div>';
             return;
         }
 

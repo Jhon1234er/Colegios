@@ -97,6 +97,15 @@ if ($page === 'asistente_notificar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+if ($page === 'asistente_reporte_excel') {
+    require_login();
+    require_role([1,4]);
+    require_once '../controllers/AsistenteController.php';
+    $_GET['action'] = 'reporte_excel';
+    new AsistenteController();
+    exit;
+}
+
 if ($page === 'asistente_colegios') {
     require_login();
     require_role([1,4]);
@@ -106,23 +115,6 @@ if ($page === 'asistente_colegios') {
     exit;
 }
 
-if ($page === 'asistente_reporte_csv') {
-    require_login();
-    require_role([1,4]);
-    require_once '../controllers/AsistenteController.php';
-    $_GET['action'] = 'reporte_csv';
-    new AsistenteController();
-    exit;
-}
-
-if ($page === 'asistente_reporte_excel') {
-    require_login();
-    require_role([1,4]);
-    require_once '../controllers/AsistenteController.php';
-    $_GET['action'] = 'reporte_excel';
-    new AsistenteController();
-    exit;
-}
 
 // Gestión de materias (cursos)
 if ($page === 'materias') {
@@ -322,6 +314,15 @@ if ($page === 'estudiantes_por_colegio' && isset($_GET['colegio_id'])) {
     $estudianteModel = new Estudiante();
     header('Content-Type: application/json');
     echo json_encode($estudianteModel->obtenerPorColegio($_GET['colegio_id']));
+    exit;
+}
+
+// Fichas por colegio
+if ($page === 'fichas_por_colegio' && isset($_GET['colegio_id'])) {
+    require_once '../models/Ficha.php';
+    $fichaModel = new Ficha();
+    header('Content-Type: application/json');
+    echo json_encode($fichaModel->obtenerPorColegio($_GET['colegio_id']));
     exit;
 }
 
@@ -764,7 +765,7 @@ if ($page === 'dashboard' && isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             break;
     }
 
-    include '../views/Archivos/resultados_busqueda.php';
+    include '../views/Componentes/resultados_busqueda.php';
     exit;
 }
 
@@ -779,7 +780,7 @@ if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // ====== ENDPOINT PREVIEW V2 (para modales de reportes) ======
 if ($page === 'preview_v2' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_login();
-    require_role([1, 2]);
+    require_role([1, 2, 4]); // Permitir a Admin, Profesor y Asistente
     include '../views/Archivos/preview.php';
     exit;
 }
@@ -794,8 +795,10 @@ if ($page === 'calendario') {
 
 // ====== DASHBOARDS SEGÚN ROL ======
 if (!empty($_SESSION['usuario'])) {
-    if ((int)$_SESSION['usuario']['rol_id'] === 1) { include '../views/dashboard.php'; exit; }
-    if ((int)$_SESSION['usuario']['rol_id'] === 2) { include '../views/Profesor/dashboard.php'; exit; }
+    $rol_id = (int)$_SESSION['usuario']['rol_id'];
+    if ($rol_id === 1) { include '../views/dashboard.php'; exit; }
+    if ($rol_id === 2) { include '../views/Profesor/dashboard.php'; exit; }
+    if ($rol_id === 4) { include '../views/Asistente/dashboard.php'; exit; }
 }
 
 // ====== LOGIN (por defecto) ======

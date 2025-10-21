@@ -11,6 +11,207 @@ class AsistenteController {
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 
+    // ===== HISTORIAL: AUSENCIAS PENDIENTES DE PROCESO =====
+    private function historialPendientes() {
+        header('Content-Type: application/json');
+        try {
+            $colegio_id = isset($_GET['colegio_id']) ? (int)$_GET['colegio_id'] : 0;
+            // Intentar con distintos nombres de tabla de seguimiento/proceso
+            $bases = [
+                // formato: [tabla, fk_nombre]
+                ['seguimiento_ausencia', 'asistencia_id'],
+                ['seguimiento_ausencias', 'asistencia_id'],
+                ['procesos_ausencia', 'asistencia_id'],
+                ['procesos_ausencias', 'asistencia_id'],
+                ['procesos', 'asistencia_id'],
+                ['seguimientos', 'asistencia_id'],
+                ['seguimiento', 'asistencia_id']
+            ];
+
+            $rows = [];
+            foreach ($bases as [$tabla, $fk]) {
+                try {
+                    // Variante 1: tabla de proceso con columna de estado (pendiente/en_proceso)
+                    $sql = "
+                        SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                               CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre
+                        FROM asistencias a
+                        JOIN estudiantes e ON a.estudiante_id = e.id
+                        JOIN usuarios u ON e.usuario_id = u.id
+                        JOIN fichas f ON a.ficha_id = f.id
+                        JOIN `$tabla` sa ON sa.`$fk` = a.id
+                        WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                          AND (sa.estado IN ('pendiente','en_proceso','abierto'))
+                          " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                        ORDER BY a.fecha DESC
+                        LIMIT 200
+                    ";
+                    $stmt = $this->pdo->prepare($sql);
+                    if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    if (!empty($rows)) break; // éxito con estado
+                } catch (Exception $inner) { /* intentar variante 2 abajo */ }
+                try {
+                    // Variante 2: pendiente si NO existe registro en la tabla de proceso
+                    $sql = "
+                        SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                               CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre
+                        FROM asistencias a
+                        JOIN estudiantes e ON a.estudiante_id = e.id
+                        JOIN usuarios u ON e.usuario_id = u.id
+                        JOIN fichas f ON a.ficha_id = f.id
+                        LEFT JOIN `$tabla` sa ON sa.`$fk` = a.id
+                        WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                          AND sa.`$fk` IS NULL
+                          " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                        ORDER BY a.fecha DESC
+                        LIMIT 200
+                    ";
+                    $stmt = $this->pdo->prepare($sql);
+                    if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    break; // éxito
+                } catch (Exception $inner2) {
+                    // Variante 3: relación por (estudiante_id, fecha) cuando no existe FK a asistencia
+                    try {
+                        $sql = "
+                            SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                                   CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre
+                            FROM asistencias a
+                            JOIN estudiantes e ON a.estudiante_id = e.id
+                            JOIN usuarios u ON e.usuario_id = u.id
+                            JOIN fichas f ON a.ficha_id = f.id
+                            LEFT JOIN `$tabla` sa ON sa.estudiante_id = e.id AND DATE(sa.fecha) = DATE(a.fecha)
+                            WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                              AND sa.estudiante_id IS NULL
+                              " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                            ORDER BY a.fecha DESC
+                            LIMIT 200
+                        ";
+                        $stmt = $this->pdo->prepare($sql);
+                        if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    } catch (Exception $inner3) { /* swallow and follow with fallback */ }
+                    continue;
+                }
+            }
+            // Fallback: si no hay tablas de proceso o no devolvió nada, mostrar ausentes de hoy
+            if ($rows === [] && $colegio_id >= 0) {
+                $hoy = date('Y-m-d');
+                $sql = "
+                    SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                           CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre
+                    FROM asistencias a
+                    JOIN estudiantes e ON a.estudiante_id = e.id
+                    JOIN usuarios u ON e.usuario_id = u.id
+                    JOIN fichas f ON a.ficha_id = f.id
+                    WHERE DATE(a.fecha)=? AND LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                          " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                    ORDER BY a.fecha DESC
+                    LIMIT 200
+                ";
+                $stmt = $this->pdo->prepare($sql);
+                $params = [$hoy]; if ($colegio_id>0) $params[] = $colegio_id; 
+                $stmt->execute($params);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            }
+
+            $this->respondJSON(['success'=>true,'data'=>$rows]);
+        } catch (Exception $e) {
+            $this->respondJSON(['success'=>false,'error'=>$e->getMessage()], 500);
+        }
+    }
+
+    // ===== HISTORIAL: AUSENCIAS CON PROCESO REALIZADO =====
+    private function historialProcesados() {
+        header('Content-Type: application/json');
+        try {
+            $colegio_id = isset($_GET['colegio_id']) ? (int)$_GET['colegio_id'] : 0;
+            $bases = [
+                ['seguimiento_ausencia', 'asistencia_id', 'id AS proceso_id'],
+                ['seguimiento_ausencias', 'asistencia_id', 'id AS proceso_id'],
+                ['procesos_ausencia', 'asistencia_id', 'id AS proceso_id'],
+                ['procesos_ausencias', 'asistencia_id', 'id AS proceso_id'],
+                ['procesos', 'asistencia_id', 'id AS proceso_id'],
+                ['seguimientos', 'asistencia_id', 'id AS proceso_id'],
+                ['seguimiento', 'asistencia_id', 'id AS proceso_id']
+            ];
+
+            $rows = [];
+            foreach ($bases as [$tabla, $fk, $selProc]) {
+                try {
+                    // Variante 1: estado completado/finalizado
+                    $sql = "
+                        SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                               CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre,
+                               sa.$selProc
+                        FROM asistencias a
+                        JOIN estudiantes e ON a.estudiante_id = e.id
+                        JOIN usuarios u ON e.usuario_id = u.id
+                        JOIN fichas f ON a.ficha_id = f.id
+                        JOIN `$tabla` sa ON sa.`$fk` = a.id
+                        WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                          AND (sa.estado IN ('completado','finalizado','cerrado'))
+                          " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                        ORDER BY a.fecha DESC
+                        LIMIT 200
+                    ";
+                    $stmt = $this->pdo->prepare($sql);
+                    if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    if (!empty($rows)) break;
+                } catch (Exception $inner) { /* intentar variante 2 */ }
+                try {
+                    // Variante 2: procesado si existe registro (sin columna estado)
+                    $sql = "
+                        SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                               CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre,
+                               sa.$selProc
+                        FROM asistencias a
+                        JOIN estudiantes e ON a.estudiante_id = e.id
+                        JOIN usuarios u ON e.usuario_id = u.id
+                        JOIN fichas f ON a.ficha_id = f.id
+                        JOIN `$tabla` sa ON sa.`$fk` = a.id
+                        WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                          " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                        ORDER BY a.fecha DESC
+                        LIMIT 200
+                    ";
+                    $stmt = $this->pdo->prepare($sql);
+                    if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    if (!empty($rows)) break;
+                } catch (Exception $inner2) {
+                    // Variante 3: relación por (estudiante_id, fecha)
+                    try {
+                        $sql = "
+                            SELECT a.id AS asistencia_id, a.estudiante_id, a.ficha_id, DATE(a.fecha) AS fecha,
+                                   CONCAT(u.nombres,' ',u.apellidos) AS nombres, f.nombre AS ficha_nombre,
+                                   sa.$selProc
+                            FROM asistencias a
+                            JOIN estudiantes e ON a.estudiante_id = e.id
+                            JOIN usuarios u ON e.usuario_id = u.id
+                            JOIN fichas f ON a.ficha_id = f.id
+                            JOIN `$tabla` sa ON sa.estudiante_id = e.id AND DATE(sa.fecha) = DATE(a.fecha)
+                            WHERE LOWER(a.estado) IN ('falla','fallo','ausente','no_asistio','no asistio','no asistió','inasistencia','noasistio')
+                              " . ($colegio_id>0 ? " AND e.colegio_id = ?" : "") . "
+                            ORDER BY a.fecha DESC
+                            LIMIT 200
+                        ";
+                        $stmt = $this->pdo->prepare($sql);
+                        if ($colegio_id>0) $stmt->execute([$colegio_id]); else $stmt->execute();
+                        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+                    } catch (Exception $inner3) { /* swallow */ }
+                    break;
+                }
+            }
+
+            $this->respondJSON(['success'=>true,'data'=>$rows]);
+        } catch (Exception $e) {
+            $this->respondJSON(['success'=>false,'error'=>$e->getMessage()], 500);
+        }
+    }
+
     private function estadisticasColegio() {
         header('Content-Type: application/json');
         try {
@@ -136,11 +337,13 @@ class AsistenteController {
         if ($action === 'resumen_hoy' || $page === 'asistente_resumen') { $this->resumenHoy(); return; }
         if ($action === 'ausentes_hoy' || $page === 'asistente_ausentes') { $this->ausentesHoy(); return; }
         if ($action === 'colegios' || $page === 'asistente_colegios') { $this->listarColegios(); return; }
-        if ($action === 'reporte_csv' || $page === 'asistente_reporte_csv') { $this->reporteCSV(); return; }
         if ($action === 'reporte_excel' || $page === 'asistente_reporte_excel') { $this->reporteExcel(); return; }
         if ($action === 'notificaciones' || $page === 'asistente_notificaciones') { $this->notificacionesRecientes(); return; }
         if (($action === 'notificar_falta' || $page === 'asistente_notificar') && $_SERVER['REQUEST_METHOD'] === 'POST') { $this->notificarFalta(); return; }
         if ($action === 'estadisticas_colegio' || $page === 'asistente_estadisticas') { $this->estadisticasColegio(); return; }
+        // historial de ausencias (pendientes / procesados)
+        if ($action === 'historial_pendientes' || $page === 'asistente_historial_pendientes') { $this->historialPendientes(); return; }
+        if ($action === 'historial_procesados' || $page === 'asistente_historial_procesados') { $this->historialProcesados(); return; }
         // por defecto mostrar vista
         include __DIR__ . '/../views/Asistente/dashboard.php';
     }
@@ -208,6 +411,7 @@ class AsistenteController {
             $this->respondJSON(['success'=>false,'error'=>$e->getMessage()], 500);
         }
     }
+
 
     private function reporteExcel() {
         try {
@@ -297,59 +501,6 @@ class AsistenteController {
         }
     }
 
-    private function reporteCSV() {
-        try {
-            $colegio_id = isset($_GET['colegio_id']) ? (int)$_GET['colegio_id'] : 0;
-            $desde = $_GET['desde'] ?? date('Y-m-01');
-            $hasta = $_GET['hasta'] ?? date('Y-m-t');
-            $estado = $_GET['estado'] ?? '';
-
-            $params = [$desde, $hasta];
-            $filtroColegio = '';
-            if ($colegio_id > 0) { $filtroColegio = ' AND e.colegio_id = ? '; $params[] = $colegio_id; }
-            $filtroEstado = '';
-            if ($estado !== '') { $filtroEstado = ' AND a.estado = ? '; $params[] = $estado; }
-
-            $sql = "
-                SELECT 
-                    DATE(a.fecha) as fecha,
-                    CONCAT(u.nombres,' ',u.apellidos) as estudiante,
-                    u.numero_documento,
-                    f.numero as ficha_numero,
-                    f.nombre as ficha_nombre,
-                    a.estado
-                FROM asistencias a
-                JOIN estudiantes e ON a.estudiante_id = e.id
-                JOIN usuarios u ON e.usuario_id = u.id
-                JOIN fichas f ON a.ficha_id = f.id
-                WHERE a.fecha BETWEEN ? AND ? $filtroColegio
-                ORDER BY a.fecha ASC, estudiante ASC
-            ";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-            header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="reporte_asistencias.csv"');
-            echo "\xEF\xBB\xBF"; // BOM UTF-8
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Fecha','Estudiante','Documento','Ficha','Nombre Ficha','Estado']);
-            foreach ($rows as $r) {
-                fputcsv($out, [
-                    $r['fecha'],
-                    $r['estudiante'],
-                    $r['numero_documento'],
-                    $r['ficha_numero'],
-                    $r['ficha_nombre'],
-                    $r['estado']
-                ]);
-            }
-            fclose($out);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo 'Error generando CSV: ' . $e->getMessage();
-        }
-    }
 
     private function notificarFalta() {
         header('Content-Type: application/json');

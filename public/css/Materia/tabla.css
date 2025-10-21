@@ -1,13 +1,13 @@
 /* ================================
    Layout / Contenedor
 ==================================*/
-:root { --page-spacing: 32px; }
+:root { --page-spacing: 0; }
 .tabla-cursos {
     max-width: 1400px; /* más ancho */
     margin-left: auto;           /* centrado horizontal */
     margin-right: auto;
-    margin-block: var(--page-spacing); /* misma separación arriba/abajo respecto a header/footer */
-    padding: 24px 20px 32px; /* un poco más de padding inferior para respiro */
+    margin-block: 0.5rem; /* Margen mínimo superior e inferior */
+    padding: 24px 20px 32px;
     box-sizing: border-box;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   }
@@ -15,7 +15,6 @@
     :root { --page-spacing: 40px; }
     .tabla-cursos { max-width: 1680px; }
   }
-  
   /* Card contenedora con sombra */
   .tabla-cursos .card-widget {
     background: #fff;
