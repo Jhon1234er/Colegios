@@ -4,11 +4,47 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <link rel="stylesheet" href="/css/Ficha/ver.css">
 
 <div class="container">
-    <h2>Ficha: <?= htmlspecialchars($ficha['nombre']) ?></h2>
-    <p><strong>Número:</strong> <?= htmlspecialchars($ficha['numero'] ?? '-') ?></p>
-    <p><strong>Estado:</strong> <?= htmlspecialchars($ficha['estado'] ?? 'pendiente') ?></p>
-    <p><strong>Cupo total:</strong> <?= (int)($ficha['cupo_total'] ?? 0) ?></p>
-    <p><strong>Cupo usado:</strong> <?= (int)($ficha['cupo_usado'] ?? 0) ?></p>
+    <div class="titulo-ficha-wrap">
+        <h2>Ficha: <?= htmlspecialchars($ficha['nombre']) ?></h2>
+        <div class="linea-verde"></div>
+    </div>
+    <div class="ficha-info">
+        <div class="ficha-card">
+            <div class="ficha-card-bar"></div>
+            <div class="ficha-card-content">
+                <strong>Número:</strong>
+                <span class="ficha-card-value"><?= htmlspecialchars($ficha['numero'] ?? '-') ?></span>
+            </div>
+        </div>
+        <div class="ficha-card">
+            <div class="ficha-card-bar"></div>
+            <div class="ficha-card-content">
+                <strong>Estado:</strong>
+                <span class="ficha-card-value">
+                    <?php $estado = strtolower($ficha['estado'] ?? 'pendiente'); ?>
+                    <?php if ($estado === 'activa' || $estado === 'activo'): ?>
+                        <span class="estado-badge"><span class="dot"></span>ACTIVA</span>
+                    <?php else: ?>
+                        <span class="estado-badge" style="background:#fbeee0;color:#a67c00;"><span class="dot" style="background:#e1b000;"></span><?= strtoupper(htmlspecialchars($ficha['estado'] ?? 'PENDIENTE')) ?></span>
+                    <?php endif; ?>
+                </span>
+            </div>
+        </div>
+        <div class="ficha-card">
+            <div class="ficha-card-bar"></div>
+            <div class="ficha-card-content">
+                <strong>Cupo Total:</strong>
+                <span class="ficha-card-value"><?= (int)($ficha['cupo_total'] ?? 0) ?></span>
+            </div>
+        </div>
+        <div class="ficha-card">
+            <div class="ficha-card-bar"></div>
+            <div class="ficha-card-content">
+                <strong>Cupo Usado:</strong>
+                <span class="ficha-card-value"><?= (int)($ficha['cupo_usado'] ?? 0) ?></span>
+            </div>
+        </div>
+    </div>
 
     <?php if (isset($_GET['import_ok'])): ?>
         <?php 
@@ -84,7 +120,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
                                class="btn-accion btn-warning">Editar</a>
                             <a href="/?page=estudiantes&action=eliminar&id=<?= urlencode($e['id']) ?>"
                                class="btn-accion btn-danger"
-                               onclick="return confirm('¿Eliminar este estudiante?')">Eliminar</a>
+                               onclick="return confirm('¿Suspender este estudiante?')">Suspender</a>
                         </td>
                     </tr>
                 <?php endforeach ?>

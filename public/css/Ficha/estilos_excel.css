@@ -1,0 +1,173 @@
+/* Sobrescribir estilos de título y etiquetas */
+.importar-container h2 {
+  color: #000000 !important;
+  font-size: 2.2rem !important;
+  font-weight: 750 !important;
+  margin-bottom: 1.5rem !important;
+  letter-spacing: 0.5px !important;
+  text-align: center !important;
+}
+
+label {
+  color: #000000 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-top: 15px !important;
+  margin-bottom: 0.4rem !important;
+  letter-spacing: 0.2px !important;
+
+}
+/* Sobrescribir márgenes de los párrafos */
+p {
+  margin-top: 0 !important;
+  margin-bottom: 1.5rem !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+}
+/* Sobrescribir estilos Bootstrap para .form-control */
+.form-control {
+  display: block !important;
+  width: 100% !important;
+  padding: 0.7rem 1.2rem !important;
+  font-size: 1.1rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #222 !important;
+  background-color: #ffffff !important;
+  background-clip: padding-box !important;
+  border: 1.5px solid #ffffff !important;
+  border-radius: 10px !important;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
+  appearance: none !important;
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.40);
+}
+
+.form-control:focus {
+  border-color: #39A900 !important;
+  box-shadow: 0 0 0 2px rgba(57,169,0,0.15) !important;
+  outline: none !important;
+}
+.btn-cancelar {
+  background: #00304D !important;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 15px;
+  padding: 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 120px;
+  max-width: 100%;
+  display: inline-block;
+  transition: background 0.2s;
+  margin-left: 15px;
+}
+/* estilos_excel.css - Estilos para la vista importar.php de Estudiante */
+
+.importar-container {
+  max-width: 1200px;
+  min-height: 50vh;
+  margin: 100px auto;
+  background: #fff;
+  border-radius: 50px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.40);
+}
+
+.importar-container h2 {
+  text-align: center;
+  color: #000000;
+  margin-bottom: 24px;
+  font-size: 40px;
+}
+
+.importar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.importar-form input[type="file"] {
+  border: 1px solid #ffffff;
+  border-radius: 15px;
+  padding: 10px;
+  background: #ffffff;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.40);
+  margin-top: 15px;
+}
+
+.importar-form button {
+  background: #39A900 !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 15px;
+  padding: 12px 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+
+  
+}
+
+.btn-light {
+  background: #39A900 !important;
+  color: #fff !important;
+  border-radius: 20px;
+  font-weight: 600;
+  width: 200px;
+}
+
+
+.importar-success {
+  background: #eafaf1;
+  color: #229954;
+  border: 1px solid #a9dfbf;
+}
+
+
+/* Tabla principal */
+.importar-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+
+/* Celdas de la tabla */
+.importar-table th, .importar-table td {
+  border: 1px solid #d5d8dc;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+/* Encabezado de la tabla */
+.importar-table th {
+  background: #f2f4f4;
+}
+
+/* Fila par de la tabla */
+.importar-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* Input archivo */
+.importar-archivo {
+  color: #34495e;
+}
+
+/* Texto pequeño debajo del input */
+.importar-small {
+  font-size: 0.9em;
+  color: #000000;
+}
+
+/* Botones dentro de la tabla */
+.importar-botones {
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
