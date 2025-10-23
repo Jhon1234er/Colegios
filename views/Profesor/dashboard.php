@@ -52,11 +52,18 @@
       <div class="filtros-cursos"> 
         <div class="filtro">Todos</div> 
         <div class="filtro">Buscar</div> 
-        <div class="filtro">Ordenar por nombre</div> 
+
+        <!-- <div class="filtro">Ordenar por nombre</div> 
         <div class="filtro">Tarjeta</div> 
+          -->
+
+
       </div>
         <h3>Mis Fichas</h3>
-          <!-- Tarjetas de fichas -->
+        <div class="paginacion-fichas-wrapper">
+          <div id="paginacionFichas" class="paginacion-fichas"></div>
+        </div>
+        <!-- Tarjetas de fichas -->
         <div id="tarjetasFichas" class="contenedor-tarjetas"></div>
         <div id="estudiantesContainer"></div>
         <!-- Registro de asistencia  -->
@@ -99,6 +106,8 @@
 
 <?php require __DIR__ . '/../Componentes/footer.php'; ?>
 <script src="/js/Profesor/dashboard_profesor.js"></script>
+<script src="/js/Profesor/paginacion_fichas_profesor.js"></script>
+<script src="/js/Profesor/filtros_dashboard_profesor.js"></script>
 <script>
   // Saludo dinámico (mismo comportamiento que Admin)
   (function(){

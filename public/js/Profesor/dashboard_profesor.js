@@ -447,17 +447,15 @@ async function cargarFichas() {
       return;
     }
 
+
     fichasGlobal = fichas;
     tarjetasFichas.innerHTML = '';
-
-    fichas.forEach(ficha => {
+    // Función para renderizar una card y agregar listeners
+    function renderCard(ficha, disabled = false) {
       const card = document.createElement('div');
       card.className = 'card-ficha';
-      
-      // Badge para fichas compartidas
-      const badgeCompartida = ficha.tipo === 'compartida' ? 
-        '<div class="ficha-compartida-badge">Compartido</div>' : '';
-      
+      if (disabled) card.classList.add('card-ficha-disabled');
+      const badgeCompartida = ficha.tipo === 'compartida' ? '<div class="ficha-compartida-badge">Compartido</div>' : '';
       card.innerHTML = `
         <div class="banner"></div>
         <div class="contenido">
@@ -475,93 +473,104 @@ async function cargarFichas() {
           </div>
         </div>
       `;
-
-      // Click en la tarjeta para seleccionar ficha
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.menu-container')) {
-          let diasSemana;
-          if (ficha.dias_semana) {
-            try {
-              diasSemana = JSON.parse(ficha.dias_semana);
-            } catch (e) {
+      if (!disabled) {
+        // Listener para seleccionar ficha
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.menu-container')) {
+            let diasSemana;
+            if (ficha.dias_semana) {
+              try {
+                diasSemana = JSON.parse(ficha.dias_semana);
+              } catch (e) {
+                diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+              }
+            } else {
               diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
             }
-          } else {
-            diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
-          }
-        
-          fichaSeleccionada = { 
-            id: ficha.id, 
-            nombre: ficha.numero || ficha.numero_ficha,
-            dias_semana: diasSemana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']
-          };
-          semanaOffset = 0;
-          calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
-          fetch(`/?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
-            credentials: 'include'
-          })
-            .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
-            .then(estudiantes => {
-              console.log("📌 Estudiantes cargados:", estudiantes);
-              estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
-              if (estudiantesCache.length === 0) {
-                calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
-                return;
-              }
-              renderCalendario();
+            fichaSeleccionada = { 
+              id: ficha.id, 
+              nombre: ficha.numero || ficha.numero_ficha,
+              dias_semana: diasSemana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']
+            };
+            semanaOffset = 0;
+            calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
+            fetch(`index.php?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
+              credentials: 'include'
             })
-            .catch(err => {
-              console.error('Error estudiantes:', err);
-              calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
-            });
-        }
-      });
-
-      // menú desplegable
+              .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
+              .then(estudiantes => {
+                console.log("📌 Estudiantes cargados:", estudiantes);
+                estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
+                if (estudiantesCache.length === 0) {
+                  calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
+                  return;
+                }
+                renderCalendario();
+              })
+              .catch(err => {
+                console.error('Error estudiantes:', err);
+                calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
+              });
+          }
+        });
+      } else {
+        // Si está deshabilitado, evitar cualquier interacción
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.6';
+      }
+      // Menú desplegable y otros listeners
       const menuBtn = card.querySelector('.menu');
       const menuDropdown = card.querySelector('.menu-dropdown');
-
-      menuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menuDropdown.classList.toggle('show');
-      });
-
-      // Event listener para ver ficha
-      const verBtn = card.querySelector('.ver-ficha');
-      verBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menuDropdown.classList.remove('show');
-        // El enlace href ya maneja la redirección
-      });
-
-      // Event listener para compartir ficha (solo si existe el botón)
-      const compartirBtn = card.querySelector('.compartir-ficha');
-      if (compartirBtn) {
-        compartirBtn.addEventListener('click', (e) => {
-          e.preventDefault();
+      if (menuBtn && menuDropdown) {
+        menuBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const fichaId = e.target.getAttribute('data-ficha-id');
-          const fichaNombre = e.target.getAttribute('data-ficha-nombre');
-          abrirModalCompartir(fichaId, fichaNombre);
+          menuDropdown.classList.toggle('show');
+        });
+        const verBtn = card.querySelector('.ver-ficha');
+        if (verBtn) {
+          verBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuDropdown.classList.remove('show');
+          });
+        }
+        const compartirBtn = card.querySelector('.compartir-ficha');
+        if (compartirBtn) {
+          compartirBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const fichaId = e.target.getAttribute('data-ficha-id');
+            const fichaNombre = e.target.getAttribute('data-ficha-nombre');
+            abrirModalCompartir(fichaId, fichaNombre);
+            menuDropdown.classList.remove('show');
+          });
+        }
+        const irReport = card.querySelector('.ir-reportes');
+        if (irReport) {
+          irReport.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuDropdown.classList.remove('show');
+          });
+        }
+        document.addEventListener('click', () => {
           menuDropdown.classList.remove('show');
         });
       }
+      return card;
+    }
+    // Exponer renderCard y fichasGlobal globalmente
+    window.renderCard = renderCard;
+    window.fichasGlobal = fichasGlobal;
 
-      // Event listener para Reportes (navegación simple y cerrar menú)
-      const irReport = card.querySelector('.ir-reportes');
-      if (irReport) {
-        irReport.addEventListener('click', (e) => {
-          e.stopPropagation();
-          menuDropdown.classList.remove('show');
-        });
+    // Paginación: solo después de crear todas las cards
+    if (window.inicializarPaginacionFichas) {
+      tarjetasFichas.innerHTML = '';
+      const paginar = window.inicializarPaginacionFichas;
+      if (typeof paginar === 'function') {
+        paginar('tarjetasFichas', 4, 'paginacionFichas', fichas, renderCard);
       }
-
-      document.addEventListener('click', () => {
-        menuDropdown.classList.remove('show');
-      });
-
-      tarjetasFichas.appendChild(card);
-    });
+    } else {
+      fichas.forEach(ficha => tarjetasFichas.appendChild(renderCard(ficha)));
+    }
 
   } catch (err) {
     console.error('Error al cargar fichas:', err);
