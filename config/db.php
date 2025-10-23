@@ -17,7 +17,7 @@ class Database {
             $port = getenv('DB_PORT') ?: '3306';
             $db   = getenv('DB_NAME') ?: 'sistema_escolar';
             $user = getenv('DB_USER') ?: 'root';
-            $pass = getenv('DB_PASS') ?: '1234';
+            $pass = getenv('DB_PASS') ?: '';
             
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
         }
@@ -40,3 +40,4 @@ class Database {
         }
     }
 }
+        

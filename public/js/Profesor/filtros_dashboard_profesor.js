@@ -1,0 +1,191 @@
+// filtros_dashboard_profesor.js
+// Lógica para los filtros "Todos" y "Buscar" en el dashboard del profesor
+
+document.addEventListener('DOMContentLoaded', () => {
+  const filtros = document.querySelectorAll('.filtros-cursos .filtro');
+  const tarjetasFichas = document.getElementById('tarjetasFichas');
+
+  // Paginación
+  let paginarFichas;
+  function aplicarPaginacion() {
+    if (window.inicializarPaginacionFichas) {
+      paginarFichas = window.inicializarPaginacionFichas('tarjetasFichas', 4);
+    }
+  }
+
+  // Crear input de búsqueda dinámicamente
+  let inputBuscar = document.createElement('input');
+  inputBuscar.type = 'text';
+  inputBuscar.placeholder = 'Buscar ficha...';
+  inputBuscar.className = 'input-buscar-ficha';
+  inputBuscar.style.display = 'none';
+  // No lo agregamos aún, solo cuando se activa buscar
+
+  let fichasBackup = [];
+
+  // Esperar a que cargarFichas() haya llenado las cards
+  function obtenerCards() {
+    return Array.from(document.querySelectorAll('#tarjetasFichas .card-ficha'));
+  }
+
+  // Guardar backup de fichas al primer uso
+  function backupFichas() {
+    if (fichasBackup.length === 0) {
+      fichasBackup = obtenerCards().map(card => card.cloneNode(true));
+    }
+  }
+
+  // Estado para saber si estamos en modo 'Todos' o paginado
+  let modoTodosActivo = false;
+
+
+  // Delegación para el filtro 'Todos' para evitar problemas de referencia
+  const filtrosCursos = document.querySelector('.filtros-cursos');
+  function activarFiltroTodos() {
+    modoTodosActivo = true;
+    if (window.fichasGlobal && typeof window.fichasGlobal.forEach === 'function' && typeof window.renderCard === 'function') {
+      tarjetasFichas.innerHTML = '';
+      window.fichasGlobal.forEach(ficha => {
+        tarjetasFichas.appendChild(window.renderCard(ficha, true));
+      });
+      // Eliminar paginación si existe
+      const paginacion = document.getElementById('paginacionFichas');
+      if (paginacion) paginacion.remove();
+      inputBuscar.value = '';
+      inputBuscar.style.display = 'none';
+      // Restaurar el botón de buscar si el input está visible
+      if (filtrosCursos && filtros[1] && filtrosCursos.contains(inputBuscar)) {
+        filtrosCursos.replaceChild(filtros[1], inputBuscar);
+      }
+      // Reemplazar el botón 'Todos' por la flecha
+      let backBtn = document.getElementById('filtro-todos-back');
+      if (!backBtn) {
+        backBtn = document.createElement('button');
+        backBtn.id = 'filtro-todos-back';
+        backBtn.innerHTML = '⟵';
+        backBtn.title = 'Volver a fichas paginadas';
+        backBtn.style.marginRight = '8px';
+        backBtn.style.fontSize = '1.2em';
+        backBtn.style.background = 'none';
+        backBtn.style.border = 'none';
+        backBtn.style.cursor = 'pointer';
+        // Reemplazar el botón 'Todos' (primer .filtro) por la flecha
+        const todosBtn = filtrosCursos.querySelector('.filtro');
+        if (todosBtn) {
+          filtrosCursos.replaceChild(backBtn, todosBtn);
+        }
+        backBtn.addEventListener('click', () => {
+          // Restaurar paginación
+          tarjetasFichas.innerHTML = '';
+          if (window.inicializarPaginacionFichas && window.fichasGlobal && typeof window.renderCard === 'function') {
+            window.inicializarPaginacionFichas('tarjetasFichas', 4, 'paginacionFichas', window.fichasGlobal, window.renderCard);
+          }
+          // Restaurar el botón 'Todos' en su lugar
+          if (filtrosCursos && backBtn) {
+            const nuevoTodosBtn = document.createElement('div');
+            nuevoTodosBtn.className = 'filtro';
+            nuevoTodosBtn.textContent = 'Todos';
+            filtrosCursos.replaceChild(nuevoTodosBtn, backBtn);
+          }
+          modoTodosActivo = false;
+        });
+      }
+      // Limpiar selección de ficha y calendario de asistencia
+      if (window.fichaSeleccionada !== undefined) {
+        window.fichaSeleccionada = null;
+      }
+      const calWrapper = document.getElementById('calendarioAsistencia');
+      if (calWrapper) {
+        calWrapper.innerHTML = '';
+      }
+    }
+  }
+
+  // Delegación de eventos para el filtro 'Todos'
+  filtrosCursos.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.classList.contains('filtro') && target.textContent.trim() === 'Todos') {
+      activarFiltroTodos();
+    }
+  });
+
+  // Filtro "Buscar"
+  filtros[1]?.addEventListener('click', () => {
+    backupFichas();
+    // Reemplazar el botón de buscar por el input
+    filtros[1].parentNode.replaceChild(inputBuscar, filtros[1]);
+    inputBuscar.style.display = 'inline-block';
+    inputBuscar.focus();
+  });
+
+  // Lógica de búsqueda
+  inputBuscar.addEventListener('input', (e) => {
+    const valor = e.target.value.trim().toLowerCase();
+    tarjetasFichas.innerHTML = '';
+    // Usar window.fichasGlobal y renderCard para evitar mostrar el calendario
+    if (window.fichasGlobal && typeof window.renderCard === 'function') {
+      if (valor === '') {
+        // Si el input está vacío:
+        if (modoTodosActivo) {
+          // Si venimos de 'Todos', mostrar todas las fichas deshabilitadas
+          window.fichasGlobal.forEach(ficha => tarjetasFichas.appendChild(window.renderCard(ficha, true)));
+          // Eliminar paginación si existe
+          const paginacion = document.getElementById('paginacionFichas');
+          if (paginacion) paginacion.remove();
+        } else {
+          // Si venimos de paginado, restaurar paginación
+          if (window.inicializarPaginacionFichas) {
+            window.inicializarPaginacionFichas('tarjetasFichas', 4, 'paginacionFichas', window.fichasGlobal, window.renderCard);
+          } else {
+            window.fichasGlobal.forEach(ficha => tarjetasFichas.appendChild(window.renderCard(ficha)));
+          }
+        }
+        // Limpiar calendario si está abierto
+        const calWrapper = document.getElementById('calendarioAsistencia');
+        if (calWrapper) calWrapper.innerHTML = '';
+        return;
+      }
+      const fichasFiltradas = window.fichasGlobal.filter(ficha => {
+        // Buscar por nombre o número de ficha
+        const texto = (ficha.nombre + ' ' + (ficha.numero_ficha || ficha.numero)).toLowerCase();
+        return texto.includes(valor);
+      });
+      // Si estamos en modoTodosActivo pero hay búsqueda, permitir seleccionar (disabled = false)
+      const disabled = false;
+      fichasFiltradas.forEach(ficha => tarjetasFichas.appendChild(window.renderCard(ficha, modoTodosActivo && valor === '' ? true : disabled)));
+      // Eliminar paginación si existe
+      const paginacion = document.getElementById('paginacionFichas');
+      if (paginacion) paginacion.remove();
+      // Limpiar calendario si está abierto
+      const calWrapper = document.getElementById('calendarioAsistencia');
+      if (calWrapper) calWrapper.innerHTML = '';
+    }
+  });
+
+  // Si el input pierde el foco y está vacío, restaurar el botón de buscar
+  inputBuscar.addEventListener('blur', () => {
+    if (inputBuscar.value.trim() === '') {
+      // Restaurar el botón de buscar
+      const filtrosCursos = document.querySelector('.filtros-cursos');
+      filtrosCursos.replaceChild(filtros[1], inputBuscar);
+      inputBuscar.style.display = 'none';
+    }
+  });
+
+  // Inicializar backup y paginación si ya hay fichas
+  if (obtenerCards().length > 0) {
+    backupFichas();
+    aplicarPaginacion();
+  }
+
+  // Si cargarFichas es global, hook para actualizar backup y paginación
+  if (window.cargarFichas) {
+    const originalCargarFichas = window.cargarFichas;
+    window.cargarFichas = async function() {
+      await originalCargarFichas();
+      fichasBackup = [];
+      backupFichas();
+      aplicarPaginacion();
+    };
+  }
+});
