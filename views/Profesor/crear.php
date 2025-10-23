@@ -87,6 +87,6 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-<script src="/js/crearP.js?v=2"></script>
+<script src="/js/Profesor/crearP.js?v=2"></script>
 
 <?php include __DIR__ . '/../Componentes/footer.php'; ?>

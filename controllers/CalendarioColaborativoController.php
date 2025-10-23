@@ -15,7 +15,7 @@ class CalendarioColaborativoController {
     public function crear() {
         try {
             $rol = (int)($_SESSION['usuario']['rol_id'] ?? 0);
-            if (!in_array($rol, [1,4], true)) { http_response_code(403); echo json_encode(['error'=>'No autorizado']); return; }
+            if (!in_array($rol, [1,2,4], true)) { http_response_code(403); echo json_encode(['error'=>'No autorizado']); return; }
 
             // Datos esperados
             $profesor_id   = (int)($_POST['profesor_id'] ?? 0);
@@ -58,8 +58,6 @@ class CalendarioColaborativoController {
     // GET /?page=calcolab_disponibilidad_ficha&ficha_id=ID
     public function disponibilidadFicha() {
         try {
-            $rol = (int)($_SESSION['usuario']['rol_id'] ?? 0);
-            if (!in_array($rol, [1,4], true)) { http_response_code(403); echo json_encode(['error'=>'No autorizado']); return; }
             $fid = (int)($_GET['ficha_id'] ?? 0);
             if ($fid <= 0) { echo json_encode(['dias'=>[], 'jornada_global'=>null, 'jornada_por_dia'=>[]]); return; }
 
