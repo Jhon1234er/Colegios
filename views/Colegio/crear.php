@@ -64,6 +64,6 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 <!-- Choices.js -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<script src="js/filtros.js"></script>
+<script src="/js/Administrador/filtros.js"></script>
 
 <?php require_once __DIR__ . '/../Componentes/footer.php'; ?>

@@ -39,6 +39,7 @@ function formatearNombreColegio($nombre) {
     <!-- Flatpickr (mismo estilo que en formulario de profesor) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
 <!-- JS Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -331,8 +332,8 @@ function formatearNombreColegio($nombre) {
 
     <!-- Librerías JS -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <script src="/js/dashboard.js"></script>
-    <script src="/js/encabezado.js"></script>
+    <script src="/js/Administrador/dashboard.js"></script>
+    <script src="/js/Componentes/encabezado.js"></script>
     <script>
       // Saludo dinámico: por hora al entrar, y rotación de saludos al volver tras 2 min
       (function(){
@@ -517,7 +518,7 @@ $(function(){
     function makeFpOptions(side, colegioSelector, modalSelector, shiftX = 0, moreTransparent = false, alignTargetSelector = null){
       return {
         dateFormat: 'Y-m-d',
-        locale: 'es',
+        locale: (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.es) ? flatpickr.l10ns.es : 'es',
         static: true, // lo mantendremos embebido, pero lo moveremos a modalContent
         monthSelectorType: 'static',
         prevArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',

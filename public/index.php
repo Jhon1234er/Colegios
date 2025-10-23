@@ -827,10 +827,9 @@ if ($page === 'calcolab_eventos') {
     exit;
 }
 
-// Calcolab: disponibilidad por ficha
+// Calcolab: disponibilidad por ficha (usar en modal estándar). Solo requiere sesión activa.
 if ($page === 'calcolab_disponibilidad_ficha') {
     require_login();
-    require_role([1, 4]);
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->disponibilidadFicha();
     exit;
@@ -842,6 +841,43 @@ if ($page === 'calcolab_fichas_por_instructor') {
     require_role([1, 4]);
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->fichasPorInstructor();
+    exit;
+}
+
+// API: Asistencias por fecha (para pestaña en modal de detalles)
+if ($page === 'asistencias_por_fecha') {
+    require_login();
+    require_role([1, 2, 4]);
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $fecha = isset($_GET['fecha']) ? trim((string)$_GET['fecha']) : '';
+        if ($fecha === '') { echo json_encode([]); exit; }
+        $fichaIdParam = isset($_GET['ficha_id']) ? trim((string)$_GET['ficha_id']) : '';
+        $fichaParam = isset($_GET['ficha']) ? trim((string)$_GET['ficha']) : '';
+        // Resolver ficha_id desde 'ficha_id' directo o desde código/nombre
+        require_once '../config/db.php';
+        $pdo = Database::conectar();
+        $ficha_id = 0;
+        if ($fichaIdParam !== '' && ctype_digit($fichaIdParam)) {
+            $ficha_id = (int)$fichaIdParam;
+        } elseif ($fichaParam !== '') {
+            if (ctype_digit($fichaParam)) { $ficha_id = (int)$fichaParam; }
+            else {
+                $st = $pdo->prepare('SELECT id FROM fichas WHERE numero = ? OR nombre = ? LIMIT 1');
+                $st->execute([$fichaParam, $fichaParam]);
+                $row = $st->fetch(PDO::FETCH_ASSOC); if ($row) $ficha_id = (int)$row['id'];
+            }
+        }
+        // Si no hay ficha id, retornar vacío
+        if ($ficha_id <= 0) { echo json_encode([]); exit; }
+        require_once '../models/Asistencia.php';
+        $m = new Asistencia();
+        $rows = $m->obtenerEstudiantesFichaFecha($ficha_id, $fecha);
+        echo json_encode($rows ?: []);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
     exit;
 }
 

@@ -271,9 +271,9 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-<script src="/js/crearE.js?v=1"></script>
+<script src="/js/Estudiante/crearE.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-  <script src="/js/crearE.js"></script>
+  <script src="/js/Estudiante/crearE.js"></script>
   <script>
     // Defensa: ocultar todos los pasos excepto el primero al cargar
     (function(){
