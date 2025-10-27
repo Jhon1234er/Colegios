@@ -10,8 +10,42 @@ document.addEventListener('DOMContentLoaded', function () {
     contentHeight: 'auto',
     expandRows: true,
     handleWindowResize: true,
+    // Interacciones: arrastrar, redimensionar y seleccionar
+    editable: true,
+    selectable: true,
+    selectMirror: true,
+    eventResizableFromStart: true,
+    eventOverlap: true,
+    customButtons: {
+      myToday: {
+        text: 'Hoy',
+        click: () => {
+          try {
+            cal.today();
+            setTimeout(() => {
+              const root = document.getElementById('calendario');
+              const targets = [];
+              root?.querySelectorAll('.fc-daygrid .fc-day-today .fc-daygrid-day-frame')?.forEach(n=>targets.push(n));
+              root?.querySelectorAll('.fc-timegrid .fc-day-today .fc-timegrid-col-frame')?.forEach(n=>targets.push(n));
+              if (!targets.length) return;
+              let up = true; const start = Date.now(); const D = 1000; const STEP = 140;
+              const prev = targets.map(n=>({t:n.style.transform, s:n.style.boxShadow}));
+              const timer = setInterval(() => {
+                const elapsed = Date.now()-start; if (elapsed > D) { clearInterval(timer); targets.forEach((n,i)=>{ n.style.transform = prev[i].t || ''; n.style.boxShadow = prev[i].s || ''; }); return; }
+                targets.forEach(n=>{
+                  n.style.transition = 'transform .12s ease, box-shadow .12s ease';
+                  n.style.transform = up ? 'translateY(-8px)' : 'translateY(0)';
+                  n.style.boxShadow = up ? '0 10px 18px rgba(0,0,0,.12)' : '0 4px 10px rgba(0,0,0,.06)';
+                });
+                up = !up;
+              }, STEP);
+            }, 60);
+          } catch(_) {}
+        }
+      }
+    },
     headerToolbar: {
-      left: 'today,timeGridDay,timeGridWeek,dayGridMonth',
+      left: 'myToday,timeGridDay,timeGridWeek,dayGridMonth',
       center: '', // sin flechas/título nativos
       right: ''
     },
@@ -35,11 +69,44 @@ document.addEventListener('DOMContentLoaded', function () {
         displayEventTime: false
       }
     },
+    // Personalizar el texto del link "+N más" en vista Mes
+    moreLinkContent: function(args) {
+      try {
+        const n = args && (args.num || args.shortText || args.text);
+        const num = typeof n === 'number' ? n : parseInt(String(n||'').replace(/\D+/g,''), 10) || '';
+        return { html: `+${num} más` };
+      } catch (_) {
+        return { html: '+ más' };
+      }
+    },
     // Render personalizado: vista Mes con punto de estado fuera y "pill" interior recortado
     eventContent: function(arg) {
       try {
+        const vtype = arg.view?.type || '';
+        // Vista Semana/Día (timeGrid): mostrar texto informativo dentro del bloque
+        if (vtype === 'timeGridWeek' || vtype === 'timeGridDay') {
+          const ex = arg.event.extendedProps || {};
+          const root = arg.event || {};
+          const pick = (a, b, ...keys) => {
+            for (const src of [a,b]) { for (const k of keys){ const v = src && src[k]; if (v!=null && String(v).trim()!=='') return String(v).trim(); } }
+            return '';
+          };
+          const instructor = pick(root, ex, 'profesor_nombre','docente','profesor','creado_por','creador','title_profesor');
+          const fichaCode  = pick(root, ex, 'ficha_codigo','codigo_ficha','ficha','codigo');
+          const aula       = pick(root, ex, 'aula','salon','sala');
+          const head = [instructor, fichaCode].filter(Boolean).join(' ');
+          const sub  = aula ? ('Aula: ' + aula) : '';
+          const wrap = document.createElement('div');
+          wrap.style.display = 'flex';
+          wrap.style.flexDirection = 'column';
+          wrap.style.gap = '2px';
+          const h = document.createElement('div'); h.textContent = head || (root.title || 'Clase'); h.style.fontWeight = '800';
+          const s = document.createElement('div'); s.textContent = sub; s.className = 'ev-sub';
+          wrap.appendChild(h); if (sub) wrap.appendChild(s);
+          return { domNodes: [wrap] };
+        }
         // Solo personalizar en vista Mes
-        if (arg.view?.type !== 'dayGridMonth') return undefined;
+        if (vtype !== 'dayGridMonth') return undefined;
         const estado = (arg.event.extendedProps?.estado || '').toString().toLowerCase();
         const map = { programado: '#3b82f6', 'en_curso': '#22c55e', finalizado: '#111827', suspendido: '#ef4444' };
         const dotColor = map[estado] || arg.event.backgroundColor || '#3b82f6';
@@ -97,9 +164,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const el = info.el;
         el.style.backgroundColor = 'transparent';
         el.style.borderColor = 'transparent';
-        el.style.overflow = 'visible';
-        el.style.width = '100%';
-        const parent = el.parentElement; if (parent) parent.style.overflow = 'visible';
+        // No forzar overflow/width para evitar cambios de alto en filas
+        el.style.overflow = '';
+        el.style.width = '';
+        const parent = el.parentElement; if (parent) parent.style.overflow = '';
         // Truncado explícito con '…' si el texto no cabe
         const pill = el.querySelector('[data-is-month-pill="1"]');
         if (pill) {
@@ -145,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
         url.searchParams.set('end', fetchInfo.endStr);
         if (window.profesorFiltro) url.searchParams.set('profesor_id', window.profesorFiltro);
         if (window.estadoFiltro) url.searchParams.set('estado', window.estadoFiltro);
+        if (window.fichaFiltro) url.searchParams.set('ficha', window.fichaFiltro);
 
         fetch(url.toString(), { credentials: 'same-origin' })
           .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
@@ -170,16 +239,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 backgroundColor: e.backgroundColor || e.color || '#3b82f6',
                 borderColor: e.borderColor || e.color || '#3b82f6',
                 textColor: '#ffffff',
-                display: 'block',
+                // no forzar display para respetar render según vista
                 classNames: cls,
                 extendedProps: Object.assign({}, e.extendedProps || {}, { estado })
               };
             });
-            // Filtro cliente por estado
+            // Filtro cliente por estado (normalizado en minúsculas)
             if (window.estadoFiltro) {
-              const est = String(window.estadoFiltro).trim();
+              const est = String(window.estadoFiltro).trim().toLowerCase();
               mapped = mapped.filter(ev => {
-                const es = (ev.extendedProps?.estado || '').toString().trim();
+                const es = (ev.extendedProps?.estado || '').toString().trim().toLowerCase();
                 return es === est;
               });
             }
@@ -217,6 +286,36 @@ document.addEventListener('DOMContentLoaded', function () {
   btnNext?.addEventListener('click', () => { cal.next(); refreshTitle(); });
   cal.on('datesSet', refreshTitle);
   refreshTitle();
+
+  // Exportar reporte de clases (rango de la vista actual)
+  try {
+    const btnExp = document.getElementById('btnExportar');
+    if (btnExp && !btnExp.dataset.bound) {
+      btnExp.dataset.bound = '1';
+      btnExp.addEventListener('click', () => {
+        try {
+          const view = cal.view;
+          const d1 = view?.activeStart || view?.currentStart || new Date();
+          const d2 = view?.activeEnd   || view?.currentEnd   || new Date();
+          const toYMD = (d) => {
+            const yy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            return `${yy}-${mm}-${dd}`;
+          };
+          const url = new URL('/', window.location.origin);
+          url.searchParams.set('page', 'calendario_exportar');
+          url.searchParams.set('action', 'exportarReporte');
+          url.searchParams.set('fecha_inicio', toYMD(d1));
+          url.searchParams.set('fecha_fin', toYMD(new Date(d2.getTime() - 24*60*60*1000))); // fin inclusivo
+          if (window.estadoFiltro)   url.searchParams.set('estado', String(window.estadoFiltro));
+          if (window.profesorFiltro) url.searchParams.set('profesor_id', String(window.profesorFiltro));
+          // Abrir en nueva pestaña para descargar .xls
+          window.open(url.toString(), '_blank');
+        } catch (_) { /* noop */ }
+      });
+    }
+  } catch(_) {}
 
   // Filtro por estado
   try {
@@ -267,6 +366,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
       };
+
+  
 
       const fichas = await tryFetch();
       if (Array.isArray(fichas) && fichas.length > 0) {
@@ -353,7 +454,250 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (_) {}
   };
   applyTimeGridTweaks();
-  cal.on('datesSet', applyTimeGridTweaks);
+  cal.on('datesSet', (arg) => {
+    applyTimeGridTweaks();
+    try {
+      const vt = arg.view?.type || cal.view?.type || '';
+      const isMonth = vt === 'dayGridMonth';
+      // En Mes: permitir mover entre días, NO redimensionar
+      cal.setOption('eventDurationEditable', !isMonth);
+      cal.setOption('eventResizableFromStart', !isMonth);
+      // Drag sigue activo en todas, pero validaremos por estado en handlers
+    } catch(_) {}
+  });
+
+  // === Botón "Hoy" confiable ===
+  const inlineJump = () => {
+    try {
+      const root = document.getElementById('calendario');
+      const targets = [];
+      root?.querySelectorAll('.fc-daygrid .fc-day-today .fc-daygrid-day-frame')?.forEach(n=>targets.push(n));
+      root?.querySelectorAll('.fc-timegrid .fc-day-today .fc-timegrid-col-frame')?.forEach(n=>targets.push(n));
+      targets.forEach(n=>{
+        const prev = n.style.transform;
+        const prevShadow = n.style.boxShadow;
+        n.style.transition = 'transform .25s ease, box-shadow .25s ease';
+        n.style.transform = 'translateY(-6px)';
+        n.style.boxShadow = '0 8px 16px rgba(0,0,0,.12)';
+        setTimeout(()=>{ n.style.transform = prev || ''; n.style.boxShadow = prevShadow || ''; }, 350);
+      });
+    } catch(_) {}
+  };
+  const bindTodayReliable = () => {
+    try {
+      const btn = document.querySelector('.fc .fc-today-button');
+      if (!btn || btn.dataset.boundToday==='1') return;
+      btn.dataset.boundToday = '1';
+      btn.addEventListener('click', () => { try { cal.today(); setTimeout(inlineJump, 60); } catch(_) {} });
+    } catch(_) {}
+  };
+  // Bind inicial y observar cambios en el header del calendario
+  bindTodayReliable();
+  try {
+    const mo = new MutationObserver(() => bindTodayReliable());
+    mo.observe(document.getElementById('calendario'), { childList:true, subtree:true });
+  } catch(_) {}
+
+  // Persistencia al mover/redimensionar eventos (según reglas)
+  const toMySQL = (d) => {
+    if (!d) return null;
+    const pad = (n)=> String(n).padStart(2,'0');
+    const yy=d.getFullYear(); const mm=pad(d.getMonth()+1); const dd=pad(d.getDate());
+    const hh=pad(d.getHours()); const mi=pad(d.getMinutes()); const ss=pad(d.getSeconds());
+    return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  };
+  const persistEventUpdate = async (ev) => {
+    try {
+      const url = new URL('/', window.location.origin);
+      url.searchParams.set('page','calendario_actualizar');
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const payload = {
+        id: ev.id,
+        fecha_inicio: ev.start ? toMySQL(ev.start) : null,
+        fecha_fin: ev.end ? toMySQL(ev.end) : null,
+        // Enviar también campos que el backend espera para no sobreescribir con NULL
+        titulo: ev.title || (ev.extendedProps?.titulo) || 'Clase',
+        aula: ev.extendedProps?.aula || null,
+        color: ev.backgroundColor || ev.extendedProps?.color || '#007bff'
+      };
+      const res = await fetch(url.toString(), {
+        method:'POST', credentials:'same-origin',
+        headers: { 'Content-Type':'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify(payload)
+      });
+      let data = null; try { data = await res.json(); } catch(_){}
+      return res.ok ? { ok:true } : { ok:false, error: (data && (data.error||data.message)) || 'Error' };
+    } catch(_) { return { ok:false, error:'Error de red' }; }
+  };
+  const estadoOf = (ev) => (ev.extendedProps?.estado || '').toString().toLowerCase();
+  const isMovable = (ev) => {
+    const st = estadoOf(ev);
+    return st === 'programado' || st === 'suspendido';
+  };
+  // Helpers de fechas
+  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const isPastDay = (d) => startOfDay(d) < startOfDay(new Date());
+  const toast = (msg) => {
+    try {
+      let t = document.getElementById('cal-toast');
+      if (!t) {
+        t = document.createElement('div'); t.id = 'cal-toast';
+        t.setAttribute('role','alert'); t.setAttribute('aria-live','polite');
+        Object.assign(t.style, {
+          position:'fixed', bottom:'16px', left:'50%', transform:'translateX(-50%)',
+          background:'#111827', color:'#fff', padding:'10px 14px', borderRadius:'10px',
+          boxShadow:'0 6px 20px rgba(0,0,0,.2)', fontWeight:'800', zIndex:'100000',
+          transition:'opacity .2s ease', opacity:'0', pointerEvents:'none'
+        });
+        document.body.appendChild(t);
+      }
+      t.textContent = String(msg || '');
+      // Force reflow then show
+      void t.offsetHeight; t.style.opacity = '1';
+      clearTimeout(toast._h);
+      toast._h = setTimeout(()=>{ t.style.opacity = '0'; }, 1800);
+    } catch(_){ /* noop */ }
+  };
+  cal.on('eventResize', async (info)=>{
+    const vt = cal.view?.type || '';
+    if (vt === 'dayGridMonth') { info.revert(); toast('En Mes no se puede cambiar la duración'); return; } // no redimensionar en Mes
+    if (!isMovable(info.event)) { info.revert(); toast('No se puede editar una clase en curso o finalizada'); return; }
+    // No permitir que empiece o termine en fechas pasadas
+    const s = info.event.start, e = info.event.end || info.event.start;
+    if (isPastDay(s) || isPastDay(e)) { info.revert(); toast('No se puede ajustar a fechas pasadas'); return; }
+    // Validar disponibilidad por ficha
+    const fid = info.event.extendedProps?.ficha_id;
+    if (fid) {
+      const chek = await rangeAllowedForFicha(fid, info.event.start, info.event.end || info.event.start);
+      if (!chek.ok) { info.revert(); toast(chek.reason || 'Horario no permitido'); return; }
+    }
+    const res = await persistEventUpdate(info.event);
+    if (res.ok) {
+      toast('Duración actualizada'); try { cal.refetchEvents(); } catch(_){}
+    } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
+  });
+  cal.on('eventDrop',   async (info)=>{
+    const vt = cal.view?.type || '';
+    const st = estadoOf(info.event);
+    // No mover en_curso o finalizado en ninguna vista
+    if (st === 'en_curso' || st === 'finalizado') { info.revert(); toast('No se puede mover una clase en curso o finalizada'); return; }
+    // En Mes: permitido mover entre días; en Semana/Día: permitido si es movable
+    if (vt !== 'dayGridMonth' && !isMovable(info.event)) { info.revert(); toast('Solo Programadas o Suspendidas se pueden mover'); return; }
+    // No permitir mover a fechas pasadas
+    const s2 = info.event.start; const e2 = info.event.end || info.event.start;
+    if (isPastDay(s2) || isPastDay(e2)) { info.revert(); toast('No se puede mover a fechas pasadas'); return; }
+    // Validar disponibilidad por ficha
+    const fid = info.event.extendedProps?.ficha_id;
+    if (fid) {
+      const chek = await rangeAllowedForFicha(fid, info.event.start, info.event.end || info.event.start);
+      if (!chek.ok) { info.revert(); toast(chek.reason || 'Día/hora no permitido'); return; }
+    }
+    const res = await persistEventUpdate(info.event);
+    if (res.ok) {
+      const d = info.event.start; const pad=(n)=>String(n).padStart(2,'0');
+      toast(`Clase movida a ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`);
+      try { cal.refetchEvents(); } catch(_){}
+    } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
+  });
+
+  // Bloquear selección fuera de disponibilidad si ya se eligió ficha en el modal (sólo en semana/día)
+  cal.setOption('selectAllow', (selInfo) => {
+    const vt = cal.view?.type || '';
+    if (vt !== 'timeGridWeek' && vt !== 'timeGridDay') return true;
+    const sel = document.getElementById('fichaNuevaClase');
+    const fid = sel && sel.value ? sel.value : null;
+    // Si no hay ficha seleccionada aún, permitir; luego el modal filtrará
+    if (!fid) return true;
+    // Validación síncrona no puede esperar; devolvemos true y validamos al abrir modal también
+    return true;
+  });
+
+  // Selección de slot en Semana/Día => abrir modal 'Nueva Clase' con fecha/hora precargadas y fichas filtradas
+  const dayNameFromIdx2 = (i) => ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'][i] || '';
+  const toYMD = (d) => {
+    const yy=d.getFullYear(); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0');
+    return `${yy}-${mm}-${dd}`;
+  };
+  const toHM = (d) => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+  // Cache simple de disponibilidad por ficha
+  window._fichaAvailCache = window._fichaAvailCache || new Map();
+  const fetchAvail = async (fid) => {
+    const key = String(fid);
+    if (window._fichaAvailCache.has(key)) return window._fichaAvailCache.get(key);
+    try {
+      const r = await fetch(`/?page=calcolab_disponibilidad_ficha&ficha_id=${encodeURIComponent(key)}`, { credentials:'same-origin' });
+      if (!r.ok) return null; const data = await r.json();
+      window._fichaAvailCache.set(key, data); return data;
+    } catch { return null; }
+  };
+
+  // Validar si un rango [start,end] es permitido para una ficha por día/jornada
+  const rangeAllowedForFicha = async (fid, start, end) => {
+    const avail = await fetchAvail(fid);
+    if (!avail) return { ok: true };
+    const dayIdx = start.getDay();
+    const dayName = dayNameFromIdx2(dayIdx);
+    const dias = Array.isArray(avail.dias) ? avail.dias : [];
+    if (dias.length && !dias.includes(dayName)) return { ok:false, reason:`La ficha no opera el ${dayName}` };
+    // jornada: puede venir global o por día; permitimos mañana/tarde/noche o ambos (todo el día)
+    const segsDay = avail.jornada_por_dia && avail.jornada_por_dia[dayName];
+    let segs = Array.isArray(segsDay) ? segsDay.slice() : (Array.isArray(avail.jornada_global) ? avail.jornada_global.slice() : []);
+    segs = (segs||[]).map(s => s==='mañana' ? 'manana' : s);
+    // convertir a rangos
+    const segTo = (s)=> s==='manana'?['06:00','12:00']: s==='tarde'?['12:00','18:00']: s==='noche'?['18:00','22:00']: null;
+    let ranges = segs.map(segTo).filter(Boolean);
+    if (segs.includes('manana') && segs.includes('tarde')) ranges = [['08:00','17:00']];
+    if (!ranges.length) return { ok: true };
+    const fmt = (d)=> `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const sHM = fmt(start), eHM = fmt(end || start);
+    const inRange = ranges.some(([a,b]) => sHM>=a && eHM<=b);
+    return inRange ? { ok:true } : { ok:false, reason:'Fuera de la jornada permitida para ese día' };
+  };
+
+  const filterFichasForWeekday = async (weekdayIdx) => {
+    const sel = document.getElementById('fichaNuevaClase'); if (!sel) return;
+    const all = Array.isArray(window.fichasDisponibles) ? window.fichasDisponibles.slice() : [];
+    const dayName = dayNameFromIdx2(weekdayIdx);
+    const matches = [];
+    for (const f of all) {
+      const fid = String(f.id ?? f.value ?? ''); if (!fid) continue;
+      const avail = await fetchAvail(fid);
+      if (!avail) continue;
+      const dias = Array.isArray(avail.dias) ? avail.dias : [];
+      if (!dias.length || dias.includes(dayName)) { matches.push({ id: fid, codigo: f.codigo ?? f.numero ?? f.numero_ficha ?? '', nombre: f.nombre ?? '' }); }
+    }
+    // Rellenar select solo con coincidentes
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Seleccionar ficha...</option>';
+    matches.forEach(f => {
+      const o = document.createElement('option');
+      o.value = f.id || f.codigo || '';
+      o.textContent = f.codigo ? (f.nombre ? `${f.codigo} — ${f.nombre}` : f.codigo) : (f.nombre || 'Ficha');
+      sel.appendChild(o);
+    });
+    if (current && Array.from(sel.options).some(o=>o.value===current)) sel.value = current;
+  };
+
+  cal.on('select', async (selInfo) => {
+    try {
+      const vtype = cal.view?.type || '';
+      if (vtype !== 'timeGridWeek' && vtype !== 'timeGridDay') return;
+      // Abrir modal
+      openNuevaClaseModal();
+      // Precargar fecha y horas
+      const d = selInfo.start; const d2 = selInfo.end;
+      const fechaEl = document.getElementById('fechaNuevaClase');
+      const hiEl = document.getElementById('horaInicioNuevaClase');
+      const hfEl = document.getElementById('horaFinNuevaClase');
+      const ymd = toYMD(d);
+      if (fechaEl && fechaEl._flatpickr) fechaEl._flatpickr.setDate(ymd, true); else if (fechaEl) fechaEl.value = ymd;
+      if (hiEl && hiEl._flatpickr) hiEl._flatpickr.setDate(toHM(d), true); else if (hiEl) hiEl.value = toHM(d);
+      if (hfEl && hfEl._flatpickr) hfEl._flatpickr.setDate(toHM(d2), true); else if (hfEl) hfEl.value = toHM(d2);
+      // Filtrar fichas para el día seleccionado
+      await filterFichasForWeekday(d.getDay());
+    } catch(_) {}
+  });
 
   // =====================
   // Modal de Detalle de Evento (todas las vistas)
@@ -380,6 +724,8 @@ document.addEventListener('DOMContentLoaded', function () {
             <div id="detalleEventoBody"></div>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="btnReactivarClaseFooter">Reactivar</button>
+            <button type="button" class="btn btn-outline-danger" id="btnSuspenderClaseFooter">Suspender</button>
             <button type="button" class="btn btn-modal-close" data-bs-dismiss="modal">Cerrar</button>
           </div>
         </div>
@@ -450,6 +796,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div><span class="edi-chip">${estado || '—'}</span></div>
               </div>
             </div>
+            <div class="mt-3" id="detalle-acciones" style="display:flex;gap:8px;justify-content:flex-end;align-items:center;"></div>
           </div>
         </div>
         <div class="event-detail-pane" id="pane-asistencias">
@@ -467,6 +814,112 @@ document.addEventListener('DOMContentLoaded', function () {
         panes.asistencias.classList.toggle('is-active', k==='asistencias');
       }));
 
+      // Acciones: Suspender / Reactivar en footer (no se ocultan; solo se (des)habilitan)
+      try {
+        let btnReactFooter = modal.querySelector('#btnReactivarClaseFooter');
+        let btnSuspFooter  = modal.querySelector('#btnSuspenderClaseFooter');
+        const chip = body.querySelector('.edi-state .edi-chip');
+        const stateWrap = body.querySelector('.edi-state');
+        const estadoBgMap2 = { 'finalizado':'#111827', 'en_curso':'#22c55e', 'suspendido':'#ef4444', 'programado':'#3b82f6' };
+        const canReact = () => (estado === 'suspendido') && (new Date(inicio) > new Date());
+        const syncButtons = () => {
+          // Suspender deshabilitado si ya está suspendido
+          if (btnSuspFooter) btnSuspFooter.disabled = (estado === 'suspendido');
+          // Reactivar deshabilitado salvo que cumpla reglas
+          if (btnReactFooter) {
+            btnReactFooter.disabled = !canReact();
+            btnReactFooter.title = canReact() ? '' : 'Solo se puede reactivar antes de la hora de inicio';
+          }
+          if (chip) chip.textContent = (estado || '—');
+          if (stateWrap) stateWrap.style.setProperty('--chip-bg', estadoBgMap2[estado] || '#111827');
+        };
+
+        // Deshabilitar temporalmente las acciones de estado según solicitud
+        const estadoActionsEnabled = false;
+        if (!estadoActionsEnabled) {
+          if (btnReactFooter) { btnReactFooter.style.display = 'none'; btnReactFooter.disabled = true; }
+          if (btnSuspFooter)  { btnSuspFooter.style.display  = 'none'; btnSuspFooter.disabled  = true; }
+          syncButtons();
+        } else {
+
+        let changingEstado = false;
+        const doChangeEstado = async (nuevo) => {
+          if (changingEstado) return; // evitar re-entrada por doble clic
+          changingEstado = true;
+          // Deshabilitar botones mientras guarda
+          btnReactFooter && (btnReactFooter.disabled = true);
+          btnSuspFooter  && (btnSuspFooter.disabled  = true);
+          let saved = false;
+          try {
+            const url = new URL('/', window.location.origin); url.searchParams.set('page','calendario_estado');
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            // Para eventos sincronizados, usar el id original numérico
+            const rawId = (ex && (ex.horario_original_id || ex.horario_id)) || ev.id;
+            const idNum = String(rawId).replace(/^sync_/,'');
+            if (!/^[0-9]+$/.test(idNum)) { toast('No se puede cambiar el estado de este evento'); return; }
+            const tryOnce = async (estadoVal) => {
+              const pay = { horario_id: parseInt(idNum, 10), estado: estadoVal };
+              const res = await fetch(url.toString(), { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify(pay) });
+              const txt = await res.text(); let jj=null; try{ jj = JSON.parse(txt); }catch(_){ }
+              return { ok: res.ok && !(jj && jj.error), text: txt, json: jj };
+            };
+            const toTitleEnum = (v)=> v==='en_curso' ? 'En curso' : (v==='programado' ? 'Programado' : (v==='suspendido' ? 'Suspendido' : v));
+            let resp = await tryOnce(toTitleEnum(nuevo));
+            if (!resp.ok) { resp = await tryOnce(nuevo); }
+            if (!resp.ok && /Data truncated|SQLSTATE\[01000\]/i.test(resp.text||'')) {
+              resp = await tryOnce(toTitleEnum(nuevo));
+            }
+            const isSoftSuccess = (!resp.ok) && /SQLSTATE\[01000\].*Data truncated.*estado/i.test(resp.text||'');
+            if (!resp.ok && !isSoftSuccess) {
+              toast((resp.json && resp.json.error) || resp.text || 'No se pudo cambiar el estado');
+            } else {
+              // Actualizar estado local y del evento sin recargar
+              estado = (nuevo === 'suspendido') ? 'suspendido' : 'programado';
+              try { if (ev.setExtendedProp) ev.setExtendedProp('estado', estado); } catch(_) { /* noop */ }
+              syncButtons();
+              toast(nuevo === 'suspendido' ? 'Clase suspendida' : 'Clase reactivada');
+              // Refrescar y cerrar modal para que el cambio sea evidente
+              try { cal.refetchEvents(); } catch(_){ }
+              try {
+                const md = document.getElementById('modalDetalleEvento');
+                if (md) {
+                  if (window.bootstrap && window.bootstrap.Modal) {
+                    const inst = window.bootstrap.Modal.getInstance(md) || new window.bootstrap.Modal(md);
+                    inst.hide();
+                  } else {
+                    md.classList.remove('show');
+                    md.style.display = 'none';
+                  }
+                }
+              } catch(_) { /* noop */ }
+              saved = true;
+            }
+          } catch(_) {
+            if (!saved) toast('No se pudo contactar al servidor');
+          } finally {
+            // Rehabilitar según estado actual
+            syncButtons();
+            changingEstado = false;
+          }
+        };
+        // Asegurar un solo listener por apertura de modal: clonar botones para limpiar listeners previos
+        if (btnReactFooter && btnReactFooter.parentNode) {
+          const clone = btnReactFooter.cloneNode(true);
+          btnReactFooter.parentNode.replaceChild(clone, btnReactFooter);
+          btnReactFooter = clone;
+        }
+        if (btnSuspFooter && btnSuspFooter.parentNode) {
+          const clone = btnSuspFooter.cloneNode(true);
+          btnSuspFooter.parentNode.replaceChild(clone, btnSuspFooter);
+          btnSuspFooter = clone;
+        }
+        // Wire footer buttons (ya sin listeners anteriores)
+        btnReactFooter?.addEventListener('click', ()=> { if (!btnReactFooter.disabled) doChangeEstado('programado'); });
+        btnSuspFooter?.addEventListener('click',  ()=> { if (!btnSuspFooter.disabled)  doChangeEstado('suspendido'); });
+        // Inicializar estado de botones
+        syncButtons();
+        }
+      } catch(_) {}
       // Cargar asistencias (usa ficha_id si está disponible y fecha local YYYY-MM-DD)
       try {
         const toLocalYMD = (d) => {
@@ -490,10 +943,52 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(r => r.ok ? r.json() : [])
           .then(list => {
             const cont = body.querySelector('#asistenciasContent');
-            if (!Array.isArray(list) || list.length===0) { cont.textContent = 'Sin asistencias registradas en esta fecha.'; return; }
-            const ul = document.createElement('ul'); ul.style.margin='0'; ul.style.padding='0 0 0 16px';
-            list.forEach(it => { const li = document.createElement('li'); li.textContent = `${it.estudiante || it.nombre || 'Estudiante'} — ${it.estado || 'presente'}`; ul.appendChild(li); });
-            cont.innerHTML = ''; cont.appendChild(ul);
+            const rows = Array.isArray(list) ? list : [];
+            // Mostrar solo asistencias con registro real
+            const withRecords = rows.filter(it => it && (it.asistencia_id != null));
+            if (withRecords.length === 0) { cont.textContent = 'Sin asistencias registradas en esta fecha.'; return; }
+
+            // Resumen por estado
+            const counts = { presente:0, ausente:0, tardanza:0, justificada:0 };
+            withRecords.forEach(it => {
+              const st = (it.estado||'').toLowerCase();
+              if (st === 'presente') counts.presente++;
+              else if (st === 'falla' || st === 'ausente') counts.ausente++;
+              else if (st === 'tardanza' || st === 'tarde') counts.tardanza++;
+              else if (st === 'justificada' || st === 'justificado') counts.justificada++;
+            });
+
+            const frag = document.createDocumentFragment();
+            const summary = document.createElement('div');
+            summary.className = 'asist-summary';
+            summary.innerHTML = `
+              <span class="asist-pill presente">Presentes: ${counts.presente}</span>
+              <span class="asist-pill ausente">Ausentes: ${counts.ausente}</span>
+              <span class="asist-pill tardanza">Tarde: ${counts.tardanza}</span>
+              <span class="asist-pill justificada">Justificados: ${counts.justificada}</span>
+            `;
+            frag.appendChild(summary);
+
+            const listWrap = document.createElement('div');
+            listWrap.className = 'asist-list';
+            withRecords.forEach(it => {
+              const nombre = [it.nombres, it.apellidos].filter(Boolean).join(' ') || it.estudiante || it.nombre || 'Estudiante';
+              const estadoRaw = (it.estado || 'sin registro').toLowerCase();
+              const estadoClass = estadoRaw === 'falla' ? 'ausente' : (estadoRaw === 'tarde' ? 'tardanza' : estadoRaw);
+              const initials = nombre.split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+              const item = document.createElement('div');
+              item.className = 'asist-item';
+              item.innerHTML = `
+                <div class="asist-avatar">${initials}</div>
+                <div class="asist-name">${nombre}</div>
+                <div class="asist-chip ${estadoClass}">${estadoRaw}</div>
+              `;
+              listWrap.appendChild(item);
+            });
+            frag.appendChild(listWrap);
+
+            cont.innerHTML = '';
+            cont.appendChild(frag);
           })
           .catch(()=>{ const cont = body.querySelector('#asistenciasContent'); cont.textContent = 'Sin asistencias registradas en esta fecha.'; });
       } catch(_) {}
@@ -655,6 +1150,57 @@ document.addEventListener('DOMContentLoaded', function () {
       initTime(hi); initTime(hf);
     }
 
+    // Color chips: seleccionar/deseleccionar y sincronizar con input color
+    const colorInput = document.getElementById('colorNuevaClase');
+    const chipsWrap = document.getElementById('newclass-color-chips');
+    const updateStatus = (hex, selectedChip) => {
+      // eliminar cualquier texto de estado si existe
+      const st = document.getElementById('newclass-color-status'); if (st) st.remove();
+      // Marcar visualmente el chip seleccionado
+      if (chipsWrap) {
+        chipsWrap.querySelectorAll('.cc-color').forEach(btn => btn.classList.remove('is-selected'));
+        if (selectedChip) selectedChip.classList.add('is-selected');
+      }
+      // Brillo suave en el input color con el tono seleccionado
+      if (colorInput) {
+        const v = (hex && hex.startsWith('#')) ? hex : (hex ? ('#'+hex) : '#3b82f6');
+        colorInput.style.boxShadow = `0 0 0 3px ${v}33`;
+        colorInput.style.borderColor = v;
+      }
+    };
+    const defaultHex = '#3b82f6';
+    if (chipsWrap && !chipsWrap.dataset.bound) {
+      chipsWrap.dataset.bound = '1';
+      chipsWrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('.cc-color');
+        if (!btn) return;
+        const hex = String(btn.getAttribute('data-color') || '').trim();
+        // Toggle: si ya está seleccionado, deseleccionar y volver a default
+        const isSelected = btn.classList.contains('is-selected');
+        if (isSelected) {
+          btn.classList.remove('is-selected');
+          if (colorInput) colorInput.value = defaultHex;
+          updateStatus(defaultHex, null);
+        } else {
+          if (colorInput && /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex.replace('#',''))) {
+            colorInput.value = hex.startsWith('#') ? hex : ('#'+hex);
+            updateStatus(colorInput.value, btn);
+          }
+        }
+      });
+    }
+    // Cambio manual del input color limpia selección de chips y actualiza estado
+    if (colorInput && !colorInput.dataset.bound) {
+      colorInput.dataset.bound = '1';
+      colorInput.addEventListener('input', () => {
+        const v = colorInput.value || defaultHex;
+        if (chipsWrap) chipsWrap.querySelectorAll('.cc-color').forEach(btn => btn.classList.remove('is-selected'));
+        updateStatus(v, null);
+      });
+      // Inicializar estado al abrir
+      updateStatus(colorInput.value || defaultHex, null);
+    }
+
     // Crear contenedor del aviso si no existe
     const ensureAvailWrap = () => {
       let el = document.getElementById('newclass-ficha-availability');
@@ -755,7 +1301,76 @@ document.addEventListener('DOMContentLoaded', function () {
             const chips = document.getElementById('newclass-color-chips'); chips?.querySelectorAll('.cc-color').forEach(b=>b.classList.remove('is-selected'));
             const av = document.getElementById('newclass-ficha-availability'); if (av) av.textContent = '';
             _fichaAvailModal = null;
+            // limpiar estilos visuales del input color
+            const ci = document.getElementById('colorNuevaClase');
+            if (ci) { ci.style.boxShadow = ''; ci.style.borderColor = ''; }
           });
+        }
+        // Bind de envío del formulario (crear clase)
+        const form = document.getElementById('formNuevaClase');
+        const doCreate = async () => {
+            const fichaEl = document.getElementById('fichaNuevaClase');
+            const start = new Date(toDT(fecha, hi).replace(' ', 'T'));
+            const end   = new Date(toDT(fecha, hf).replace(' ', 'T'));
+            if (end <= start) { toast('La hora fin debe ser mayor a la de inicio'); return; }
+            // Validar disponibilidad (inline para evitar dependencias de scope)
+            const fetchAvailLocal = async (fidL) => {
+              try {
+                const key = String(fidL);
+                window._fichaAvailCache = window._fichaAvailCache || new Map();
+                if (window._fichaAvailCache.has(key)) return window._fichaAvailCache.get(key);
+                const r = await fetch(`/?page=calcolab_disponibilidad_ficha&ficha_id=${encodeURIComponent(key)}`, { credentials:'same-origin' });
+                if (!r.ok) return null; const data = await r.json();
+                window._fichaAvailCache.set(key, data); return data;
+              } catch { return null; }
+            };
+            const avail = await fetchAvailLocal(fid);
+            if (avail) {
+              const dayName = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'][start.getDay()] || '';
+              const dias = Array.isArray(avail.dias) ? avail.dias : [];
+              if (dias.length && !dias.includes(dayName)) { toast(`La ficha no opera el ${dayName}`); return; }
+              const segsDay = avail.jornada_por_dia && avail.jornada_por_dia[dayName];
+              let segs = Array.isArray(segsDay) ? segsDay.slice() : (Array.isArray(avail.jornada_global) ? avail.jornada_global.slice() : []);
+              segs = (segs||[]).map(s => s==='mañana' ? 'manana' : s);
+              const segTo = (s)=> s==='manana'?['06:00','12:00']: s==='tarde'?['12:00','18:00']: s==='noche'?['18:00','22:00']: null;
+              let ranges = segs.map(segTo).filter(Boolean);
+              if (segs.includes('manana') && segs.includes('tarde')) ranges = [['08:00','17:00']];
+              if (ranges.length) {
+                const fmt = (d)=> `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                const sHM = fmt(start), eHM = fmt(end);
+                const inRange = ranges.some(([a,b]) => sHM>=a && eHM<=b);
+                if (!inRange) { toast('Fuera de la jornada permitida para ese día'); return; }
+              }
+            }
+            // Armar FormData según backend
+            const fd = new FormData();
+            fd.append('ficha_id', fid);
+            fd.append('titulo', titulo);
+            fd.append('fecha_inicio', `${fecha} ${hi.length===5?hi+':00':hi}`);
+            fd.append('fecha_fin', `${fecha} ${hf.length===5?hf+':00':hf}`);
+            fd.append('aula', aula);
+            fd.append('color', color);
+            fd.append('estado', estado);
+            const url = new URL('/', window.location.origin); url.searchParams.set('page','calendario_crear');
+            const btn = document.getElementById('btnCrearClase') || form.querySelector('[type="submit"]'); if (btn) { btn.disabled = true; btn.dataset.prevText = btn.textContent; btn.textContent = 'Guardando…'; }
+            try {
+              const r = await fetch(url.toString(), { method:'POST', credentials:'same-origin', body: fd });
+              const ok = r.ok; let j=null; try { j = await r.json(); } catch(_){ }
+              if (!ok || (j && j.error)) { toast(j?.error || 'No se pudo crear la clase'); return; }
+              toast('Clase creada');
+              try { cal.refetchEvents(); } catch(_){ }
+              inst.hide();
+            } catch(_) { toast('Error de red al crear clase'); }
+            finally { if (btn) { btn.disabled = false; btn.textContent = btn.dataset.prevText || 'Guardar'; } }
+        };
+        if (form && !form.dataset.boundSubmit) {
+          form.dataset.boundSubmit = '1';
+          form.addEventListener('submit', async (e) => { e.preventDefault(); await doCreate(); });
+        }
+        const btnCrear = document.getElementById('btnCrearClase');
+        if (btnCrear && !btnCrear.dataset.boundClick) {
+          btnCrear.dataset.boundClick = '1';
+          btnCrear.addEventListener('click', async () => { await doCreate(); });
         }
       } else {
         modalEl.setAttribute('aria-hidden', 'false'); modalEl.style.display = 'block'; modalEl.classList.add('show');
@@ -766,4 +1381,62 @@ document.addEventListener('DOMContentLoaded', function () {
   // Botón para abrir el modal
   const btnNueva = document.getElementById('btnNuevaClase');
   btnNueva?.addEventListener('click', openNuevaClaseModal);
+
+  // === Deep link desde Dashboard: abrir modal y preseleccionar ficha/fecha ===
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    const want = qs.get('newclass') || qs.get('openModal');
+    // Fallback por sessionStorage (Dashboard puede setear cal_newclass)
+    let payload = null;
+    try { const raw = sessionStorage.getItem('cal_newclass'); if (raw) { payload = JSON.parse(raw); /* NO remover aún */ } } catch(_) {}
+    const fichaParam = (qs.get('ficha_id') || qs.get('ficha') || qs.get('ficha_codigo') || (payload && (payload.ficha_id||payload.ficha||payload.ficha_codigo)) || '').toString();
+    // Abrir si: flag explicita o simplemente viene una ficha por URL/storage
+    if ((want && (want === '1' || /nueva|true|yes/i.test(String(want)))) || fichaParam || payload) {
+      const fechaParam = (qs.get('fecha') || (payload && payload.fecha) || '').toString();
+      const hiParam = (qs.get('hi') || qs.get('hora_inicio') || (payload && (payload.hi||payload.hora_inicio)) || '').toString();
+      const hfParam = (qs.get('hf') || qs.get('hora_fin') || (payload && (payload.hf||payload.hora_fin)) || '').toString();
+      // Abrir modal
+      openNuevaClaseModal();
+      // Retry loop hasta que las opciones estén listas
+      let tries = 0; const MAX = 16; // ~16*150ms ~ 2.4s
+      let applied = false;
+      const attempt = () => {
+        try {
+          const sel = document.getElementById('fichaNuevaClase');
+          if (sel && fichaParam) {
+            // Asegurar opciones: si casi vacío y ya tenemos window.fichasDisponibles, repoblar
+            if (sel.options.length <= 1 && Array.isArray(window.fichasDisponibles) && window.fichasDisponibles.length) {
+              try { buildFichaOptions(sel); } catch(_) {}
+            }
+            let set = false;
+            if (Array.from(sel.options).some(o => o.value == fichaParam)) { sel.value = fichaParam; set = true; }
+            if (!set) {
+              const opt = Array.from(sel.options).find(o => (o.textContent||'').toLowerCase().includes(fichaParam.toLowerCase()));
+              if (opt) { sel.value = opt.value; set = true; }
+            }
+            // Si aún no existe, inyectar opción temporal para no dejar vacío
+            if (!set) {
+              const tmp = document.createElement('option'); tmp.value = fichaParam; tmp.textContent = `Ficha ${fichaParam}`; sel.appendChild(tmp); sel.value = fichaParam; set = true;
+            }
+            if (set) sel.dispatchEvent(new Event('change'));
+          }
+          const fechaEl = document.getElementById('fechaNuevaClase');
+          const hiEl = document.getElementById('horaInicioNuevaClase');
+          const hfEl = document.getElementById('horaFinNuevaClase');
+          if (fechaParam && fechaEl) { if (fechaEl._flatpickr) fechaEl._flatpickr.setDate(fechaParam, true); else fechaEl.value = fechaParam; }
+          if (hiParam && hiEl) { if (hiEl._flatpickr) hiEl._flatpickr.setDate(hiParam, true); else hiEl.value = hiParam; }
+          if (hfParam && hfEl) { if (hfEl._flatpickr) hfEl._flatpickr.setDate(hfParam, true); else hfEl.value = hfParam; }
+          applied = true;
+        } catch(_) {}
+        finally {
+          if (++tries < MAX && !applied) setTimeout(attempt, 150);
+          else {
+            // Remover payload solo cuando aplicamos o agotamos reintentos
+            try { if (payload) sessionStorage.removeItem('cal_newclass'); } catch(_) {}
+          }
+        }
+      };
+      setTimeout(attempt, 150);
+    }
+  } catch(_) {}
 });

@@ -217,13 +217,13 @@ function formatearNombreColegio($nombre) {
             <label for="checkAllFichasPDF" class="form-check-label">Seleccionar todas</label>
           </div>
         </div>
-        <!-- Selector de semana (misma fila) -->
+        <!-- Selección de días (un solo calendario) -->
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Semana (inicio)</label>
-            <input type="date" id="weekStartPDF" class="form-control" />
+            <label class="form-label">Días (selección múltiple)</label>
+            <input type="text" id="weekStartPDF" class="form-control" placeholder="Selecciona uno o varios días" />
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" style="display:none">
             <label class="form-label">Semana (fin)</label>
             <input type="date" id="weekEndPDF" class="form-control" />
           </div>
@@ -235,8 +235,9 @@ function formatearNombreColegio($nombre) {
             <table class="table table-bordered" id="previewTablePDF">
               <thead>
                 <tr>
-                  <th>Ficha</th>
                   <th>Documento</th>
+                  <th>Nombre</th>
+                  <th>Ficha</th>
                   <th>Lunes</th>
                   <th>Martes</th>
                   <th>Miércoles</th>
@@ -252,7 +253,6 @@ function formatearNombreColegio($nombre) {
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" id="btnPreviewPDF" class="btn btn-preview">Vista previa</button>
         <button type="button" id="btnDownloadPDF" class="btn btn-pdf">Descargar PDF</button>
       </div>
     </div>
@@ -285,13 +285,13 @@ function formatearNombreColegio($nombre) {
             <label for="checkAllFichasExcel" class="form-check-label">Seleccionar todas</label>
           </div>
         </div>
-        <!-- Selector de semana (misma fila) -->
+        <!-- Selección de días (un solo calendario) -->
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Semana (inicio)</label>
-            <input type="date" id="weekStartExcel" class="form-control" />
+            <label class="form-label">Días (selección múltiple)</label>
+            <input type="text" id="weekStartExcel" class="form-control" placeholder="Selecciona uno o varios días" />
           </div>
-          <div class="col-md-6">
+          <div class="col-md-6" style="display:none">
             <label class="form-label">Semana (fin)</label>
             <input type="date" id="weekEndExcel" class="form-control" />
           </div>
@@ -302,8 +302,9 @@ function formatearNombreColegio($nombre) {
             <table class="table table-bordered" id="previewTableExcel">
               <thead>
                 <tr>
-                  <th>Ficha</th>
                   <th>Documento</th>
+                  <th>Nombre</th>
+                  <th>Ficha</th>
                   <th>Lunes</th>
                   <th>Martes</th>
                   <th>Miércoles</th>
@@ -319,7 +320,6 @@ function formatearNombreColegio($nombre) {
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" id="btnPreviewExcel" class="btn btn-preview">Vista previa</button>
         <button type="button" id="btnDownloadExcel" class="btn btn-excel">Descargar Excel</button>
       </div>
     </div>
@@ -334,6 +334,22 @@ function formatearNombreColegio($nombre) {
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="/js/Administrador/dashboard.js"></script>
     <script src="/js/Componentes/encabezado.js"></script>
+    <script>
+      (function(){
+        const nativeAlert = window.alert;
+        window.alert = function(msg){
+          try {
+            if (typeof mostrarNotificacionTemporal === 'function') {
+              const m = String(msg||'');
+              const type = /error|falló|fallo|no pudo|invalid/i.test(m) ? 'error' : ( /éxito|exito|ok|listo/i.test(m) ? 'success' : 'info');
+              mostrarNotificacionTemporal(m, type);
+            } else {
+              nativeAlert(msg);
+            }
+          } catch(_){ nativeAlert(msg); }
+        };
+      })();
+    </script>
     <script>
       // Saludo dinámico: por hora al entrar, y rotación de saludos al volver tras 2 min
       (function(){
@@ -421,14 +437,41 @@ $(function(){
       let t; return function(){ clearTimeout(t); const args=arguments, ctx=this; t=setTimeout(()=>fn.apply(ctx,args), wait); };
     }
 
+    function nombreDiaEs(ymd){
+      const d = new Date(ymd+'T00:00:00');
+      return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+    }
+
+    function buildThead($table, dias){
+      const cols = ['Documento','Nombre','Ficha']
+        .concat(dias.map(d=>nombreDiaEs(d)))
+        .concat(['Jornada','Estado']);
+      const tr = '<tr>'+cols.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+      $table.find('thead').html(tr);
+    }
+
+    function parseSelectedDays(inputSelector){
+      const raw = $(inputSelector).val() || '';
+      return raw.split(',').map(s=>s.trim()).filter(Boolean);
+    }
+
     function doPreview(){
       const colegioId = $sel.val();
       const fichas = getSel();
+      const daysSel = parseSelectedDays('#weekStart'+suf);
       const weekStart = $('#weekStart'+suf).val();
       const weekEnd   = $('#weekEnd'+suf).val();
       if(!colegioId || !fichas.length){ return; }
-      $.post('/?page=preview_v2', {colegio_id: colegioId, fichas: fichas, week_start: weekStart, week_end: weekEnd}, function(html){
-        $prevTable.html(html); $prevWrap.show();
+      const payload = {colegio_id: colegioId, fichas: fichas};
+      if (daysSel.length) { payload.days = daysSel; } else { payload.week_start = weekStart; payload.week_end = weekEnd; }
+      $.post('/?page=preview_v2', payload, function(html){
+        $prevTable.html(html);
+        // leer meta y ajustar encabezado
+        const $meta = $prevTable.find('tr.__meta');
+        const diasStr = ($meta.attr('data-dias')||'').split(',').filter(Boolean);
+        $meta.remove();
+        buildThead($('#previewTable'+suf), diasStr);
+        $prevWrap.show();
       });
     }
     const doPreviewDebounced = debounce(doPreview, 250);
@@ -497,9 +540,13 @@ $(function(){
     $btnDown.off('click').on('click', function(){
       const colegioId = $sel.val();
       const fichas = getSel();
+      const daysSel = parseSelectedDays('#weekStart'+suf);
+      const weekStart = $('#weekStart'+suf).val();
+      const weekEnd   = $('#weekEnd'+suf).val();
       if(!colegioId){ alert('Seleccione un colegio'); return; }
       if(!fichas.length){ alert('Seleccione al menos una ficha'); return; }
-      const url = `/?page=${downloadPage}&colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
+      const base = `/?page=${downloadPage}&colegio_id=${colegioId}&fichas=${fichas.join(',')}`;
+      const url = daysSel.length ? `${base}&days=${encodeURIComponent(daysSel.join(','))}` : `${base}&week_start=${encodeURIComponent(weekStart||'')}&week_end=${encodeURIComponent(weekEnd||'')}`;
       window.open(url, '_blank');
     });
 
@@ -513,7 +560,7 @@ $(function(){
   setupReportModal('PDF', 'generar_pdf');
   setupReportModal('Excel', 'generar_excel');
 
-  // Calendarios con Flatpickr (posicionar a los lados y selección en verde controlada por CSS)
+  // Calendarios con Flatpickr (modo multiple para seleccionar días específicos)
   if (typeof flatpickr !== 'undefined') {
     function makeFpOptions(side, colegioSelector, modalSelector, shiftX = 0, moreTransparent = false, alignTargetSelector = null){
       return {
@@ -565,12 +612,38 @@ $(function(){
       };
     }
 
-    // PDF: coloca "inicio" sobre el input de fin y "fin" sobre el input de inicio
-    const fpStartPDF  = flatpickr('#weekStartPDF',  makeFpOptions('right', '#selectColegioPDF', '#modalReportesPDF .modal-content', 0, false, '#weekEndPDF'));
-    const fpEndPDF    = flatpickr('#weekEndPDF',    makeFpOptions('left',  '#selectColegioPDF', '#modalReportesPDF .modal-content', 0, true,  '#weekStartPDF'));
-    // Excel: igual
-    const fpStartXLS  = flatpickr('#weekStartExcel', makeFpOptions('right', '#selectColegioExcel', '#modalReportesExcel .modal-content', 0, false, '#weekEndExcel'));
-    const fpEndXLS    = flatpickr('#weekEndExcel',   makeFpOptions('left',  '#selectColegioExcel', '#modalReportesExcel .modal-content', 0, true,  '#weekStartExcel'));
+    const multiOpts = (alignSel, modalSel) => ({
+      mode: 'multiple',
+      dateFormat: 'Y-m-d',
+      locale: (window.flatpickr && flatpickr.l10ns && flatpickr.l10ns.es) ? flatpickr.l10ns.es : 'es',
+      static: true,
+      monthSelectorType: 'static',
+      defaultDate: [],
+      onReady: function(selectedDates, dateStr, inst){
+        // Evitar selección por defecto (hoy) cuando se abre el calendario
+        if (!inst.input.value) inst.clear();
+      },
+      onOpen: function(_, __, inst){
+        const cal = inst.calendarContainer;
+        const modal = document.querySelector(modalSel) || inst.input.closest('.modal-content');
+        if (!modal) return;
+        if (inst.config.appendTo !== modal) { inst.config.appendTo = modal; if (cal.parentNode !== modal) modal.appendChild(cal); }
+        if (getComputedStyle(modal).position === 'static') modal.style.position = 'relative';
+        cal.style.zIndex = '9999'; cal.style.position = 'absolute';
+        const modalRect = modal.getBoundingClientRect();
+        const target = document.querySelector(alignSel) || inst.input;
+        const tRect = target.getBoundingClientRect(); const cRect = cal.getBoundingClientRect();
+        const top = (tRect.top - modalRect.top) + tRect.height + 8; let left = (tRect.left - modalRect.left) + (tRect.width/2) - (cRect.width/2);
+        cal.style.top = `${top}px`; const maxLeft = modalRect.width - cRect.width - 8; left = Math.max(8, Math.min(left, maxLeft)); cal.style.left = `${left}px`;
+      },
+      onChange: function(){
+        // auto-preview si hay selección
+        const any = $('.ficha-check-PDF:checked, .ficha-check-Excel:checked').length > 0;
+        if (any) { /* debounce outer inits apply */ }
+      }
+    });
+    flatpickr('#weekStartPDF',  multiOpts('#selectColegioPDF',  '#modalReportesPDF .modal-content'));
+    flatpickr('#weekStartExcel',multiOpts('#selectColegioExcel','#modalReportesExcel .modal-content'));
 
     // Refuerzo: limitar también el input nativo para evitar fechas futuras
     (function(){
@@ -588,8 +661,7 @@ $(function(){
       $s.on('change', function(){ if ($s.val()) { $e.attr('min', $s.val()); } });
       $e.on('change', function(){ if ($e.val()) { $s.attr('max', $e.val()); } });
     }
-    linkRange('#weekStartPDF','#weekEndPDF');
-    linkRange('#weekStartExcel','#weekEndExcel');
+    // ya no se enlazan rangos; usamos selección múltiple
   }
 });
 </script>

@@ -314,6 +314,7 @@
     box-shadow: var(--shadow-lg);
     opacity:0; visibility:hidden; transform: translateY(-6px);
     transition: var(--t-slow); z-index:1001;
+    color: #111; /* asegurar texto oscuro dentro del panel */
   }
   .notifications-panel.active{ opacity:1; visibility:visible; transform: translateY(0); }
   .notifications-header{
@@ -324,10 +325,16 @@
   .notification-item{
     background:#f6fbff; border-left:3px solid var(--c-primary);
     padding:12px; border-radius: var(--radius-sm); margin-bottom:10px;
+    color:#0f172a; /* texto oscuro para contraste */
   }
   .notification-item.unread{ background:#eef7ff; }
   .notification-actions{
     margin-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#666;
+  }
+  .notification-item a{
+    color: var(--c-primary);
+    text-decoration: underline;
+    font-weight: 700;
   }
   .mark-read-btn{
     background:transparent; border:none; color:var(--c-primary); text-decoration:underline;

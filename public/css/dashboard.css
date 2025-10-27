@@ -542,10 +542,11 @@ body{
   border: 2px solid var(--green) !important;
   border-radius: 10px;             /* efecto pastilla en cabeceras */
   font-weight: 800; font-size: .9rem;
-  text-align: center;
+  text-align: center; vertical-align: middle;
 }
 .table.table-bordered tbody td{
   border: 1.8px solid var(--green) !important;
+  text-align: center; vertical-align: middle;
 }
 
 /* Footer: dos botones AZULES (como en la maqueta) */
@@ -586,10 +587,44 @@ body{
   #fichasContainerExcel .form-check{ width: 100%; }
 }
 
-/* Ensanchar el modal grande para acomodar 4 fichas y el calendario */
-.modal-lg{ max-width: 1000px; }
-@media (max-width: 992px){
-  .modal-lg{ max-width: 95%; }
+/* Ensanchar el modal grande para acomodar más contenido */
+.modal-lg{ max-width: 1200px; }
+@media (max-width: 992px){ .modal-lg{ max-width: 95%; } }
+@media (min-width: 1400px){
+  .modal-lg{ max-width: 1280px; }
+  /* En pantallas muy grandes mostrar 5 columnas de fichas */
+  #fichasContainerPDF,
+  #fichasContainerExcel{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Vista previa: área desplazable para ver más filas sin salir del modal */
+#previewContainerPDF .table-responsive,
+#previewContainerExcel .table-responsive{
+  max-height: 55vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* Estilo mejorado para tablas de vista previa (PDF/Excel) */
+#previewTablePDF thead th,
+#previewTableExcel thead th{
+  background: var(--blue) !important; /* #00304D */
+  color: #fff !important;
+  border: none !important; /* quitar líneas de referencia en encabezado */
+}
+#previewTablePDF tbody td,
+#previewTableExcel tbody td{
+  background: #ffffff;
+  border-color: var(--line) !important; /* líneas grises */
+}
+#previewTablePDF tbody tr:nth-child(even) td,
+#previewTableExcel tbody tr:nth-child(even) td{
+  background: #f3f5f7; /* gris clarito */
+}
+#previewTablePDF tbody tr:hover td,
+#previewTableExcel tbody tr:hover td{
+  background: rgba(57,169,0,0.08); /* leve realce al pasar */
 }
 
 /* ===== RESPONSIVE ===== */

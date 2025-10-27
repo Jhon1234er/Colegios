@@ -10,7 +10,7 @@ $usuario = $_SESSION['usuario'];
 <head>
     <meta charset="UTF-8">
     <title>Panel de Asistente</title>
-    <link rel="stylesheet" href="/css/Asistente/dashboard.css">
+    <link rel="stylesheet" href="/css/Asistente/dashboard.css?v=20251023-1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <body>
@@ -150,12 +150,12 @@ $usuario = $_SESSION['usuario'];
         </div>
         <div class="row g-3">
           <div class="col-md-6">
-            <label for="weekStartPDF" class="form-label">Fecha de inicio</label>
-            <input type="text" id="weekStartPDF" class="form-control" placeholder="Selecciona fecha de inicio">
+            <label for="weekStartPDF" class="form-label">Días (selección múltiple)</label>
+            <input type="text" id="weekStartPDF" class="form-control" placeholder="Selecciona uno o varios días">
           </div>
-          <div class="col-md-6">
-            <label for="weekEndPDF" class="form-label">Fecha de fin</label>
-            <input type="text" id="weekEndPDF" class="form-control" placeholder="Selecciona fecha de fin">
+          <div class="col-md-6" style="display:none">
+            <label for="weekEndPDF" class="form-label">Semana (fin)</label>
+            <input type="text" id="weekEndPDF" class="form-control" placeholder="">
           </div>
         </div>
         <div id="previewContainerPDF" class="mt-4" style="display:none;">
@@ -184,12 +184,28 @@ $usuario = $_SESSION['usuario'];
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="/js/Componentes/encabezado.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <script src="/js/Asistente/dashboard.js"></script>
     <script src="/js/Asistente/view-toggle.js"></script>
     <script>
+      (function(){
+        const nativeAlert = window.alert;
+        window.alert = function(msg){
+          try {
+            if (typeof mostrarNotificacionTemporal === 'function') {
+              const m = String(msg||'');
+              const type = /error|falló|fallo|no pudo|invalid/i.test(m) ? 'error' : ( /éxito|exito|ok|listo/i.test(m) ? 'success' : 'info');
+              mostrarNotificacionTemporal(m, type);
+            } else {
+              nativeAlert(msg);
+            }
+          } catch(_){ nativeAlert(msg); }
+        };
+      })();
+    </script>
       // Saludo dinámico (alineado con Admin), usando zona horaria de Bogotá
       (function(){
         const el = document.getElementById('greeting-text');
@@ -552,8 +568,17 @@ $usuario = $_SESSION['usuario'];
                         body: body
                     });
                     const html = await r.text();
-                    previewTableHead.innerHTML = '<tr><th>Ficha</th><th>Documento</th><th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th><th>Jornada</th><th>Estado</th></tr>';
                     previewTableBody.innerHTML = html;
+                    const meta = document.querySelector('#previewTable'+suf+' tbody tr.__meta');
+                    const dias = meta ? (meta.getAttribute('data-dias')||'').split(',').filter(Boolean) : [];
+                    if (meta) meta.remove();
+                    const nombreDiaEs = (ymd) => {
+                      const d = new Date(ymd+'T00:00:00');
+                      return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+                    };
+                    const cols = ['Documento','Nombre','Ficha']
+                      .concat(dias.map(d=>nombreDiaEs(d)))
+                    previewTableHead.innerHTML = '<tr>'+cols.map(h=>`<th>${h}</th>`).join('')+'</tr>';
                 } catch (e) {
                     console.error('Error en la vista previa:', e);
                     previewTableBody.innerHTML = '<tr><td colspan="9" class="text-danger">Error al cargar la vista previa.</td></tr>';
@@ -564,29 +589,25 @@ $usuario = $_SESSION['usuario'];
 
             btnDownload.addEventListener('click', () => {
                 const colegioId = selectColegio.value;
-                const weekStart = document.getElementById('weekStart' + suf).value;
-                const weekEnd = document.getElementById('weekEnd' + suf).value;
+                const dias = Array.from(document.querySelectorAll('.flatpickr-calendar.open .flatpickr-day.selected')).map(d => d.getAttribute('aria-label'));
                 const fichas = Array.from(fichasContainer.querySelectorAll('.ficha-check-' + suf + ':checked')).map(cb => cb.value);
 
-                if (!colegioId || fichas.length === 0 || !weekStart || !weekEnd) {
+                if (!colegioId || fichas.length === 0 || !dias.length) {
                     alert('Por favor, complete todos los campos.');
                     return;
                 }
-                const url = `/?page=${downloadPage}&colegio_id=${colegioId}&fichas=${fichas.join(',')}&week_start=${weekStart}&week_end=${weekEnd}`;
+                const url = `/?page=${downloadPage}&colegio_id=${colegioId}&fichas=${fichas.join(',')}&days=${encodeURIComponent(dias.join(','))}`;
                 window.open(url, '_blank');
             });
 
             // Flatpickr
             if (typeof flatpickr !== 'undefined') {
-                const makeFpOptions = (side, alignTargetSelector = null) => ({
+                const multiOpts = (alignTargetSelector = null) => ({
+                    mode: 'multiple',
                     dateFormat: 'Y-m-d',
                     locale: 'es',
                     static: true,
                     monthSelectorType: 'static',
-                    prevArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>',
-                    nextArrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>',
-                    allowInput: true,
-                    clickOpens: true,
                     onOpen: function(_, __, inst) {
                         const cal = inst.calendarContainer;
                         const modalContent = inst.input.closest('.modal-content');
@@ -607,16 +628,7 @@ $usuario = $_SESSION['usuario'];
                         cal.style.left = `${left}px`;
                     }
                 });
-
-                const fpStart = flatpickr('#weekStart' + suf, makeFpOptions('left', '#weekStart' + suf));
-                const fpEnd = flatpickr('#weekEnd' + suf, makeFpOptions('right', '#weekEnd' + suf));
-
-                fpStart.config.onChange.push((selectedDates) => {
-                    if (selectedDates[0]) fpEnd.set('minDate', selectedDates[0]);
-                });
-                fpEnd.config.onChange.push((selectedDates) => {
-                    if (selectedDates[0]) fpStart.set('maxDate', selectedDates[0]);
-                });
+                flatpickr('#weekStart' + suf, multiOpts('#weekStart' + suf));
             }
         }
 

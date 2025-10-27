@@ -48,8 +48,16 @@
 .fc .fc-col-header-cell-cushion { color:#111827; font-weight:800; text-transform:uppercase; text-align:left; padding:8px 12px; display:block; letter-spacing:.2px; }
 
 /* Celdas del mes como tarjetas */
-.fc .fc-daygrid-day { padding: 6px; }
-.fc .fc-daygrid-day-frame { background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.06); overflow:hidden; min-height: 90px; }
+.fc .fc-daygrid-body table { table-layout: fixed !important; }
+.fc .fc-daygrid-day { padding: 6px; vertical-align: top; }
+.fc .fc-daygrid-day-frame {
+  background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.06);
+  overflow:hidden; height: 110px; /* alto fijo para uniformidad */
+  display: flex; flex-direction: column; /* estabiliza alto interno */
+  position: relative; /* para posicionar el +N más */
+}
+.fc .fc-daygrid-day-top { padding: 8px 8px 2px 8px; flex: 0 0 auto; }
+.fc .fc-daygrid-day-events { flex: 1 1 auto; overflow: hidden; }
 .fc .fc-daygrid-day-number { 
   color:#6b7280; padding: 6px 8px; font-weight:700; background: transparent; border-radius: 0; margin: 0; display:inline; 
   text-decoration: none !important; border-bottom: none !important;
@@ -113,7 +121,8 @@
 .fc .fc-daygrid-event, .fc .fc-timegrid-event {
   transition: transform .15s ease, box-shadow .15s ease;
 }
-.fc .fc-daygrid-event:hover, .fc .fc-timegrid-event:hover {
+/* Hover lift solo para Semana/Día, no para Mes */
+.fc .fc-timegrid-event:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
   z-index: 5;
@@ -127,6 +136,24 @@
   color: #111827 !important; font-weight: 800; text-transform: uppercase;
   text-align: left; padding: 8px 12px; display: block; letter-spacing: .2px;
 }
+
+/* Contenido de eventos en Semana/Día: texto legible y subtexto sutil */
+.fc-timegrid-event { cursor: pointer; }
+/* Permitir que el contenido ocupe todo el alto del bloque y envuelva líneas */
+.fc-timegrid-event .fc-event-main-frame {
+  overflow: visible !important;
+  white-space: normal !important;
+  height: 100% !important;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
+  padding: 4px 6px;
+}
+.fc-timegrid-event .fc-event-main {
+  color: #fff !important;
+  white-space: normal !important;
+  word-break: break-word;
+}
+.fc-timegrid-event .fc-event-title { white-space: normal !important; line-height: 1.2; font-weight: 800; }
+.fc-timegrid-event .fc-event-main .ev-sub { opacity: .95; font-weight: 700; font-size: 12px; }
 
 /* Cada día como tarjeta */
 .fc-timegrid .fc-timegrid-col { padding: 2px !important; box-sizing: border-box; }
@@ -197,6 +224,24 @@
 .event-detail-pane { display:none; }
 .event-detail-pane.is-active { display:block; }
 
+/* Assistencias list styling */
+#asistenciasContent { padding: 4px; }
+.asist-summary { display:flex; gap:8px; flex-wrap:wrap; margin:4px 0 10px; }
+.asist-pill { display:inline-block; padding:4px 10px; border-radius:9999px; font-weight:800; font-size:12px; color:#fff; }
+.asist-pill.presente { background:#22c55e; }
+.asist-pill.ausente { background:#ef4444; }
+.asist-pill.tardanza { background:#8b5cf6; }
+.asist-pill.justificada { background:#f59e0b; }
+.asist-list { display:flex; flex-direction:column; gap:8px; }
+.asist-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+.asist-avatar { width:32px; height:32px; border-radius:50%; background:#00304D; color:#fff; display:inline-grid; place-items:center; font-weight:900; font-size:12px; }
+.asist-name { font-weight:800; color:#111827; }
+.asist-chip { margin-left:auto; padding:4px 10px; border-radius:9999px; font-weight:800; font-size:12px; color:#fff; }
+.asist-chip.presente { background:#22c55e; }
+.asist-chip.ausente { background:#ef4444; }
+.asist-chip.tardanza { background:#8b5cf6; }
+.asist-chip.justificada { background:#f59e0b; }
+
 /* Separadores de horas sutiles */
 .fc-timegrid .fc-timegrid-slots tr { border-top: 1px dashed #e5e7eb !important; }
 .fc-timegrid .fc-timegrid-slots tr:first-child { border-top: 0 !important; }
@@ -250,8 +295,13 @@
 #calendario .fc .fc-more-link {
   background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
   padding: 0 6px; color: #111827; font-weight: 700; line-height: 22px;
+  display: inline-block;
 }
 #calendario .fc .fc-more-link:hover { background: #f3f4f6; }
+
+/* Mostrar '+N más' en la franja inferior del día, alineado a la derecha */
+#calendario .fc .fc-daygrid-day-bottom { padding: 2px 6px 6px; text-align: right; }
+#calendario .fc .fc-daygrid-day .fc-more-link { position: static; margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Mes: ocultar la hora dentro de las pastillas */
 #calendario .fc .fc-daygrid-event .fc-event-time { display: none !important; }

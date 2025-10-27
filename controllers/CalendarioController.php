@@ -23,6 +23,20 @@ class CalendarioController {
             exit;
         }
     }
+
+    /**
+     * Registra cambios en historial_horarios (si la tabla existe). Silencioso ante errores.
+     */
+    private function registrarHistorial($horario_id, $usuario_id, $accion, $antes, $despues) {
+        try {
+            $stmt = $this->pdo->prepare("INSERT INTO historial_horarios (horario_id, usuario_id, accion, antes, despues, creado_en) VALUES (?, ?, ?, ?, ?, NOW())");
+            $a = is_array($antes) ? json_encode($antes, JSON_UNESCAPED_UNICODE) : (is_string($antes) ? $antes : null);
+            $d = is_array($despues) ? json_encode($despues, JSON_UNESCAPED_UNICODE) : (is_string($despues) ? $despues : null);
+            $stmt->execute([$horario_id, $usuario_id, $accion, $a, $d]);
+        } catch (Throwable $e) {
+            // silencioso si la tabla no existe o hay cualquier fallo
+        }
+    }
     
     // Obtener horarios para el calendario
     public function obtenerHorarios() {
@@ -44,23 +58,25 @@ class CalendarioController {
             $end   = $this->normalizarDateTime($end);
             $view = $_GET['view'] ?? 'dayGridMonth';
             $profesorFiltro = $_GET['profesor_id'] ?? null;
+            $estadoFiltro = isset($_GET['estado']) && $_GET['estado'] !== '' ? $_GET['estado'] : null; // puede venir "programado", "en_curso", etc.
+            $fichaFiltro  = isset($_GET['ficha']) && $_GET['ficha'] !== '' ? $_GET['ficha'] : null;   // acepta id o número (codigo)
             $esAdmin = (int)($_SESSION['usuario']['rol_id'] ?? 0) === 1;
             
             error_log("Parámetros recibidos - Start: $start, End: $end, View: $view");
             
             // Delegar por rol y contexto
             if ($esAdmin) {
-                echo json_encode($this->obtenerHorariosAdmin($start, $end, $profesorFiltro));
+                echo json_encode($this->obtenerHorariosAdmin($start, $end, $profesorFiltro, $estadoFiltro, $fichaFiltro));
                 return;
             }
 
             $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
             if (!$profesor_id) {
-                echo json_encode($this->obtenerHorariosPublico());
+                echo json_encode($this->obtenerHorariosPublico($estadoFiltro, $fichaFiltro));
                 return;
             }
 
-            echo json_encode($this->obtenerHorariosProfesor($start, $end, $profesor_id));
+            echo json_encode($this->obtenerHorariosProfesor($start, $end, $profesor_id, $estadoFiltro, $fichaFiltro));
             return;
             
         } catch (Exception $e) {
@@ -90,7 +106,7 @@ class CalendarioController {
     }
 
     // ==== Helpers de obtención por rol ====
-    private function obtenerHorariosAdmin(?string $start, ?string $end, $profesorFiltro = null): array {
+    private function obtenerHorariosAdmin(?string $start, ?string $end, $profesorFiltro = null, $estadoFiltro = null, $fichaFiltro = null): array {
         $sql = "
             SELECT 
                 hf.*,
@@ -108,6 +124,20 @@ class CalendarioController {
         $params = [];
         if ($profesorFiltro) { $sql .= " AND hf.profesor_id = ?"; $params[] = $profesorFiltro; }
         if ($start && $end) { $sql .= " AND hf.fecha_inicio >= ? AND hf.fecha_fin <= ?"; $params[] = $start; $params[] = $end; }
+        // Estado (mapear del filtro cliente a ENUM BD)
+        if ($estadoFiltro) {
+            $map = [
+                'programado' => 'Programado', 'en_curso' => 'En curso', 'finalizado' => 'Finalizado', 'suspendido' => 'Suspendido'
+            ];
+            $estadoBD = $map[strtolower((string)$estadoFiltro)] ?? null;
+            if ($estadoBD) { $sql .= " AND hf.estado = ?"; $params[] = $estadoBD; }
+        }
+        // Ficha: aceptar id numérico o código (f.numero)
+        if ($fichaFiltro) {
+            $isNum = ctype_digit((string)$fichaFiltro);
+            if ($isNum) { $sql .= " AND hf.ficha_id = ?"; $params[] = (int)$fichaFiltro; }
+            else { $sql .= " AND f.numero = ?"; $params[] = $fichaFiltro; }
+        }
         $sql .= " ORDER BY hf.fecha_inicio, u.nombres, u.apellidos";
 
         $stmt = $this->pdo->prepare($sql);
@@ -145,7 +175,7 @@ class CalendarioController {
         return $eventos;
     }
 
-    private function obtenerHorariosPublico(): array {
+    private function obtenerHorariosPublico($estadoFiltro = null, $fichaFiltro = null): array {
         $sql = "
             SELECT 
                 hf.*,
@@ -157,10 +187,23 @@ class CalendarioController {
             JOIN fichas f ON hf.ficha_id = f.id
             JOIN profesores p ON hf.profesor_id = p.id
             JOIN usuarios u ON p.usuario_id = u.id
-            ORDER BY hf.fecha_inicio";
+            WHERE 1=1";
+
+        $params = [];
+        if ($estadoFiltro) {
+            $map = [ 'programado' => 'Programado', 'en_curso' => 'En curso', 'finalizado' => 'Finalizado', 'suspendido' => 'Suspendido' ];
+            $estadoBD = $map[strtolower((string)$estadoFiltro)] ?? null;
+            if ($estadoBD) { $sql .= " AND hf.estado = ?"; $params[] = $estadoBD; }
+        }
+        if ($fichaFiltro) {
+            $isNum = ctype_digit((string)$fichaFiltro);
+            if ($isNum) { $sql .= " AND hf.ficha_id = ?"; $params[] = (int)$fichaFiltro; }
+            else { $sql .= " AND f.numero = ?"; $params[] = $fichaFiltro; }
+        }
+        $sql .= " ORDER BY hf.fecha_inicio";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $eventos = [];
@@ -196,7 +239,7 @@ class CalendarioController {
         return $eventos;
     }
 
-    private function obtenerHorariosProfesor(?string $start, ?string $end, int $profesor_id): array {
+    private function obtenerHorariosProfesor(?string $start, ?string $end, int $profesor_id, $estadoFiltro = null, $fichaFiltro = null): array {
         $eventos = [];
 
         // 1) Propios y compartidos
@@ -226,6 +269,16 @@ class CalendarioController {
 
         $params_propios = [$profesor_id, $profesor_id, $profesor_id, $profesor_id];
         if ($start && $end) { $sql_propios .= " AND hf.fecha_inicio >= ? AND hf.fecha_fin <= ?"; $params_propios[] = $start; $params_propios[] = $end; }
+        if ($estadoFiltro) {
+            $map = [ 'programado' => 'Programado', 'en_curso' => 'En curso', 'finalizado' => 'Finalizado', 'suspendido' => 'Suspendido' ];
+            $estadoBD = $map[strtolower((string)$estadoFiltro)] ?? null;
+            if ($estadoBD) { $sql_propios .= " AND hf.estado = ?"; $params_propios[] = $estadoBD; }
+        }
+        if ($fichaFiltro) {
+            $isNum = ctype_digit((string)$fichaFiltro);
+            if ($isNum) { $sql_propios .= " AND hf.ficha_id = ?"; $params_propios[] = (int)$fichaFiltro; }
+            else { $sql_propios .= " AND f.numero = ?"; $params_propios[] = $fichaFiltro; }
+        }
         $sql_propios .= " ORDER BY hf.fecha_inicio";
         $stmt = $this->pdo->prepare($sql_propios);
         $stmt->execute($params_propios);
@@ -325,13 +378,15 @@ class CalendarioController {
             $ficha_id = (int)($body['ficha_id'] ?? 0);
             $week_start = $body['week_start'] ?? null; // ISO YYYY-MM-DD (lunes)
             $months_ahead = (int)($body['months_ahead'] ?? 0); // 0: solo mes actual, 1: incluye próximo mes
+            $weeks_ahead  = (int)($body['weeks_ahead'] ?? 0);  // si >0, duplica N semanas hacia adelante
+            $include_days = $body['include_days'] ?? null;     // ['lunes','martes',...]
             if (!$ficha_id || !$week_start || !strtotime($week_start)) {
                 http_response_code(400);
                 echo json_encode(['success'=>false,'error'=>'Parámetros inválidos']);
                 return;
             }
 
-            // Rango de la semana: lunes -> domingo
+            // Rango de la semana base: lunes -> domingo
             $monday = new DateTime($week_start.' 00:00:00');
             $sunday = clone $monday; $sunday->modify('+6 days')->setTime(23,59,59);
 
@@ -370,7 +425,8 @@ class CalendarioController {
             $jornadaGlobal = strtolower(trim((string)($ficha['jornada'] ?? '')));
             $rangos = [ 'mañana'=>['06:00:00','12:00:00'], 'manana'=>['06:00:00','12:00:00'], 'tarde'=>['12:00:00','18:00:00'], 'noche'=>['18:00:00','22:00:00'] ];
 
-            // Final de alcance (fin de mes actual + months_ahead)
+            // Final de alcance: si weeks_ahead>0, usaremos conteo de semanas; si no, fin de mes(+months)
+            $useWeeksCount = $weeks_ahead > 0;
             $endOfMonth = new DateTime($monday->format('Y-m-01').' 00:00:00');
             $endOfMonth->modify('last day of this month')->setTime(23,59,59);
             if ($months_ahead > 0) {
@@ -379,22 +435,31 @@ class CalendarioController {
             }
 
             $insertados = 0;
+            $porSemana = [];
 
             foreach ($baseEventos as $ev) {
                 $start = new DateTime($ev['fecha_inicio']);
                 $end   = new DateTime($ev['fecha_fin']);
                 // Iterar por semanas
                 $cursorStart = clone $start; $cursorEnd = clone $end;
+                $sem = 0;
                 while (true) {
                     $cursorStart->modify('+7 days');
                     $cursorEnd->modify('+7 days');
-                    if ($cursorStart > $endOfMonth) break;
+                    $sem++;
+                    if ($useWeeksCount && $sem > $weeks_ahead) break;
+                    if (!$useWeeksCount && $cursorStart > $endOfMonth) break;
 
                     // Validar día permitido
                     $diaNum = (int)$cursorStart->format('N');
                     $mapDias = [1=>'lunes',2=>'martes',3=>'miercoles',4=>'jueves',5=>'viernes',6=>'sabado',7=>'domingo'];
                     $diaNombre = $mapDias[$diaNum] ?? '';
                     if (!in_array($diaNombre, $diasPermitidos, true)) continue;
+                    // Filtro opcional del usuario: incluir solo ciertos días
+                    if (is_array($include_days) && !empty($include_days)) {
+                        $incl = array_map('strtolower', array_map('trim', $include_days));
+                        if (!in_array($diaNombre, $incl, true)) continue;
+                    }
 
                     // Validar jornada (por día si existe, si no global)
                     $jornadaDia = !empty($jornadaPorDia[$diaNombre]) ? strtolower(trim((string)$jornadaPorDia[$diaNombre])) : $jornadaGlobal;
@@ -418,11 +483,14 @@ class CalendarioController {
                         $cursorStart->format('Y-m-d H:i:s'), $cursorEnd->format('Y-m-d H:i:s'),
                         $ev['aula'], $ev['color'], 'programado', $ev['creado_por']
                     ]);
-                    if ($ok) $insertados++;
+                    if ($ok) {
+                        $insertados++;
+                        $porSemana[$sem] = ($porSemana[$sem] ?? 0) + 1;
+                    }
                 }
             }
 
-            echo json_encode(['success'=>true,'insertados'=>$insertados]);
+            echo json_encode(['success'=>true,'insertados'=>$insertados,'por_semana'=>$porSemana,'weeks_used'=>$useWeeksCount ? $weeks_ahead : 0]);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['success'=>false,'error'=>$e->getMessage()]);
@@ -688,40 +756,47 @@ class CalendarioController {
         }
     }
     
-    // Cambiar estado de horario
+    // Cambiar estado de horario (responde JSON limpio y mapea al ENUM de BD)
     public function cambiarEstado() {
         start_secure_session();
         require_role(2);
-        $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
-        
+        header('Content-Type: application/json; charset=utf-8');
         try {
+            $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
             $data = json_decode(file_get_contents('php://input'), true);
-            $horario_id = $data['horario_id'];
-            $nuevo_estado = $data['estado'];
-            
+            $horario_id = (int)($data['horario_id'] ?? 0);
+            $nuevo_estado = (string)($data['estado'] ?? '');
+
+            if (!$horario_id) { http_response_code(400); echo json_encode(['error'=>'horario_id requerido']); return; }
             if (!$this->tienePermisosHorario($horario_id, $profesor_id)) {
-                http_response_code(403);
-                echo json_encode(['error' => 'Sin permisos para modificar este horario']);
-                return;
+                http_response_code(403); echo json_encode(['error' => 'Sin permisos para modificar este horario']); return;
             }
-            
-            $sql = "UPDATE horarios_fichas SET estado = ? WHERE id = ?";
-            $stmt = $this->pdo->prepare($sql);
+
+            // Mapear a ENUM de BD: 'Programado','En curso','Finalizado','Suspendido'
+            $map = [
+                'programado' => 'Programado', 'Programado' => 'Programado',
+                'en_curso'   => 'En curso',   'En curso'   => 'En curso',
+                'finalizado' => 'Finalizado', 'Finalizado' => 'Finalizado',
+                'suspendido' => 'Suspendido', 'Suspendido' => 'Suspendido',
+                'cancelado'  => 'Suspendido', 'Cancelado'  => 'Suspendido',
+            ];
+            if (isset($map[$nuevo_estado])) $nuevo_estado = $map[$nuevo_estado];
+
+            $stmt = $this->pdo->prepare("UPDATE horarios_fichas SET estado = ? WHERE id = ?");
             $stmt->execute([$nuevo_estado, $horario_id]);
-            
-            // Habilitar asistencia si la clase está en curso
-            if ($nuevo_estado === 'en_curso') {
-                $sql_asistencia = "UPDATE horarios_fichas SET asistencia_habilitada = TRUE WHERE id = ?";
-                $stmt_asistencia = $this->pdo->prepare($sql_asistencia);
-                $stmt_asistencia->execute([$horario_id]);
+
+            // Ejemplo: habilitar asistencia si entra en curso
+            if ($nuevo_estado === 'En curso') {
+                $this->pdo->prepare("UPDATE horarios_fichas SET asistencia_habilitada = TRUE WHERE id = ?")
+                          ->execute([$horario_id]);
             }
-            
-            echo json_encode(['success' => true]);
-            
-        } catch (Exception $e) {
+
+            echo json_encode(['success' => true, 'estado' => $nuevo_estado], JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $e) {
             http_response_code(400);
-            echo json_encode(['error' => $e->getMessage()]);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
+        exit;
     }
     
     // Verificar conflictos de horarios
@@ -731,7 +806,7 @@ class CalendarioController {
             FROM horarios_fichas hf
             JOIN fichas f ON hf.ficha_id = f.id
             WHERE hf.profesor_id = ? 
-              AND hf.estado != 'cancelado'
+              AND hf.estado != 'Suspendido'
               AND (
                   (? BETWEEN hf.fecha_inicio AND hf.fecha_fin) OR
                   (? BETWEEN hf.fecha_inicio AND hf.fecha_fin) OR

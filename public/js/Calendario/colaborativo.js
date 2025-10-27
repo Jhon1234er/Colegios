@@ -109,6 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
     headerToolbar: false,
     locale: 'es',
     firstDay: 1, // Lunes como primer día de la semana
+    editable: true,
+    selectable: false,
+    selectMirror: true,
+    eventResizableFromStart: true,
     hiddenDays: [0], // Ocultar domingos
     allDaySlot: false,
     slotMinTime: '06:00:00',
@@ -191,6 +195,223 @@ document.addEventListener('DOMContentLoaded', () => {
     datesSet: debounce(() => reloadEvents(), 50),
   });
   calendar.render();
+  function ensureDetailModal(){
+    let el = document.getElementById('calcolab-modal-detalle');
+    if (el) return el;
+    el = document.createElement('div');
+    el.className = 'modal fade';
+    el.id = 'calcolab-modal-detalle';
+    el.tabIndex = -1;
+    el.innerHTML = `
+      <div class="modal-dialog modal-lg" style="max-width:980px;">
+        <div class="modal-content" style="border:none;border-radius:12px;">
+          <div class="modal-header" style="background:#00304D;justify-content:center;border-radius:12px;margin:16px 16px 0 16px;padding:12px 18px;position:relative;">
+            <h5 class="modal-title" style="color:#fff;text-align:center;width:100%;margin:6px 0;font-weight:900;font-size:24px;letter-spacing:0.4px;">Detalle del Evento</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);"></button>
+          </div>
+          <div class="modal-body">
+            <div id="calcolab-detalle-body"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn" data-bs-dismiss="modal" style="background:#39A900;color:#fff;border-radius:10px;">Cerrar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    return el;
+  }
+  function fmtDateTime(v){
+    try{ const d = new Date(v); return d.toLocaleString('es-CO', { dateStyle:'medium', timeStyle:'short' }); }catch{ return String(v||''); }
+  }
+  function pick(obj){
+    for (let i=1;i<arguments.length;i++){ const k = arguments[i]; const val = obj && obj[k]; if (val!=null && String(val).trim()!=='') return String(val).trim(); }
+    return '';
+  }
+  calendar.on('eventClick', function(info){
+    try{
+      info.jsEvent && info.jsEvent.preventDefault && info.jsEvent.preventDefault();
+      const modal = ensureDetailModal();
+      const body = modal.querySelector('#calcolab-detalle-body');
+      const ev = info.event || {};
+      const ex = ev.extendedProps || {};
+      const titulo = ev.title || ex.titulo || 'Evento';
+      const inicio = ev.start || ex.fecha_inicio || ex.inicio;
+      const fin = ev.end || ex.fecha_fin || ex.fin;
+      const aula = pick(ex, 'aula','salon','sala');
+      const profesor = pick(ex, 'profesor_nombre','docente','profesor','creado_por','creador');
+      const ficha = pick(ex, 'ficha_numero','ficha_codigo','codigo_ficha','ficha_nombre','ficha');
+      const colegio = pick(ex, 'colegio_nombre','colegio');
+      const estado = String(pick(ex, 'estado')).toLowerCase();
+      const estadoBgMap = { 'finalizado':'#111827', 'en_curso':'#22c55e', 'suspendido':'#ef4444', 'programado':'#3b82f6' };
+      const estadoBg = estadoBgMap[estado] || '#3b82f6';
+      body.innerHTML = `
+        <div style="display:grid;gap:12px;">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Título</small>
+              <div style="font-weight:800;">${titulo}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Ficha</small>
+              <div style="font-weight:800;">${ficha||'—'}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Inicio</small>
+              <div style="font-weight:800;">${fmtDateTime(inicio)}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Fin</small>
+              <div style="font-weight:800;">${fmtDateTime(fin)}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Instructor</small>
+              <div style="font-weight:800;">${profesor||'—'}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Aula</small>
+              <div style="font-weight:800;">${aula||'—'}</div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Estado</small>
+              <div><span style="display:inline-block;padding:4px 10px;border-radius:9999px;font-weight:800;color:#fff;background:${estadoBg};text-transform:lowercase;">${estado||'—'}</span></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px;">
+            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,.04);text-align:center;">
+              <small style="color:#6b7280;">Colegio</small>
+              <div style="font-weight:800;">${colegio||'—'}</div>
+            </div>
+          </div>
+        </div>`;
+      if (window.bootstrap && window.bootstrap.Modal) {
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+      } else {
+        modal.style.display = 'block'; modal.classList.add('show');
+      }
+    } catch(_){}
+  });
+
+  calendar.on('eventMouseEnter', function(info){
+    try{
+      const el = info.el; if (!el) return;
+      el._prevTrf = el.style.transform || '';
+      el._prevSh  = el.style.boxShadow || '';
+      el.style.transition = 'transform .15s ease, box-shadow .15s ease';
+      el.style.transform = 'scale(1.03) translateY(-2px)';
+      el.style.boxShadow = '0 8px 20px rgba(0,0,0,.18)';
+    }catch(_){}
+  });
+  calendar.on('eventMouseLeave', function(info){
+    try{
+      const el = info.el; if (!el) return;
+      el.style.transform = el._prevTrf || '';
+      el.style.boxShadow = el._prevSh || '';
+    }catch(_){}
+  });
+
+  // ====== Edición: mover/redimensionar con reglas similares al base ======
+  // Toast minimalista
+  function toast(msg){
+    try{
+      let t = document.getElementById('calcolab-toast');
+      if (!t){
+        t = document.createElement('div'); t.id='calcolab-toast';
+        Object.assign(t.style, { position:'fixed', bottom:'16px', left:'50%', transform:'translateX(-50%)', background:'#111827', color:'#fff', padding:'10px 14px', borderRadius:'10px', boxShadow:'0 6px 20px rgba(0,0,0,.2)', fontWeight:'800', zIndex:'100000', transition:'opacity .2s ease', opacity:'0', pointerEvents:'none' });
+        document.body.appendChild(t);
+      }
+      t.textContent = String(msg||''); void t.offsetHeight; t.style.opacity='1'; clearTimeout(toast._h); toast._h=setTimeout(()=>{ t.style.opacity='0'; }, 1600);
+    }catch(_){}
+  }
+  const toMySQL = (d) => {
+    if (!d) return null; const pad=n=>String(n).padStart(2,'0');
+    const yy=d.getFullYear(), mm=pad(d.getMonth()+1), dd=pad(d.getDate());
+    const hh=pad(d.getHours()), mi=pad(d.getMinutes()), ss=pad(d.getSeconds());
+    return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  };
+  async function persistEventUpdate(ev){
+    try{
+      const url = new URL('/', window.location.origin); url.searchParams.set('page','calendario_actualizar');
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const payload = {
+        id: ev.id,
+        fecha_inicio: ev.start ? toMySQL(ev.start) : null,
+        fecha_fin: ev.end ? toMySQL(ev.end) : null,
+        titulo: ev.title || ev.extendedProps?.titulo || 'Clase',
+        aula: ev.extendedProps?.aula || null,
+        color: ev.backgroundColor || ev.extendedProps?.color || '#00304D'
+      };
+      const res = await fetch(url.toString(), { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify(payload) });
+      let data=null; try{ data=await res.json(); }catch{}
+      return res.ok ? { ok:true } : { ok:false, error: (data && (data.error||data.message)) || 'Error' };
+    }catch{ return { ok:false, error:'Error de red' }; }
+  }
+  const estadoOf = (ev)=> (ev.extendedProps?.estado || '').toString().toLowerCase();
+  const isMovable = (ev)=>{ const st = estadoOf(ev); return st === 'programado' || st === 'suspendido'; };
+  const startOfDay = (d)=> new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const isPastDay = (d)=> startOfDay(d) < startOfDay(new Date());
+  // Disponibilidad por ficha (cache)
+  window._fichaAvailCache = window._fichaAvailCache || new Map();
+  async function fetchAvail(fid){
+    const key = String(fid||''); if (!key) return null;
+    if (window._fichaAvailCache.has(key)) return window._fichaAvailCache.get(key);
+    try{ const r = await fetch(`/?page=calcolab_disponibilidad_ficha&ficha_id=${encodeURIComponent(key)}`, { credentials:'same-origin' }); if (!r.ok) return null; const data = await r.json(); window._fichaAvailCache.set(key, data); return data; }catch{ return null; }
+  }
+  async function rangeAllowedForFicha(fid, start, end){
+    const avail = await fetchAvail(fid); if (!avail) return { ok:true };
+    const dayIdx = start.getDay(); const names=['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+    const dayName = names[dayIdx] || '';
+    const dias = Array.isArray(avail.dias) ? avail.dias : [];
+    if (dias.length && !dias.includes(dayName)) return { ok:false, reason:`La ficha no opera el ${dayName}` };
+    const segsDay = avail.jornada_por_dia && avail.jornada_por_dia[dayName];
+    let segs = Array.isArray(segsDay) ? segsDay.slice() : (Array.isArray(avail.jornada_global) ? avail.jornada_global.slice() : []);
+    segs = (segs||[]).map(s => s==='mañana' ? 'manana' : s);
+    const segTo = (s)=> s==='manana'?['06:00','12:00']: s==='tarde'?['12:00','18:00']: s==='noche'?['18:00','22:00']: null;
+    let ranges = segs.map(segTo).filter(Boolean);
+    if (segs.includes('manana') && segs.includes('tarde')) ranges = [['08:00','17:00']];
+    if (!ranges.length) return { ok:true };
+    const fmt=(d)=>`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const sHM = fmt(start), eHM = fmt(end || start);
+    const inRange = ranges.some(([a,b]) => sHM>=a && eHM<=b);
+    return inRange ? { ok:true } : { ok:false, reason:'Fuera de la jornada permitida para ese día' };
+  }
+  calendar.on('eventResize', async (info)=>{
+    const vt = calendar.view?.type || '';
+    if (vt === 'dayGridMonth') { info.revert(); toast('En Mes no se puede cambiar la duración'); return; }
+    if (!isMovable(info.event)) { info.revert(); toast('No se puede editar una clase en curso o finalizada'); return; }
+    const s = info.event.start, e = info.event.end || info.event.start;
+    if (isPastDay(s) || isPastDay(e)) { info.revert(); toast('No se puede ajustar a fechas pasadas'); return; }
+    const fid = info.event.extendedProps?.ficha_id;
+    if (fid) {
+      const chek = await rangeAllowedForFicha(fid, s, e);
+      if (!chek.ok) { info.revert(); toast(chek.reason || 'Horario no permitido'); return; }
+    }
+    const res = await persistEventUpdate(info.event);
+    if (res.ok) { toast('Duración actualizada'); try{ reloadEvents(); }catch(_){} }
+    else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
+  });
+  calendar.on('eventDrop', async (info)=>{
+    const vt = calendar.view?.type || '';
+    const st = estadoOf(info.event);
+    if (st === 'en_curso' || st === 'finalizado') { info.revert(); toast('No se puede mover una clase en curso o finalizada'); return; }
+    if (vt !== 'dayGridMonth' && !isMovable(info.event)) { info.revert(); toast('Solo Programadas o Suspendidas se pueden mover'); return; }
+    const s2 = info.event.start; const e2 = info.event.end || info.event.start;
+    if (isPastDay(s2) || isPastDay(e2)) { info.revert(); toast('No se puede mover a fechas pasadas'); return; }
+    const fid = info.event.extendedProps?.ficha_id;
+    if (fid) {
+      const chek = await rangeAllowedForFicha(fid, s2, e2);
+      if (!chek.ok) { info.revert(); toast(chek.reason || 'Día/hora no permitido'); return; }
+    }
+    const res = await persistEventUpdate(info.event);
+    if (res.ok) {
+      const d = info.event.start; const pad=(n)=>String(n).padStart(2,'0');
+      toast(`Clase movida a ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`);
+      try{ reloadEvents(); }catch(_){ }
+    } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
+  });
 
   const btnGotoToday = document.getElementById('calcolab-today');
   if (btnGotoToday) {

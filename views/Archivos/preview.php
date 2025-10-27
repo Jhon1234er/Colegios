@@ -20,16 +20,38 @@ $rows = [];
 // Calcular semana actual (Lunes a Viernes)
 $weekStart = $_POST['week_start'] ?? null; // YYYY-MM-DD
 $weekEnd   = $_POST['week_end']   ?? null; // YYYY-MM-DD
+$daysParam = $_POST['days'] ?? [];          // array o CSV
 
 // Construir arreglo de fechas a mostrar
 $diasSemana = [];
-if ($weekStart) {
+// Si viene una lista de días explícitos, usarla
+if (!empty($daysParam)) {
+    if (is_string($daysParam)) { $daysParam = array_filter(array_map('trim', explode(',', $daysParam))); }
+    if (is_array($daysParam)) {
+        foreach ($daysParam as $d) {
+            if (!$d) continue;
+            $dt = DateTime::createFromFormat('Y-m-d', $d);
+            if ($dt) {
+                $dow = (int)$dt->format('N');
+                if ($dow >= 1 && $dow <= 5) { $diasSemana[] = $dt->format('Y-m-d'); }
+            }
+        }
+        // ordenar y únicos
+        $diasSemana = array_values(array_unique($diasSemana));
+        sort($diasSemana);
+    }
+} elseif ($weekStart) {
     $s = new DateTime($weekStart);
     if ($weekEnd) {
         $e = new DateTime($weekEnd);
         if ($e < $s) { $e = clone $s; }
         $days = 0;
-        while ($s <= $e && $days < 7) { $diasSemana[] = $s->format('Y-m-d'); $s->modify('+1 day'); $days++; }
+        while ($s <= $e && $days < 10) {
+            $dow = (int)$s->format('N');
+            if ($dow >= 1 && $dow <= 5) { $diasSemana[] = $s->format('Y-m-d'); }
+            $s->modify('+1 day');
+            $days++;
+        }
     } else {
         // Sin fin: usar L-V de la semana del inicio
         $startOfWeek = (clone $s)->modify('monday this week');
@@ -61,6 +83,9 @@ if ($fichas && is_array($fichas)) {
     }
 }
 
+// Emitir fila meta oculta con los días seleccionados (solo L-V dentro del rango)
+$metaDias = implode(',', $diasSemana);
+echo "<tr class='__meta' data-dias='" . htmlspecialchars($metaDias, ENT_QUOTES, 'UTF-8') . "' style='display:none'></tr>";
 if (!$rows || count($rows) === 0): ?>
     <tr>
         <td colspan="10" class="text-center text-muted">⚠️ No hay estudiantes</td>
@@ -73,19 +98,25 @@ if (!$rows || count($rows) === 0): ?>
         // Nombre/documento
         $apellidos = isset($e['apellidos']) && trim($e['apellidos']) !== '' ? trim($e['apellidos']) : '';
         $nombres   = isset($e['nombres']) && trim($e['nombres']) !== '' ? trim($e['nombres']) : '';
-        $nombreCompleto = trim($apellidos . ' ' . $nombres) ?: 'Sin nombre';
+        $nombreCompleto = trim($nombres . ' ' . $apellidos);
+        if ($nombreCompleto === '') { $nombreCompleto = ($e['nombre_completo'] ?? ''); }
+        if (trim($nombreCompleto) === '') { $nombreCompleto = 'Sin nombre'; }
         $tipoDoc = $e['tipo_documento'] ?? 'CC';
         $numDoc  = $e['numero_documento'] ?? '';
         $documento = $numDoc !== '' ? ($tipoDoc . ' ' . $numDoc) : 'Sin documento';
         $numeroFicha = $e['numero_ficha'] ?? ($e['ficha'] ?? 'N/A');
         // Jornada: normalizar valores y evitar vacíos feos
         $jornada = isset($e['jornada']) ? trim((string)$e['jornada']) : '';
+        // Quitar comillas o caracteres extraños
+        $jornada = trim($jornada, " \"'“”");
         $jn = strtolower(iconv('UTF-8','ASCII//TRANSLIT',$jornada));
-        if ($jn === '' || $jn === '""' || $jn === 'null') { $jornada = '—'; }
+        if ($jn === '' || $jn === '""' || $jn === 'null' || $jn === 'n/a') { $jornada = ''; }
         elseif (strpos($jn,'tarde') !== false) { $jornada = 'Tarde'; }
         elseif (strpos($jn,'manana') !== false || strpos($jn,'mañana') !== false) { $jornada = 'Mañana'; }
         elseif (strpos($jn,'noche') !== false || strpos($jn,'noct') !== false) { $jornada = 'Noche'; }
         elseif (strpos($jn,'mixta') !== false) { $jornada = 'Mixta'; }
+        // Si sigue vacía, mostrar vacío sin comillas
+        if ($jornada === '') { $jornada = ''; }
 
         // Traer asistencias de la semana para el estudiante
         $asistMap = [];
@@ -111,8 +142,9 @@ if (!$rows || count($rows) === 0): ?>
         };
     ?>
     <tr>
-        <td><?= htmlspecialchars($numeroFicha) ?></td>
         <td><?= htmlspecialchars($documento) ?></td>
+        <td><?= htmlspecialchars($nombreCompleto) ?></td>
+        <td><?= htmlspecialchars($numeroFicha) ?></td>
         <?php foreach ($diasSemana as $d): ?>
           <td><?= htmlspecialchars($nice($asistMap[$d] ?? null)) ?></td>
         <?php endforeach; ?>

@@ -51,6 +51,15 @@
       "tabla tabla tabla";
     animation:fadeIn .45s ease-out;
   }
+  /* Cuando se muestra la vista secundaria, usar 1 columna para evitar espacio vacío */
+  .parent.show-secondary{
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "bienvenida"
+      "indicaciones";
+  }
+  .parent.show-secondary .indicaciones-column{ width:100%; gap:10px; }
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* ===== BARRA “BIENVENIDO” (píldora azul) ===== */
@@ -501,10 +510,23 @@
     #fichasContainerExcel .form-check{ width: 100%; }
   }
 
-  /* Ensanchar el modal grande para acomodar 4 fichas y el calendario */
-  .modal-lg{ max-width: 1000px; }
-  @media (max-width: 992px){
-    .modal-lg{ max-width: 95%; }
+  /* Ensanchar el modal grande para acomodar más contenido */
+  .modal-lg{ max-width: 1200px; }
+  @media (max-width: 992px){ .modal-lg{ max-width: 95%; } }
+  @media (min-width: 1400px){
+    .modal-lg{ max-width: 1280px; }
+    /* En pantallas muy grandes mostrar 5 columnas de fichas */
+    #fichasContainerPDF,
+    #fichasContainerExcel{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  }
+
+  /* Vista previa: área desplazable para ver más filas sin salir del modal */
+  #previewContainerPDF .table-responsive,
+  #previewContainerExcel .table-responsive{
+    max-height: 55vh;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
   }
 
   /* ===== RESPONSIVE ===== */
@@ -765,3 +787,65 @@
   transform: rotate(0deg) scale(1);
   opacity: 1;
 }
+
+  .view-secondary .div1,
+  .view-secondary .div2,
+  .view-secondary .div3{
+    padding:12px 14px;
+    min-height:160px;
+    max-height:260px;
+    gap:8px;
+  }
+  .view-secondary .block-title{
+    margin:0 0 8px;
+    font-size:1rem;
+  }
+  .view-secondary .list-scroll{ padding-right:4px }
+  #tablaAusentes tbody tr td{ padding:8px 10px }
+  #tablaAusentes tbody tr{ border-bottom:1px solid var(--line) }
+  #tablaAusentes tbody tr:hover{ background: var(--green-08) }
+  #tablaAusentes td small{
+    display:inline-block;
+    background: var(--green-12);
+    border:2px solid var(--green);
+    color: var(--black);
+    border-radius: 999px;
+    padding:2px 8px;
+    font-weight:700;
+  }
+  #tablaAusentes .btn.btn-sm.btn-primary{
+    background: var(--blue);
+    border:0;
+    border-radius:14px;
+    font-weight:800;
+    padding:6px 10px;
+  }
+
+  /* Pendientes y Procesados: estilos compactos y consistentes */
+  #tablaPendientesProceso tbody tr td,
+  #tablaProcesados tbody tr td{ padding:8px 10px }
+  #tablaPendientesProceso tbody tr,
+  #tablaProcesados tbody tr{ border-bottom:1px solid var(--line) }
+  #tablaPendientesProceso tbody tr:hover,
+  #tablaProcesados tbody tr:hover{ background: var(--green-08) }
+  #tablaPendientesProceso td small,
+  #tablaProcesados td small{
+    display:inline-block;
+    background: var(--green-12);
+    border:2px solid var(--green);
+    color: var(--black);
+    border-radius: 999px;
+    padding:2px 8px;
+    font-weight:700;
+  }
+  /* Truncar texto largo en primera celda para evitar desbordes */
+  #tablaPendientesProceso td:first-child,
+  #tablaProcesados td:first-child{
+    max-width: 560px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Botones de acción alineados con paleta */
+  #tablaPendientesProceso .btn.btn-sm.btn-primary{ background: var(--blue); border:0; border-radius:14px; font-weight:800; padding:6px 10px }
+  #tablaProcesados .btn.btn-sm.btn-secondary{ background: #fff; color: var(--blue); border:2px solid var(--blue); border-radius:14px; font-weight:800; padding:6px 10px }

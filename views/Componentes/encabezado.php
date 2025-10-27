@@ -20,15 +20,16 @@ $tipo_usuario = $roles[$rol_id] ?? null;
 $notificaciones = [];
 $totalNoLeidas = 0;
 
-if ($usuario_id && $tipo_usuario) {
+if ($usuario_id) {
     try {
         $pdo = Database::conectar();
-        $stmt = $pdo->prepare("SELECT * FROM notificaciones WHERE usuario_id = ? AND rol_id = ? ORDER BY fecha DESC LIMIT 5");
-        $stmt->execute([$usuario_id, $rol_id]);
+        // Listado: todas (leídas y no leídas) para visualización; ordenar por id DESC para evitar dependencia de 'fecha'
+        $stmt = $pdo->prepare("SELECT * FROM notificaciones WHERE usuario_id = ? ORDER BY id DESC LIMIT 50");
+        $stmt->execute([$usuario_id]);
         $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND rol_id = ? AND estado = 'no_leida'");
-        $stmtTotal->execute([$usuario_id, $rol_id]);
+        $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (estado = 'no_leida' OR estado IS NULL)");
+        $stmtTotal->execute([$usuario_id]);
         $totalNoLeidas = $stmtTotal->fetchColumn();
     } catch (PDOException $e) {
         error_log("Error al obtener notificaciones: " . $e->getMessage());
@@ -175,8 +176,8 @@ if ($usuario_id && $tipo_usuario) {
         <?php if ($rol_id === 4): ?>
           <!-- Cambiar vista (Asistente) al lado izquierdo de notificaciones -->
           <button id="view-toggle-btn" class="view-toggle-btn" title="Cambiar vista">
-            <span class="icon-grid"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-            <span class="icon-eye"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span class="icon-grid"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            <span class="icon-eye"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
           </button>
         <?php endif; ?>
         <!-- Notificaciones -->
@@ -194,12 +195,26 @@ if ($usuario_id && $tipo_usuario) {
               <div class="empty-notifications">No tienes notificaciones nuevas</div>
             <?php else: ?>
               <?php foreach ($notificaciones as $n): ?>
-                <div class="notification-item <?= $n['estado'] === 'no_leida' ? 'unread' : '' ?>">
+                <?php $isUnread = !isset($n['estado']) || $n['estado'] === 'no_leida'; ?>
+                <div class="notification-item <?= $isUnread ? 'unread' : '' ?>">
                   <div class="notification-content">
-                    <?= htmlspecialchars(str_replace('profesor', 'facilitador', $n['mensaje'])) ?>
+                    <?php 
+                      $msg = trim((string)($n['mensaje'] ?? ''));
+                      if ($msg === '' && isset($n['titulo'])) { $msg = (string)$n['titulo']; }
+                      $msg = str_replace('profesor', 'facilitador', $msg);
+                      // Permitir solo <a> y quitar el resto de etiquetas
+                      $msgSafe = strip_tags($msg, '<a>');
+                      // Forzar atributos seguros en los anchors
+                      $msgSafe = preg_replace(
+                        '#<a\s+([^>]*href\s*=\s*\"[^\"]*\"[^>]*)>#i',
+                        '<a $1 target="_blank" rel="noopener noreferrer" class="link">',
+                        $msgSafe
+                      );
+                      echo $msgSafe;
+                    ?>
                   </div>
 
-                  <?php if ($n['botones_accion'] && $n['estado'] === 'no_leida'): ?>
+                  <?php if (!empty($n['botones_accion']) && $isUnread): ?>
                     <?php $botones = json_decode($n['botones_accion'], true); ?>
                     <?php $datos = json_decode($n['datos_accion'], true); ?>
                     <div class="notification-buttons">
@@ -214,15 +229,21 @@ if ($usuario_id && $tipo_usuario) {
                         </button>
                       <?php endif; ?>
                     </div>
-                  <?php elseif ($n['botones_accion'] && $n['estado'] === 'leida'): ?>
+                  <?php elseif (!empty($n['botones_accion']) && isset($n['estado']) && $n['estado'] === 'leida'): ?>
                     <div class="notification-buttons-disabled">
                       <span class="btn-disabled">Procesado</span>
                     </div>
                   <?php endif; ?>
 
                   <div class="notification-actions">
-                    <span class="notification-date"><?= date('d/m/Y H:i', strtotime($n['fecha'])) ?></span>
-                    <?php if ($n['estado'] === 'no_leida'): ?>
+                    <?php 
+                      $fechaTxt = '';
+                      if (!empty($n['fecha']) && strtotime($n['fecha'])) {
+                        $fechaTxt = date('d/m/Y H:i', strtotime($n['fecha']));
+                      }
+                    ?>
+                    <span class="notification-date"><?= htmlspecialchars($fechaTxt ?: '') ?></span>
+                    <?php if ($isUnread): ?>
                       <button type="button" class="mark-read-btn" onclick="markAsRead(<?= (int)$n['id'] ?>)">Marcar leída</button>
                     <?php endif; ?>
                   </div>

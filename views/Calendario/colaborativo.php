@@ -9,6 +9,7 @@ $usuario = $_SESSION['usuario'] ?? null;
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
   <title>Calendario Colaborativo</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
   <link rel="stylesheet" href="/css/Calendario/colaborativo.css">
