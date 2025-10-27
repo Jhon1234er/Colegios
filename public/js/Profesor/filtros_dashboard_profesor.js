@@ -13,13 +13,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Crear input de búsqueda dinámicamente
+
+  // Crear input de búsqueda y botón de icono
   let inputBuscar = document.createElement('input');
   inputBuscar.type = 'text';
   inputBuscar.placeholder = 'Buscar ficha...';
   inputBuscar.className = 'input-buscar-ficha';
   inputBuscar.style.display = 'none';
-  // No lo agregamos aún, solo cuando se activa buscar
+
+  // Crear wrapper para input y botón
+  let buscarWrapper = document.createElement('div');
+  buscarWrapper.className = 'buscar-ficha-wrapper';
+  buscarWrapper.style.display = 'none';
+
+  // Crear botón de icono
+  let btnBuscarIcon = document.createElement('button');
+  btnBuscarIcon.className = 'btn-icon';
+  btnBuscarIcon.id = 'tabla-search-btn';
+  btnBuscarIcon.type = 'button';
+  btnBuscarIcon.setAttribute('aria-label', 'Buscar');
+  btnBuscarIcon.style.width = '38px';
+  btnBuscarIcon.style.height = '38px';
+  btnBuscarIcon.style.borderRadius = '50%';
+  btnBuscarIcon.style.border = '2px solid var(--green)';
+  btnBuscarIcon.style.background = 'var(--green)';
+  btnBuscarIcon.style.color = '#fff';
+  btnBuscarIcon.style.display = 'grid';
+  btnBuscarIcon.style.placeItems = 'center';
+  btnBuscarIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="white" stroke-width="2.2" fill="none"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="white" stroke-width="2.2"/></svg>`;
+
+  buscarWrapper.appendChild(inputBuscar);
+  buscarWrapper.appendChild(btnBuscarIcon);
 
   let fichasBackup = [];
 
@@ -112,8 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Filtro "Buscar"
   filtros[1]?.addEventListener('click', () => {
     backupFichas();
-    // Reemplazar el botón de buscar por el input
-    filtros[1].parentNode.replaceChild(inputBuscar, filtros[1]);
+    // Reemplazar el botón de buscar por el wrapper con botón + input
+    filtros[1].parentNode.replaceChild(buscarWrapper, filtros[1]);
+    buscarWrapper.style.display = 'flex';
     inputBuscar.style.display = 'inline-block';
     inputBuscar.focus();
   });
@@ -164,12 +189,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Si el input pierde el foco y está vacío, restaurar el botón de buscar
   inputBuscar.addEventListener('blur', () => {
-    if (inputBuscar.value.trim() === '') {
-      // Restaurar el botón de buscar
-      const filtrosCursos = document.querySelector('.filtros-cursos');
-      filtrosCursos.replaceChild(filtros[1], inputBuscar);
-      inputBuscar.style.display = 'none';
-    }
+    setTimeout(() => {
+      if (inputBuscar.value.trim() === '') {
+        // Restaurar el botón de buscar
+        const filtrosCursos = document.querySelector('.filtros-cursos');
+        filtrosCursos.replaceChild(filtros[1], buscarWrapper);
+        buscarWrapper.style.display = 'none';
+        inputBuscar.style.display = 'none';
+      }
+    }, 120);
   });
 
   // Inicializar backup y paginación si ya hay fichas

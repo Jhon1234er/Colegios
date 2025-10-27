@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==== Asistencias ====
   async function cargarRegistrosAsistencia(fichaId, fechaInicio, fechaFin) {
     try {
-      const url = `/?page=obtener_asistencias&ficha_id=${encodeURIComponent(fichaId)}&fecha_inicio=${formatYMD(fechaInicio)}&fecha_fin=${formatYMD(fechaFin)}`;
+      const url = `index.php?page=obtener_asistencias&ficha_id=${encodeURIComponent(fichaId)}&fecha_inicio=${formatYMD(fechaInicio)}&fecha_fin=${formatYMD(fechaFin)}`;
       console.log("📌 URL de fetch:", url, fichaId, fechaInicio, fechaFin);
 
       const response = await fetch(url);
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let hayClaseEnCurso = false;
     let proximaClaseHoy = null;
     try {
-      const respClase = await fetch(`/?page=clase_en_curso&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, {
+      const respClase = await fetch(`index.php?page=clase_en_curso&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, {
         credentials: 'include'
       });
       if (respClase.ok) {
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Si no hay clase en curso, consultamos si existe una próxima clase hoy para mostrar contador
     if (!hayClaseEnCurso) {
       try {
-        const rprox = await fetch(`/?page=clase_proxima_hoy&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, { credentials: 'include' });
+        const rprox = await fetch(`index.php?page=clase_proxima_hoy&ficha_id=${encodeURIComponent(fichaSeleccionada.id)}`, { credentials: 'include' });
         if (rprox.ok) {
           const jprox = await rprox.json();
           if (jprox?.success && jprox?.horario) {
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
               asistencias[estId] = { estudiante_id: parseInt(estId), estado: sel.value };
             }
           });
-          const resp = await fetch('/?page=guardar_asistencia', {
+          const resp = await fetch('index.php?page=guardar_asistencia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const fd = new FormData();
           fd.append('id', asistenciaId);
           fd.append('estado', nuevo);
-          const resp = await fetch('/?page=asistencia_actualizar', {
+          const resp = await fetch('index.php?page=asistencia_actualizar', {
             method: 'POST',
             credentials: 'include',
             body: fd
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarFichas() {
   try {
     // ✅ endpoint correcto + cookies
-    const response = await fetch('/?page=profesorficha', {
+    const response = await fetch('index.php?page=profesorficha', {
       credentials: 'include'
     });
     if (!response.ok) throw new Error('Error en la respuesta');
@@ -473,49 +473,52 @@ async function cargarFichas() {
           </div>
         </div>
       `;
-
-      // Click en la tarjeta para seleccionar ficha
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.menu-container')) {
-          let diasSemana;
-          if (ficha.dias_semana) {
-            try {
-              diasSemana = JSON.parse(ficha.dias_semana);
-            } catch (e) {
+      if (!disabled) {
+        // Listener para seleccionar ficha
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.menu-container')) {
+            let diasSemana;
+            if (ficha.dias_semana) {
+              try {
+                diasSemana = JSON.parse(ficha.dias_semana);
+              } catch (e) {
+                diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+              }
+            } else {
               diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
             }
-          } else {
-            diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
-          }
-        
-          fichaSeleccionada = { 
-            id: ficha.id, 
-            nombre: ficha.numero || ficha.numero_ficha,
-            dias_semana: diasSemana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']
-          };
-          semanaOffset = 0;
-          calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
-          fetch(`/?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
-            credentials: 'include'
-          })
-            .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
-            .then(estudiantes => {
-              console.log("📌 Estudiantes cargados:", estudiantes);
-              estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
-              if (estudiantesCache.length === 0) {
-                calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
-                return;
-              }
-              renderCalendario();
+            fichaSeleccionada = { 
+              id: ficha.id, 
+              nombre: ficha.numero || ficha.numero_ficha,
+              dias_semana: diasSemana || ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']
+            };
+            semanaOffset = 0;
+            calWrapper.innerHTML = '<div>Cargando aprendices...</div>';
+            fetch(`index.php?page=estudiantesporficha&ficha_id=${encodeURIComponent(ficha.id)}`, {
+              credentials: 'include'
             })
-            .catch(err => {
-              console.error('Error estudiantes:', err);
-              calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
-            });
-        }
-      });
-
-      // menú desplegable
+              .then(r => { if (!r.ok) throw new Error('Error al cargar estudiantes'); return r.json(); })
+              .then(estudiantes => {
+                console.log("📌 Estudiantes cargados:", estudiantes);
+                estudiantesCache = Array.isArray(estudiantes) ? estudiantes.filter(e => e && e.id) : [];
+                if (estudiantesCache.length === 0) {
+                  calWrapper.innerHTML = '<div>No hay aprendices en esta ficha.</div>';
+                  return;
+                }
+                renderCalendario();
+              })
+              .catch(err => {
+                console.error('Error estudiantes:', err);
+                calWrapper.innerHTML = '<div>Error al cargar estudiantes.</div>';
+              });
+          }
+        });
+      } else {
+        // Si está deshabilitado, evitar cualquier interacción
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.6';
+      }
+      // Menú desplegable y otros listeners
       const menuBtn = card.querySelector('.menu');
       const menuDropdown = card.querySelector('.menu-dropdown');
       if (menuBtn && menuDropdown) {
@@ -602,7 +605,7 @@ async function abrirModalCompartir(fichaId, fichaNombre) {
 
 async function cargarProfesores() {
   try {
-    const response = await fetch('/?page=obtener_profesores', {
+    const response = await fetch('index.php?page=obtener_profesores', {
       credentials: 'include'
     });
     
@@ -611,7 +614,7 @@ async function cargarProfesores() {
     const profesores = await response.json();
     
     // Verificar estado de compartir para cada profesor
-    const responseEstado = await fetch('/?page=verificar_estado_compartir', {
+    const responseEstado = await fetch('index.php?page=verificar_estado_compartir', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -696,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     try {
-      const response = await fetch('/?page=compartir_ficha', {
+      const response = await fetch('index.php?page=compartir_ficha', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
