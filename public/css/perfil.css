@@ -3,7 +3,8 @@
 }
 
 html, body {
-    overflow: hidden !important; /* Forzar la prevención de scroll */
+    overflow-x: hidden !important;
+    overflow-y: auto !important; /* Permitir scroll vertical */
 }
 
 .perfil-container {
@@ -13,7 +14,7 @@ html, body {
     margin-top: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Alinear al inicio (arriba) */
+    align-items: center; /* Centrar verticalmente */
     min-height: 100vh;
 }
 
@@ -341,7 +342,7 @@ html, body {
 }
 
 .perfil-container .status-badge {
-    background: #dcfce7;
+    background:  #D7EECC;
     color: #000000;
     padding: 4px 12px;
     border-radius: 12px;
@@ -351,7 +352,7 @@ html, body {
     letter-spacing: 0.3px;
     display: inline-flex;
     align-items: center;
-    border: 1px solid #D7EECC;
+    border: 1px solid  #D7EECC;
     gap: 6px;
 }
 

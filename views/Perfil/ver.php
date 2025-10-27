@@ -246,18 +246,7 @@ if (empty($iniciales)) $iniciales = 'US';
                         </div>
                         
                         <?php if ($rolId == 2): ?>
-                        <!-- 
-                        CAMBIO REALIZADO: Visualización segura de contraseña para profesores
-                        - Solo muestra contraseña hasheada (asteriscos)
-                        -->
-                        <div class="info-row">
-                            <span class="info-label">Contraseña:</span>
-                            <span class="info-value">
-                                <!-- Solo contraseña enmascarada -->
-                                <?= str_repeat('*', 8) ?>
-                            </span>
-                        </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
                         <?php if ($rolId == 3): ?>
                         <div class="info-row">
                             <span class="info-label">Acudiente:</span>

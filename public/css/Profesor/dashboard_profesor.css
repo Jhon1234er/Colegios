@@ -1,8 +1,8 @@
 /* ===== INPUT DE BUSCAR FICHA ===== */
 .input-buscar-ficha {
-  background: var(--color-white);
+  background: #ebfbeb;
   padding: 8px 28px;
-  border-radius: 15px !important;
+  border-radius: 10px !important;
   border: 2px solid var(--color-gray-200);
   font-size: 14px;
   font-weight: 600;
@@ -16,6 +16,7 @@
   margin-left: 0;
   text-align: center;
   display: inline-block;
+  border-color: #39A900;
 }
 
 .input-buscar-ficha:focus {
@@ -24,7 +25,7 @@
 }
 
 .input-buscar-ficha::placeholder {
-  color: #b0b7c3;
+  color: #2c5535;
   font-weight: 400;
   opacity: 1;
 }
@@ -714,7 +715,7 @@ h3::after {
 }
 
 .contenedor-tarjetas .card-ficha .menu:hover i {
-  color: #2563eb !important;
+  color: #1c8c00 !important;
 }
 
 /* Fallback con puntos CSS si el carácter Unicode no funciona */
