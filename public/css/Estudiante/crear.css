@@ -27,7 +27,7 @@ html, body {
   max-width: 860px;
   margin: 120px auto 32px; /* Margen superior para espacio, y auto para centrar */
   padding: 32px; /* más aire interno para no pegarse a los bordes */
-  border-radius: 12px;
+  border-radius: 20px;
   border: 1px solid rgba(0, 48, 77, 0.12); /* basado en #00304D */
   box-shadow: 0 6px 24px rgba(0, 48, 77, 0.08);
   width: calc(100% - 48px);
@@ -62,9 +62,9 @@ html, body {
 /* Título principal dentro del container de esta vista */
 .container > h2 {
   margin: 0 0 12px;
-  font-size: 1.75rem;
+  font-size: 30px;
   font-weight: 800;
-  color: var(--azul-oscuro);
+  color: #000000;
   text-align: center;
 }
 
@@ -202,7 +202,7 @@ label {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: var(--azul-oscuro);
+  color: #000000;
   margin: 0 8px 4px; /* un poco menos para compactar */
 }
 

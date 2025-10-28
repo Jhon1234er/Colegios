@@ -76,6 +76,14 @@ class AuthController {
             return "Por favor selecciona un tipo de documento, género y fecha de nacimiento válidos.";
         }
 
+        // Convertir fecha de nacimiento de dd/mm/yyyy a yyyy-mm-dd si es necesario
+        if (!empty($data['fecha_nacimiento']) && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $data['fecha_nacimiento'])) {
+            $partes = explode('/', $data['fecha_nacimiento']);
+            if (count($partes) === 3) {
+                $data['fecha_nacimiento'] = $partes[2] . '-' . $partes[1] . '-' . $partes[0];
+            }
+        }
+
         $data['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
         unset($data['password']);
 

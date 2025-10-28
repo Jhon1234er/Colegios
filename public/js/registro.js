@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
             searchEnabled: false,
             itemSelectText: '',
             classNames: {
-                containerOuter: 'choices dark-compatible'
+                containerOuter: 'choices',
+                containerOuterDark: 'dark-compatible'
             }
         });
     });

@@ -1,4 +1,8 @@
 <?php
+// Mostrar todos los errores en pantalla (solo para desarrollo)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once '../helpers/auth.php';
 require_once '../controllers/AuthController.php';
 // Autoload de Composer (PhpSpreadsheet, Dompdf, etc.)
@@ -147,7 +151,12 @@ if ($page === 'materias') {
 // ====== REGISTRO USUARIO GENERAL ======
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
     csrf_validate();
-    AuthController::registrar($_POST);
+    $result = AuthController::registrar($_POST);
+    if (is_string($result) && strpos($result, 'Error') !== false) {
+        echo '<div style="color:red; font-weight:bold; margin:40px auto; max-width:600px; text-align:center;">'.$result.'</div>';
+        echo '<a href="javascript:history.back()" style="display:block;text-align:center;margin-top:20px;">Volver</a>';
+        exit;
+    }
     exit;
 }
 
@@ -669,6 +678,16 @@ if ($page === 'registro_profesor_guardar' && $_SERVER['REQUEST_METHOD'] === 'POS
 
 
 // ====== RUTAS PROTEGIDAS (VISTAS) ======
+
+if ($page === 'asistentes') {
+    require_login(); require_role(1);
+    $action = $_GET['action'] ?? 'index';
+    if ($action === 'crear') {
+        include '../views/Administrador/crear_asistente.php';
+        exit;
+    }
+    // Aquí podrías agregar más acciones para asistentes si lo necesitas
+}
 if ($page === 'colegios') {
     require_login(); require_role(1);
     require_once '../controllers/ColegioController.php';

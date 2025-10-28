@@ -114,6 +114,7 @@ if ($usuario_id) {
               Registros
             </button>
             <div class="dropdown-content" role="menu">
+              <a role="menuitem" href="/?page=asistentes&action=crear">Crear Asistente</a>
               <a role="menuitem" href="/?page=profesores&action=crear">Crear Facilitador</a>
               <a role="menuitem" href="/?page=estudiantes&action=crear">Crear Aprendiz</a>
               <a role="menuitem" href="/?page=colegios&action=crear">Registrar Colegios</a>

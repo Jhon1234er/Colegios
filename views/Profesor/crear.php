@@ -4,7 +4,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-<link rel="stylesheet" href="/css/Profesor/crear.css?v=4">
+<link rel="stylesheet" href="/css/Profesor/crear.css">
 
 <div class="profesor-crear">
   <h2 class="form-title">Registro de Facilitador</h2>
