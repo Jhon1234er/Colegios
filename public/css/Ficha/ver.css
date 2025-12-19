@@ -1,0 +1,476 @@
+/* Línea verde debajo del título */
+.linea-verde {
+    width: 98%;
+    height: 7px;
+    background: #5ca82b;
+    border-radius: 8px;
+    margin: 10px auto 32px auto;
+    box-shadow: 0 2px 8px rgba(92,168,43,0.08);
+    position: center;
+}
+/* === FICHA INFO CARDS === */
+.ficha-info {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ficha-info .ficha-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    display: flex;
+    align-items: center;
+    max-width: 200px;
+    padding: 0 16px 0 0;
+    max-height: 90px;
+    height: 110px;
+    margin: 0;
+    position: relative;
+    flex: 1 1 140px;
+}
+
+.ficha-info .ficha-card .ficha-card-bar {
+    background: #39A900;
+    width: 30px;
+    height: 100%;
+    border-radius: 20px 0 0 20px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.ficha-info .ficha-card-content {
+    margin-left: 32px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.ficha-info .ficha-card strong {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.1em;
+    align-items: center;
+}
+
+.ficha-info .ficha-card .ficha-card-value {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 0.1em;
+}
+
+/* Estado badge */
+.ficha-info .estado-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #D7EECC;
+    color: #000000;
+    border-radius: 999px;
+    padding: 6px 18px 6px 10px;
+    font-weight: 700;
+    font-size: 10px;
+    margin-top: 0.2em;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    letter-spacing: 0.5px;
+    align-items: center;
+}
+.ficha-info .estado-badge .dot {
+    width: 18px;
+    height: 18px;
+    background: #39A900;
+    border-radius: 50%;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+@media (max-width: 900px) {
+    .ficha-info {
+        gap: 16px;
+    }
+    .ficha-info .ficha-card {
+        min-width: 180px;
+        max-width: 100%;
+        height: 100px;
+        padding-right: 16px;
+    }
+    .ficha-info .ficha-card-content {
+        margin-left: 48px;
+    }
+    .ficha-info .ficha-card strong {
+        font-size: 1.2rem;
+    }
+    .ficha-info .ficha-card .ficha-card-value {
+        font-size: 1rem;
+    }
+}
+/* === ESTILOS PARA FICHA DE ESTUDIANTES === */
+
+/* Container principal */
+.container {
+    max-width: 1800px;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #ffffff;
+    min-height: 83vh;
+    border-radius: 50px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.40);
+    margin-top: 32px; /* Espacio entre el header y el contenedor */
+    align-items: center;
+}
+
+/* Título principal */
+.container h2 {
+    color: #000000;
+    margin-bottom: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    padding-bottom: 0;
+    text-align: center;
+}
+
+/* Sección del link público */
+.link-publico {
+    background: white;
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #e3e8ee;
+}
+
+.link-publico label {
+    display: block;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.link-publico .form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background: #f8f9fa;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.link-publico .form-control:focus {
+    border-color: #3498db;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Sección de acciones */
+.acciones {
+    margin: 25px 0;
+    text-align: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Botón claro personalizado */
+.btn-light {
+    background: #00304D;
+    color: white;
+}
+
+.btn-primary {
+    background: #39A900;
+    color: white;
+}
+
+/* Separador */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #bdc3c7, transparent);
+    margin: 30px 0;
+}
+
+/* Título de la sección de estudiantes */
+.container h3 {
+    color: #000000;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Mensaje cuando no hay estudiantes */
+.container > p:last-of-type {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    font-size: 1.1rem;
+    padding: 40px 20px;
+    background: white;
+    border: 2px dashed #bdc3c7;
+    border-radius: 8px;
+}
+
+/* Tabla responsive */
+.table-responsive {
+    background: white;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.tabla-lista {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.tabla-lista thead {
+    background: #00304D;
+    color: white;
+}
+
+.tabla-lista th {
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #2c3e50;
+    white-space: nowrap;
+}
+
+.tabla-lista tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+/* Chip de estado del aprendiz (Activo / Suspendido) */
+.estado-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.estado-chip-activo {
+    background: #ecfdf3;
+    color: #166534;
+}
+.estado-chip-suspendido {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.tabla-lista tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.tabla-lista tbody tr:nth-child(even) {
+    background: #fdfdfd;
+}
+
+.tabla-lista tbody tr:nth-child(even):hover {
+    background: #f0f8ff;
+}
+
+.tabla-lista td {
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+    vertical-align: middle;
+}
+
+/* Botones de acción */
+.btn-accion {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-warning {
+    background: #39A900;
+    color: white;
+}
+
+
+.btn-danger {
+    background:#aa2010;
+    color: white;
+}
+
+
+
+/* === RESPONSIVE DESIGN === */
+
+/* Tablets */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .container h2 {
+        font-size: 1.6rem;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;;
+    }
+    
+    .tabla-lista {
+        min-width: 700px;
+    }
+    
+    .tabla-lista th,
+    .tabla-lista td {
+        padding: 8px 6px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-accion {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        margin: 1px;
+    }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .container h2 {
+        font-size: 1.4rem;
+    }
+    
+    .container p {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .link-publico {
+        padding: 15px;
+    }
+    
+    .link-publico .form-control {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .tabla-lista {
+        min-width: 600px;
+    }
+    
+    .tabla-lista th,
+    .tabla-lista td {
+        padding: 6px 4px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-accion {
+        display: block;
+        margin: 2px 0;
+        text-align: center;
+    }
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Efecto de enfoque para inputs */
+.form-control:focus {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* === ACCESIBILIDAD === */
+.btn:focus,
+.btn-accion:focus,
+.form-control:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+/* Mejor contraste para usuarios con dificultades visuales */
+@media (prefers-high-contrast: high) {
+    .container p {
+        border-left-width: 6px;
+    }
+    
+    .tabla-lista tbody tr:hover {
+        background: #e3f2fd !important;
+    }
+}
+
+/* Forzar que los botones principales no cambien de color al hacer hover */
+.btn-primary:hover, .btn-primary:focus {
+    background: #39A900 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-light:hover, .btn-light:focus {
+    background: #00304D !important;
+    color: #fff !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Reducir animaciones para usuarios sensibles al movimiento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

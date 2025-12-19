@@ -1,0 +1,543 @@
+
+/* =========================================================
+   PALETA MINIMAL (solo los que pediste)
+   ========================================================= */
+   :root{
+    --c-primary: #00304D;              /* azul principal */
+    --c-accent:  #39A900;              /* verde acento   */
+    --c-white:   #ffffff;
+    --c-black:   #000000;
+  
+    /* derivados opacos (mismo color con transparencia) */
+    --c-primary-10: rgba(0, 48, 77, 0.10);
+    --c-primary-15: rgba(0, 48, 77, 0.15);
+    --c-primary-20: rgba(0, 48, 77, 0.20);
+    --c-primary-30: rgba(0, 48, 77, 0.30);
+    --c-accent-10:  rgba(57, 169, 0, 0.10);
+    --c-accent-20:  rgba(57, 169, 0, 0.20);
+    --c-accent-30:  rgba(57, 169, 0, 0.30);
+  
+    /* layout */
+    --navbar-height: 68px;
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+  
+    /* motion & sombra */
+    --ease: cubic-bezier(.4,0,.2,1);
+    --t: .25s var(--ease);
+    --t-slow: .35s var(--ease);
+    --shadow: 0 6px 20px rgba(0,0,0,.12);
+    --shadow-lg: 0 12px 34px rgba(0,0,0,.16);
+  }
+
+  /* View toggle button (Asistente) - mismo estilo que notificaciones */
+  .view-toggle-btn{
+  background: var(--c-white);
+  color: var(--c-primary);
+  border: 1px solid var(--c-primary-20);
+  width:44px; height:44px; border-radius:50%;
+  display:grid; place-items:center; cursor:pointer; transition:var(--t);
+  position:relative;
+  padding:0; line-height:1;
+  box-shadow: 0 4px 12px var(--c-primary-30);
+}
+  .view-toggle-btn:hover{
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: var(--shadow);
+  color: var(--c-primary);
+}
+  .view-toggle-btn svg{ width:20px; height:20px; stroke: currentColor; stroke-width:2.2; }
+  /* Spin animation */
+  @keyframes headerSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .view-toggle-btn:hover svg{ animation: headerSpin 1s linear infinite; }
+  .view-toggle-btn:active svg{ animation: headerSpin .6s var(--ease); }
+  @media (prefers-reduced-motion: reduce){
+    .view-toggle-btn:hover svg,
+    .view-toggle-btn:active svg{ animation: none; }
+  }
+  .view-toggle-btn > span{ position:absolute; inset:0; display:grid; place-items:center; transition: transform .3s ease, opacity .3s ease; }
+  .view-toggle-btn .icon-grid{ transform: rotate(0deg) scale(1); opacity:1; }
+  .view-toggle-btn .icon-eye{ transform: rotate(-90deg) scale(0); opacity:0; }
+  
+  /* =========================================================
+     RESET BÁSICO
+     ========================================================= */
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html,body{ min-height:100vh; }
+  img{ max-width:100%; display:block; }
+  button{ font: inherit; }
+  a{ color: inherit; text-decoration: none; }
+  
+  /* =========================================================
+     BASE
+     ========================================================= */
+  body{
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: #111;
+    background: white; /* Fondo por defecto (gris claro) */
+    padding-top: var(--navbar-height);
+    line-height: 1.55;
+  }
+
+  /* Fondo absoluto reutilizable para toda la página (si se necesita como capa) */
+  .page-background{
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* =========================================================
+     HEADER / NAVBAR (estilo como la imagen)
+     ========================================================= */
+  .header-unified{
+    position: fixed; inset: 0 0 auto 0;
+    height: var(--navbar-height);
+    background: var(--c-primary);
+    color: var(--c-white);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 20px;
+    border-bottom-left-radius: var(--radius-lg, 18px);
+    border-bottom-right-radius: var(--radius-lg, 18px);
+    box-shadow: none !important;
+    z-index: 1000;
+  }
+  .header-unified::before,
+  .header-unified::after{ content:none !important; border:0 !important; box-shadow:none !important; }
+  .header-unified .logo{
+    font-weight: 800; letter-spacing: .2px;
+    font-size: 1.25rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: var(--c-white);
+    white-space: nowrap;
+    position: relative;
+    text-decoration: none !important;
+    display: inline-block;
+    line-height: 1;
+  }
+  .header-unified .logo:focus,
+  .header-unified .logo:active,
+  .header-unified .logo:hover{
+    text-decoration: none !important;
+    -webkit-text-decoration: none !important;
+    text-decoration-color: transparent !important;
+    text-decoration-skip-ink: none !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+  }
+  /* Animación de degradado sobre el texto al pasar el cursor */
+  .header-unified .logo:hover{
+    background-image: linear-gradient(90deg, var(--c-white), var(--c-accent), var(--c-white));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: titleGradient 1.2s linear infinite;
+  }
+
+  @keyframes titleGradient{
+    0%{ background-position: 0% 50%; }
+    100%{ background-position: 200% 50%; }
+  }
+
+  /* Respeta usuarios con "reducir movimiento" */
+  @media (prefers-reduced-motion: reduce){
+    .header-unified .logo:hover{ animation: none; background-image: none; color: var(--c-white); }
+  }
+  
+  /* alineación interna sin empujones */
+  /* Grid: logo | buscador | NAV CENTRADA | spacer | usuario */
+  .header-unified .header-inner{
+    width:100%; min-width:0;
+    display:grid; align-items:center; column-gap:16px;
+    grid-template-columns: auto 1fr auto 1fr auto;
+  }
+  .logo-section{ grid-column:1; display:flex; align-items:center; gap:10px; }
+  .logo-section img{ height:36px; width:auto; object-fit:contain; }
+  .logo-section{ line-height: 1; }
+  
+  /* -------- Buscador (píldora blanca al centro) -------- */
+  .search-section{
+    grid-column:2;
+    min-width: 260px; max-width: 420px; /* un poco más ancho y equilibrado */
+    display:flex; justify-content:flex-start;
+  }
+  .search-form{
+    display:flex; align-items:center; gap:8px;
+    width:100%;
+    background: var(--c-white);
+    border: 1px solid var(--c-primary-20);       /* borde neutro suave */
+    border-radius: 999px;                        /* píldora completa */
+    padding: 4px 6px 4px 10px;                   /* espacio homogéneo */
+    height: 44px;                                /* un poco más alto para respirar */
+    overflow: visible;                           /* el menú del select puede abrir hacia abajo */
+    box-shadow: 0 10px 22px rgba(0,0,0,.10);     /* sombra única y suave */
+    transition: var(--t);
+  }
+  .search-form:focus-within{
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 2px var(--c-accent-20), 0 10px 22px rgba(0,0,0,.12);
+  }
+  
+  .select-wrapper{
+    position:relative;
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    margin-left: 0;
+  }
+  .search-select{
+    appearance:none;
+    border: none;
+    background: transparent;         /* se integra en la píldora general */
+    color: #111;
+    padding: 0 26px 0 8px;          /* vertical 0, altura controlada por height */
+    border-radius: 999px;           /* solo para el fondo de foco */
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: none;                /* sin sombra propia; la da el contenedor */
+    height: 36px;
+    line-height: 36px;               /* alinea el texto verticalmente */
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .select-arrow{ position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; }
+  /* asegurar caret a la derecha en navegadores webkit */
+  .search-select{ background-position: right 28px center; }
+  /* color visible para la flecha del select (SVG) */
+  .select-arrow svg{ width:14px; height:14px; stroke: var(--c-primary) !important; stroke-width:2 !important; transition: transform var(--t); transform-box: fill-box; transform-origin: 50% 50%; }
+  .select-arrow svg polyline{ stroke: var(--c-primary) !important; stroke-width:2 !important; }
+  /* rotar flecha del select cuando cualquier campo del buscador tiene foco */
+  .search-form:focus-within .select-arrow svg{ transform: rotate(180deg); }
+  .search-select:focus{
+    outline:none;
+    box-shadow: inset 0 0 0 1px var(--c-accent-30);
+  }
+  
+  .search-input{
+    flex:1; min-width: 80px;
+    border:none; outline:none;
+    background: transparent;
+    color:#111;
+    padding: 8px 6px;
+    font-size: 14px;
+    border-left: 1px solid rgba(0,0,0,.08);      /* separador visual respecto al select */
+    margin-left: 2px;
+  }
+  .search-input::placeholder{ color:#8a8f98; }
+  
+  .search-btn{
+    border:none; cursor:pointer; display:grid; place-items:center;
+    width:30px; height:30px; border-radius:50%;
+    background: var(--c-accent);
+    color: var(--c-white);
+    box-shadow: 0 6px 18px var(--c-accent-30);
+    transition: var(--t);
+  }
+  .header-unified .search-btn .icon{ width:16px; height:16px; }
+  .search-btn:hover{ transform: translateY(-1px) scale(1.03); }
+  
+  /* -------- Menú principal: píldoras blancas -------- */
+  .nav-main{
+    grid-column:3;
+    display:flex; align-items:center; gap:8px; justify-content:center;
+    justify-self:center; /* centrado real en el header */
+    margin-left:0;
+  }
+  /* Contenedor blanco para las opciones del profesor */
+  .nav-prof-container{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: #ffffff;
+    border: 1px solid var(--c-primary-20);
+    border-radius: 999px;
+    padding: 6px; /* espacio alrededor de las píldoras internas */
+  }
+  /* Normalizar wrappers internos dentro del contenedor */
+  .nav-prof-container .nav-item-box{ margin:0; padding:0; border:none; background: transparent; }
+  /* Dentro del contenedor blanco, las píldoras internas quedan sin borde para evitar doble marco */
+  .nav-prof-container .nav-link{ border: none; background: white; color: #000; }
+  .nav-link, .dropbtn{
+    display:flex; align-items:center; gap:8px; /* icono izquierda, texto derecha */
+    background: white;
+    color: #000000; /* texto en negro */
+    padding: 8px 14px;
+    border: 1px solid var(--c-primary-20);
+    border-radius: 999px;
+    font-weight: 700; font-size: 14px;
+    transition: var(--t);
+  }
+  /* tamaño consistente de iconos de los botones de navegación */
+  .nav-main .icon{ width:18px; height:18px; display:inline-block; }
+  .nav-link:hover, .dropbtn:hover{
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }
+  
+  /* -------- Dropdowns -------- */
+  .dropdown{ position:relative; }
+  .dropdown-content{
+    position:absolute; top: calc(100% + 8px); right:0;
+    background: var(--c-white);
+    border: 1px solid var(--c-primary-20);
+    border-radius: var(--radius);
+    min-width: 220px; overflow:hidden;
+    box-shadow: var(--shadow-lg);
+    opacity:0; visibility:hidden; transform: translateY(-6px);
+    transition: var(--t-slow); z-index: 1001; pointer-events:none;
+  }
+  .dropdown:hover .dropdown-content,
+  .dropdown.active .dropdown-content{
+    opacity:1; visibility:visible; transform: translateY(0);
+    pointer-events:auto;
+  }
+  .dropdown-content a{
+    display:flex; align-items:center; gap:10px;
+    padding: 12px 14px; color:#111; border-bottom:1px solid #f1f2f4;
+    transition: var(--t);
+  }
+  .dropdown-content a:last-child{ border-bottom:none; }
+  .dropdown-content a:hover{ background: #f7f9fb; color: var(--c-primary); transform: translateX(3px); }
+  
+  /* -------- Panel usuario / notificaciones -------- */
+  .user-panel{ grid-column:5; display:flex; align-items:center; gap:12px; position:relative; justify-self:end; }
+  .notifications-btn{
+    position: relative;
+    background: var(--c-white); color: var(--c-primary);
+    border: 1px solid var(--c-primary-20); width:40px; height:40px; border-radius:50%;
+    display:grid; place-items:center; cursor:pointer; transition:var(--t);
+  }
+  .notifications-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+  .notifications-badge{
+    position:absolute; top:-4px; right:-4px; background:#e53935; color:#fff;
+    padding:2px 6px; font-size:10px; border-radius:10px; font-weight:800;
+  }
+  
+  .notifications-panel{
+    position:absolute; right:0; top: calc(100% + 8px);
+    width: 360px; max-height: 420px; overflow:auto;
+    background: var(--c-white);
+    border: 1px solid var(--c-primary-20);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    opacity:0; visibility:hidden; transform: translateY(-6px);
+    transition: var(--t-slow); z-index:1001;
+    color: #111; /* asegurar texto oscuro dentro del panel */
+  }
+  .notifications-panel.active{ opacity:1; visibility:visible; transform: translateY(0); }
+  .notifications-header{
+    background: var(--c-primary); color:var(--c-white);
+    padding: 12px 14px; font-weight: 700; text-align:center;
+  }
+  .notifications-list{ padding:10px; }
+  .notification-item{
+    background:#f6fbff; border-left:3px solid var(--c-primary);
+    padding:12px; border-radius: var(--radius-sm); margin-bottom:10px;
+    color:#0f172a; /* texto oscuro para contraste */
+  }
+  .notification-item.unread{ background:#eef7ff; }
+  .notification-actions{
+    margin-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#666;
+  }
+  .notification-item a{
+    color: var(--c-primary);
+    text-decoration: underline;
+    font-weight: 700;
+  }
+  .mark-read-btn{
+    background:transparent; border:none; color:var(--c-primary); text-decoration:underline;
+    cursor:pointer; font-weight:700;
+  }
+
+  .notifications-panel,
+  .notifications-header,
+  .notifications-list,
+  .notification-item,
+  .notification-actions,
+  .notification-content,
+  .notification-item a,
+  .notif-chip{
+    font-family: 'Manrope', 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .notification-item{ font-size:14px; }
+  .notification-content,
+  .notification-date,
+  .notif-chip{
+    font-variant-numeric: tabular-nums;
+  }
+  .notif-chip{ letter-spacing:.2px; font-weight:700; }
+
+  /* Botones de acción (Aceptar / Rechazar) */
+  .notification-buttons{ display:flex; gap:8px; margin-top:10px; }
+  .notification-buttons .btn-aceptar,
+  .notification-buttons .btn-rechazar{
+    appearance:none; -webkit-appearance:none;
+    border:none; border-radius:999px; padding:8px 12px; line-height:1;
+    font-weight:800; font-size:12px; cursor:pointer; transition: var(--t);
+    color:#fff; display:inline-flex; align-items:center; gap:6px;
+  }
+  .notification-buttons .btn-aceptar{
+    background:#16a34a; /* verde */
+    box-shadow: 0 6px 18px rgba(22,163,74,.28);
+  }
+  .notification-buttons .btn-aceptar:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+  .notification-buttons .btn-aceptar:active{ transform: translateY(0); filter: brightness(0.98); }
+  .notification-buttons .btn-rechazar{
+    background:#dc2626; /* rojo */
+    box-shadow: 0 6px 18px rgba(220,38,38,.28);
+  }
+  .notification-buttons .btn-rechazar:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+  .notification-buttons .btn-rechazar:active{ transform: translateY(0); filter: brightness(0.98); }
+  .notification-buttons .btn-aceptar:focus,
+  .notification-buttons .btn-rechazar:focus{ outline:none; box-shadow: 0 0 0 3px rgba(2,6,23,.18); }
+  .notification-buttons-disabled .btn-disabled{
+    background:#e2e8f0; color:#475569; border-radius:999px; padding:6px 10px; font-weight:800; font-size:12px;
+  }
+  
+  /* Perfil */
+  .profile-btn{
+    display:flex; align-items:center; gap:8px;
+    background: var(--c-white); color: var(--c-primary);
+    border: 1px solid var(--c-primary-20);
+    padding:6px 10px; border-radius:999px; transition: var(--t);
+  }
+  /* flecha del perfil a la derecha siempre */
+  /* versión con Font Awesome (compat Safari) */
+  .profile-btn .profile-caret{
+    margin-left:auto; font-size:14px; color: var(--c-primary);
+    transition: transform var(--t);
+    display:inline-block;
+  }
+  .profile-menu.active .profile-btn .profile-caret,
+  .profile-menu:hover .profile-btn .profile-caret{ transform: rotate(180deg); }
+  /* Fallback SVG para Safari si el icono de FA no carga */
+  .profile-btn .profile-caret-svg{
+    margin-left:auto; width:16px; height:16px; display:inline-block;
+    transition: transform var(--t); -webkit-transition: -webkit-transform var(--t);
+  }
+  .profile-menu.active .profile-btn .profile-caret-svg,
+  .profile-menu:hover .profile-btn .profile-caret-svg{ transform: rotate(180deg); -webkit-transform: rotate(180deg); }
+  .profile-btn .profile-caret-svg polyline{
+    stroke: var(--c-primary); stroke-width: 2; fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+  /* rotar flecha del perfil cuando el menú esté activo o con hover (fallback) */
+  .profile-menu.active .profile-btn .icon-sm,
+  .profile-menu:hover .profile-btn .icon-sm{ transform: rotate(180deg); }
+  .profile-btn:hover{ box-shadow: var(--shadow); transform: translateY(-1px); }
+  .profile-avatar{ width:32px; height:32px; border-radius:50%; object-fit:cover; }
+  /* Asegurar que las iniciales (no imágenes) se vean perfectamente circulares y centradas */
+  .profile-avatar.student-initials,
+  .profile-avatar.guardian-initials,
+  .profile-avatar.prof-initials{
+    width:36px;
+    aspect-ratio: 1 / 1;
+    border-radius: 9999px;
+    display: inline-grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 14px;
+    background: #00304D;
+    color: #fff;
+  }
+  .profile-menu{ position:relative; }
+  .profile-dropdown{
+    position:absolute; top: calc(100% + 8px); right:0;
+    background: var(--c-white);
+    border: 1px solid var(--c-primary-20);
+    border-radius: var(--radius);
+    min-width: 220px; overflow:hidden;
+    box-shadow: var(--shadow-lg);
+    opacity:0; visibility:hidden; transform: translateY(-6px);
+    transition: var(--t-slow); z-index:1001; pointer-events:none;
+  }
+  .profile-menu:hover .profile-dropdown,
+  .profile-menu:focus-within .profile-dropdown{
+    opacity:1; visibility:visible; transform: translateY(0); pointer-events:auto;
+  }
+  .profile-dropdown a{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; color:#111;
+    border-bottom:1px solid #f1f2f4; transition: var(--t);
+  }
+  .profile-dropdown a:last-child{ border-bottom:none; }
+  .profile-dropdown a:hover{ background:#f7f9fb; color:var(--c-primary); transform: translateX(3px); }
+  /* tamaño y alineación de íconos del menú de perfil (Chrome/Safari) */
+  .profile-dropdown a .icon{
+    width:18px; height:18px; flex:0 0 18px; display:inline-block;
+  }
+  .profile-dropdown a svg.icon path,
+  .profile-dropdown a svg.icon circle,
+  .profile-dropdown a svg.icon polyline{
+    stroke-width:2;
+  }
+ 
+ /* =========================================================
+    ENLACES SIN DECORACIÓN (override Bootstrap)
+    ========================================================= */
+ /* Evita subrayados que Bootstrap aplica por defecto al hover */
+ .header-unified a,
+ .header-unified a:hover,
+ .header-unified a:focus,
+ .dropdown-content a,
+ .dropdown-content a:hover,
+ .profile-dropdown a,
+ .profile-dropdown a:hover{
+   text-decoration: none !important;
+   -webkit-text-decoration: none !important;
+   text-decoration-color: transparent !important;
+ }
+  
+  /* Logout */
+  .logout-btn{
+    display:flex; align-items:center; gap:8px;
+    background: var(--c-primary); color: var(--c-white);
+    border:none; padding:8px 14px; border-radius:999px; cursor:pointer;
+    transition: var(--t);
+  }
+  .logout-btn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+  
+  /* -------- Notification chips (fecha/hora/aula) -------- */
+  .notification-content{ line-height: 1.6; }
+  .notif-chip{
+    display:inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0 2px;
+    border: 1px solid rgba(0,0,0,.06);
+    background: #f3f4f6;
+    color: #111827;
+    vertical-align: baseline;
+    box-shadow: 0 1px 0 rgba(0,0,0,.03);
+  }
+  .notif-chip--date{
+    background: #eef2ff; /* indigo-50 */
+    color: #3730a3;      /* indigo-700 */
+    border-color: rgba(67,56,202,.25);
+  }
+  .notif-chip--time{
+    background: #e8f8ef; /* green-50 custom */
+    color: #166534;      /* green-700 */
+    border-color: rgba(22,163,74,.25);
+  }
+  .notif-chip--room{
+    background: #fff7ed; /* orange-50 */
+    color: #9a3412;      /* orange-700 */
+    border-color: rgba(234,88,12,.25);
+  }

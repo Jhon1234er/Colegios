@@ -1,0 +1,317 @@
+/* ========================================
+   VARIABLES
+   ======================================== */
+   :root{
+    --sena-green:#39A900;
+    --bg:#FFFFFF;
+    --text:#000000;
+    --shadow-1:rgba(0,0,0,.08);
+    --shadow-2:rgba(0,0,0,.14);
+    --field-bg:#FFFFFF;
+  }
+  
+  /* ========================================
+     RESET / BASE
+     ======================================== */
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'Myriad Pro','Myriad Pro SemiExtended','Myriad Pro Semiextended',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    min-height:100vh; overflow:hidden; display:flex; background:var(--bg); color:var(--text);
+  }
+  
+  /* ========================================
+     LAYOUT DIVIDIDO
+     ======================================== */
+  .welcome-panel{
+    flex:1;
+    background:var(--sena-green);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; min-height:100vh;
+  }
+  .login-panel{
+    flex:1;
+    background:#fff;
+    /* —— centrado del formulario —— */
+    display:flex; align-items:center; justify-content:center;
+    position:relative; padding:2rem; min-height:100vh;
+  }
+  .page-brand{
+    position:absolute; top:14px; left:14px; width:56px; height:auto; z-index:3;
+  }
+  
+  /* Esquina verde y logo arriba derecha */
+  .login-panel::before{
+    content:""; position:absolute; top:0; right:0; width:120px; height:120px;
+    background:var(--sena-green); border-bottom-left-radius:100%;
+  }
+  .login-panel::after{
+    content:""; position:absolute; top:14px; right:14px; width:56px; height:56px;
+    background:url('/icons/logo_sschool.png') no-repeat center/contain; z-index:2; pointer-events:none;
+  }
+  
+  /* Izquierda (verde) */
+  .sena-logo{
+    position:absolute; top:2.25rem; left:2.5rem;
+    width:clamp(72px,6vw,96px); height:auto; filter:brightness(0) invert(1);
+  }
+  
+  /* Contenido centrado en el panel verde */
+  .welcome-content{
+    width:100%; display:flex; align-items:center; justify-content:center;
+  }
+  .welcome-text{
+    width:100%; max-width:900px; padding:0 2vw;
+    text-align:center; color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  }
+  .welcome-text h1{
+    font-weight:800; letter-spacing:-.02em; line-height:1.05;
+    font-size:clamp(3rem,6vw,5.75rem); text-shadow:0 2px 4px rgba(0,0,0,.10);
+  }
+  .welcome-text h1 strong{display:block; white-space:nowrap}
+  #welcomeSubtitle{display:none}
+  #welcomeDescription{
+    font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif!important;
+  }
+  /* ========================================
+     TARJETA DE FORMULARIO
+     ======================================== */
+  .form-container{
+    width:100%;
+    position: relative; /* contenedor de posicionamiento */
+    height: 100%;
+    min-height: 100%;
+    display: grid; place-items: center; /* centrado adicional */
+  }
+  .login-form-container,
+  .register-form-container{
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(420px, 38vw, 620px);
+    padding:3rem 3.25rem;
+    box-shadow:0 14px 28px var(--shadow-1), 0 10px 18px var(--shadow-2);
+    border:1px solid rgba(0,0,0,.06);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  /* Visibilidad por defecto: mostrar login, ocultar registro */
+  .login-form-container{ display: block; z-index: 2; }
+  .register-form-container{ display: none; }
+  /* Reglas robustas para el toggle (por si el JS solo quita/pones clases) */
+  .login-form-container:not(.inactive){ display:block; z-index:2; }
+  .register-form-container:not(.active){ display:none; }
+  .form-title{
+    text-align:center; font-size:3rem; font-weight:800; letter-spacing:-.5px;
+    margin-bottom:2rem; color:var(--text);
+  }
+  
+  /* Estados registro/login: solo uno visible y ambos centrados */
+  .register-form-container{display:none; opacity:0;}
+  .register-form-container.active{display:block; opacity:1; z-index:2}
+  .login-form-container.inactive{display:none; opacity:0;}
+
+  /* Bloquear cualquier movimiento durante el toggle (evita que se vaya a la esquina) */
+  .login-form-container,
+  .register-form-container,
+  .login-form-container.inactive,
+  .register-form-container.active{
+    transform: translate(-50%, -50%) !important;
+    animation: none !important;
+    will-change: opacity;
+  }
+  
+  /* ========================================
+     CAMPOS / LABELS / FLOTANTES
+     ======================================== */
+  .form-group{margin-bottom:1rem; position:relative}
+  
+  /* Input pill */
+  .form-group input,
+  .form-group select{
+    width:100%; min-height:56px;
+    padding:1rem 1.2rem;
+    border:2px solid var(--sena-green);
+    border-radius:36px;
+    background:var(--field-bg); color:var(--text); font-size:1.05rem;
+    box-shadow:0 2px 4px var(--shadow-1); outline:none;
+    transition:border-color .25s ease, box-shadow .25s ease, transform .05s ease;
+  }
+  .form-group input:focus,
+  .form-group select:focus{
+    border-color:var(--sena-green);
+    box-shadow:0 0 0 3px rgba(57,169,0,.15), 0 6px 16px var(--shadow-1);
+  }
+  .form-group input::placeholder{color:#6f6f6f}
+  
+  /* Labels flotantes (usar .form-group.floating + placeholder=" ") */
+  .form-group.floating input{
+    padding-top: 1.35rem;
+    padding-bottom: .85rem;
+  }
+  .form-group.floating select{
+    padding-top: 1.35rem;
+    padding-bottom: .85rem;
+  }
+  .form-group.floating label{
+    position:absolute;
+    top:50%;
+    left: 1.1rem;
+    transform: translateY(-50%);
+    font-size: .95rem;
+    color: #6f6f6f;
+    background: var(--field-bg);
+    padding: 0 .35rem;
+    border-radius:8px;
+    line-height:1;
+    pointer-events: none;
+    transition: all .18s ease;
+  }
+  .form-group.floating input:focus + label,
+  .form-group.floating input:not(:placeholder-shown) + label{
+    top: -8px;
+    transform: none;
+    font-size: .78rem;
+    color: var(--sena-green);
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  .form-group.floating select:focus + label,
+  .form-group.floating.filled label{
+    top: -8px;
+    transform: none;
+    font-size: .78rem;
+    color: var(--sena-green);
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+
+  .form-group input:-webkit-autofill{
+    -webkit-box-shadow: 0 0 0 1000px var(--field-bg) inset;
+    -webkit-text-fill-color: var(--text);
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  .form-group.floating input:-webkit-autofill + label{
+    top: -8px;
+    transform: none;
+    font-size: .78rem;
+    color: var(--sena-green);
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  
+  /* Compatibilidad cuando no se usa .floating */
+  .form-group:not(.floating) > label{
+    display:block; font-size:.95rem; color:var(--sena-green); margin-bottom:.5rem; font-weight:700;
+  }
+  
+  /* Mostrar/ocultar contraseña */
+  .password-wrapper{position:relative}
+  .password-wrapper input{padding-right:44px}
+  .toggle-password{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    width:24px; height:24px; opacity:.8; cursor:pointer; user-select:none;
+  }
+  .toggle-password:hover{opacity:1}
+  .email-hint{margin:.65rem 0; text-align:center; color:#6f6f6f; font-size:.95rem}
+
+  /* Forgot password specific overrides */
+  .forgot-card .form-group input,
+  .forgot-card .form-group select{
+    border-color:#cbd5e1; /* slate-300 */
+  }
+  .forgot-card .form-group input:focus,
+  .forgot-card .form-group select:focus{
+    border-color:var(--sena-green);
+    box-shadow:0 0 0 3px rgba(57,169,0,.15), 0 6px 16px var(--shadow-1);
+  }
+  .alternate-actions{margin-top:16px; display:flex; align-items:center; justify-content:center; gap:12px; color:#6f6f6f; font-size:.92rem}
+  .alternate-actions .pill-secondary{display:inline-flex; align-items:center; gap:8px; padding:9px 14px; background:#0b3a53; color:#fff; border-radius:999px; text-decoration:none; font-weight:700; font-size:.9rem}
+  
+  /* Forgot card layout fixes: ensure true center on page */
+  .forgot-card{
+    position:relative !important;
+    left:auto !important; top:auto !important;
+    transform:none !important;
+    margin:0 auto;
+    align-self:center; justify-self:center;
+  }
+  .forgot-card .form-title{font-size:1.5rem}
+  
+  /* ========================================
+     LINKS — peso 200
+     ======================================== */
+  .forgot-password{margin:.25rem 0 1.25rem; text-align:right; font-weight:200}
+  .forgot-password a{color:#6f6f6f; text-decoration:none; font-size:.95rem; font-weight:200}
+  .forgot-password a:hover{color:var(--sena-green)}
+  
+  .form-links{margin-top:1rem; text-align:center; color:#6f6f6f; font-weight:200}
+  .form-links a{color:var(--sena-green); font-weight:200; text-decoration:none}
+  .form-links a:hover{text-decoration:underline}
+  
+  /* Botón principal */
+  .form-button{
+    display:inline-flex; align-items:center; justify-content:center; width:100%;
+    height:58px; border:none; border-radius:32px; cursor:pointer;
+    background:var(--sena-green); color:#fff; font-weight:800; font-size:1.35rem; letter-spacing:.02em;
+    box-shadow:0 10px 26px rgba(0,0,0,.10); transition:transform .03s ease, box-shadow .2s ease;
+  }
+  .form-button:hover{box-shadow:0 14px 30px rgba(0,0,0,.12)}
+  .form-button:active{transform:translateY(1px)}
+  
+  /* Loader del botón (opcional) */
+  .form-button.loading{position:relative; color:transparent; cursor:not-allowed}
+  .form-button.loading::after{
+    content:""; position:absolute; width:20px; height:20px; top:50%; left:50%;
+    margin:-10px 0 0 -10px; border:2px solid #fff; border-top-color:transparent;
+    border-radius:50%; animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  
+  /* ========================================
+     REGISTRO (por si lo usas)
+     ======================================== */
+  .register-form-container .row{display:grid; grid-template-columns:1fr 1fr; gap:25px; margin-bottom:25px}
+  .register-form-container .col-md-6{display:flex; flex-direction:column; margin-bottom:20px}
+  .register-form-container .col-md-6 label{margin-bottom:10px; font-weight:700; color:#333; font-size:16px}
+  .register-form-container .col-md-6 input,
+  .register-form-container .col-md-6 select{
+    width:100%; height:50px; padding:15px 18px; border:1px solid #ccc; border-radius:8px; font-size:16px; background:white
+  }
+  .register-form-container .col-md-6 select{
+    -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 15px center; background-size:12px; padding-right:45px
+  }
+  
+  /* ========================================
+     ANIMACIONES DE ENTRADA
+     ======================================== */
+  /* Evitar que la animación sobrescriba transform de centrado */
+  .login-form-container{animation:fadeIn .4s ease-out}
+  .welcome-text{animation:slideInLeft .6s ease-out}
+  @keyframes slideInLeft{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes slideInRight{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  
+  /* ========================================
+     RESPONSIVE
+     ======================================== */
+  @media (max-width: 1024px){
+    .form-title{font-size:2.5rem}
+  }
+  @media (max-width: 900px){
+    #welcomeDescription{white-space:normal}
+  }
+  @media (max-width: 768px){
+    .welcome-panel{flex:0 0 40%; padding:2rem; text-align:center}
+    .login-panel{flex:1; padding:1.5rem}
+    .login-form-container{width: min(92%, 560px); padding:2rem 1.5rem}
+    .sena-logo{width:80px; top:1rem; left:1rem}
+  }
+  @media (max-width: 480px){
+    .welcome-panel{flex:0 0 35%; padding:1.5rem}
+    .welcome-text h1{font-size:2.2rem}
+    .login-form-container{padding:2rem 1.2rem; border-radius:16px}
+    .form-title{font-size:2rem}
+  }
+  

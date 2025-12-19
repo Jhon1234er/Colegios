@@ -1,0 +1,675 @@
+/* Estudiante Crear - reset y paleta base */
+:root {
+  --verde: #39A900;
+  --azul-oscuro: #00304D;
+  --negro: #000000;
+  --blanco: #FFFFFF;
+}
+
+/* Reset mínimo y tipografía base */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--blanco);
+  color: var(--negro);
+  font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+/* Contenedor principal del formulario de aprendiz (link público e interno) */
+.crear-container,
+.estudiante-crear {
+  background: var(--blanco);
+  max-width: 780px;               /* tarjeta algo más angosta para reducir espacios laterales */
+  margin: 120px auto 32px;        /* centrado horizontal */
+  padding: 32px;                  /* aire interno uniforme a los lados */
+  border-radius: 20px;
+  border: 1px solid rgba(0, 48, 77, 0.12); /* basado en #00304D */
+  box-shadow: 0 6px 24px rgba(0, 48, 77, 0.08);
+  width: calc(100% - 48px);
+}
+
+.estudiante-crear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* centra el contenido (stepper + formulario) dentro de la tarjeta */
+}
+
+.estudiante-crear form {
+  width: 100%;
+}
+
+/* Fallback: en pantallas pequeñas o con poca altura, volver a flujo normal */
+@media (max-width: 860px), (max-height: 820px) {
+  .crear-container,
+  .estudiante-crear {
+    position: static;
+    transform: none;
+    width: auto;
+    margin: 96px auto 96px;
+  }
+}
+
+.crear-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.crear-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+}
+
+/* Título principal dentro del container de esta vista */
+.container > h2 {
+  margin: 0 0 12px;
+  font-size: 30px;
+  font-weight: 800;
+  color: #000000;
+  text-align: center;
+}
+
+/* Subtítulos de cada paso */
+.form-step h5 {
+  margin: 8px 0 12px;
+  font-size: 1.1rem;
+  color: var(--azul-oscuro);
+  text-align: center;
+}
+
+/* Visibilidad de pasos (mover desde el <style> inline) */
+.form-step { display: none; }
+.form-step.active { display: block; }
+
+/* Stepper basado en HTML real: .stepper > li.step */
+.stepper {
+  list-style: none;
+  margin: 8px 0 20px;
+  padding: 0;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stepper .step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px; /* más ancho que alto */
+  border-radius: 999px;
+  border: 1px solid rgba(57, 169, 0, 0.35);
+  background: rgba(57, 169, 0, 0.06);
+  color: var(--verde);
+  font-weight: 700;
+}
+
+.stepper .step.active {
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--blanco);
+}
+
+.stepper .step-circle {
+  width: 22px;        /* más compacto para que el chip se vea más horizontal */
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--verde);
+  color: var(--blanco);
+  font-size: 0.9rem;
+}
+
+.stepper .step.active .step-circle {
+  background: var(--blanco);
+  color: var(--verde);
+}
+
+.stepper .step-label {
+  white-space: nowrap;
+}
+
+/* Stepper/Pasos */
+.pasos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.paso {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(57, 169, 0, 0.35); /* #39A900 */
+  color: var(--verde);
+  background: rgba(57, 169, 0, 0.06);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.paso-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--verde);
+  color: var(--blanco);
+  font-size: 0.85rem;
+}
+
+.paso-texto {
+  white-space: nowrap;
+}
+
+.paso--activo {
+  background: var(--verde);
+  color: var(--blanco);
+  border-color: var(--verde);
+}
+
+.paso--activo .paso-num {
+  background: var(--blanco);
+  color: var(--verde);
+}
+
+/* Separadores y ayudas visuales */
+.divider {
+  height: 1px;
+  background: rgba(0, 48, 77, 0.12);
+  margin: 16px 0;
+  border: 0;
+}
+
+/* Layout de formulario base (opcional) */
+.crear-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .crear-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 8px 4px; /* un poco menos para compactar */
+}
+
+/* Asegurar que el label contenedor ocupe el ancho y no quiebre layout */
+.estudiante-crear label { display: block; }
+
+/* Disposición de campos (simil bootstrap) SOLO dentro del formulario de aprendiz */
+.container.estudiante-crear .row1,
+.container.estudiante-crear .row2 {
+  /* Usamos flex para poder centrar mejor las dos columnas */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;  /* centra el bloque de columnas dentro de la tarjeta */
+  column-gap: 24px;         /* espacio entre columna izquierda y derecha */
+  row-gap: 12px;            /* espacio vertical entre filas */
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.container.estudiante-crear .col-md-6 {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+  padding-right: 0;
+  flex: 0 1 340px;        /* ancho base de cada columna en desktop */
+  max-width: 340px;
+}
+
+@media (max-width: 768px) {
+  .estudiante-crear .row1,
+  .estudiante-crear .row2 {
+    justify-content: stretch;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .container.estudiante-crear .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 2px solid rgba(0, 48, 77, 0.65);
+  border-radius: 999px;
+  background: var(--blanco);
+  color: var(--negro);
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+  margin: 0; /* el espaciado lo da el grid */
+}
+
+input,
+select,
+textarea {
+  margin-top: 0; /* cohesión con el label */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #00304D;
+  box-shadow: 0 0 0 3px rgba(0, 48, 77, 0.12);
+}
+
+/* Select nativo: caret a la derecha (si no carga Choices) */
+select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300304D' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+  padding-right: 42px;
+}
+
+/* Choices.js estilo píldora (dentro del contenedor de Estudiante) */
+.container .choices{ width:100%; margin: 0 }
+.container .choices__list--dropdown{
+  border-radius: 16px !important;
+  max-height: 260px !important;   /* scroll interno si hay muchas opciones */
+  overflow: auto !important;
+  z-index: 10010 !important;      /* sobre el footer/header */
+}
+.container .choices__list--dropdown .choices__item[aria-disabled="true"]{
+  /* Oculta la opción placeholder deshabilitada para que no se repita */
+  display: none;
+}
+.container .choices__inner{
+  border: 2px solid rgba(0,48,77,.65) !important;
+  border-radius: 999px !important;
+  min-height: 48px !important;
+  padding: 12px 16px !important;
+  background:#fff !important; color:#111 !important;
+  box-shadow:none !important;
+  font-size: 14px !important;
+}
+.container .choices[data-type*="select-one"]::after{ display:none !important }
+.container .choices__list--single .choices__item{ padding:0 !important; margin:0 !important }
+.container .is-focused .choices__inner,
+.container .is-open .choices__inner{
+  border-color:#00304D !important;
+  box-shadow:0 0 0 3px rgba(0,48,77,.12) !important;
+}
+
+/* Botones base (por si se requieren) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primario {
+  background: var(--verde);
+  color: var(--blanco);
+}
+
+.btn-primario:hover {
+  filter: brightness(0.95);
+}
+
+.btn-secundario {
+  background: var(--blanco);
+  color: var(--azul-oscuro);
+  border-color: rgba(0, 48, 77, 0.25);
+}
+
+.btn-secundario:hover {
+  background: rgba(0, 48, 77, 0.05);
+}
+
+/* Botones de navegación del formulario según HTML */
+.form-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.next-btn,
+.submit-btn {
+  background: var(--verde);
+  color: var(--blanco);
+  border: 1px solid var(--verde);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.next-btn:hover,
+.submit-btn:hover { filter: brightness(0.95); }
+
+
+.prev-btn,
+.btn.btn-secondary {
+  background: var(--blanco);
+  color: var(--azul-oscuro);
+  border: 1px solid rgba(0, 48, 77, 0.25);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.prev-btn:hover,
+.btn.btn-secondary:hover { background: rgba(0, 48, 77, 0.05); }
+
+.acudiente-item {
+  position: relative;
+  padding-top: 20px; /* Espacio para el botón de eliminar */
+}
+
+.btn-eliminar-acudiente {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* ===== Input fecha (igual estilo modal dashboard) ===== */
+/* El ancho del contenedor de Estudiante ya está controlado arriba */
+.container.estudiante-crear{ max-width: 900px; }
+
+#fecha_nacimiento[type="date"],
+input[type="date"].form-control {
+  border: 2px solid #39A900;
+  border-radius: 14px;
+  padding: 10px 12px;
+  outline: none;
+}
+#fecha_nacimiento[type="date"]:focus,
+input[type="date"].form-control:focus {
+  border-color: #39A900;
+  box-shadow: 0 0 0 3px rgba(57,169,0,.15);
+}
+/* color del icono del datepicker (webkit) */
+.estudiante-crear #fecha_nacimiento[type="date"]::-webkit-calendar-picker-indicator {
+  filter: hue-rotate(70deg) saturate(2);
+  cursor: pointer;
+}
+
+/* ========== Flatpickr — replicar estilo de Profesor en Estudiante ========== */
+/* Scope: dentro del contenedor .estudiante-crear presente en views/Estudiante/crear.php */
+
+/* Header del calendario compacto y claro */
+.estudiante-crear .flatpickr-months,
+.estudiante-crear .flatpickr-months .flatpickr-month{
+  position: relative !important;
+  width: 100% !important;
+  height: 65px !important;
+  overflow: visible !important;
+}
+
+/* Contenedor Mes + Año */
+.estudiante-crear .flatpickr-current-month{
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 4px 8px !important;
+  line-height: 1 !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+/* Reset de reglas del core en esta vista */
+.estudiante-crear .flatpickr-months .flatpickr-current-month,
+.estudiante-crear .flatpickr-calendar .flatpickr-current-month{
+  position: relative !important;
+  width: 60% !important;
+  height: 81px !important;
+  padding: 4px 90px 4px 8px !important;
+  -webkit-transform: none !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  white-space: nowrap !important;
+}
+
+/* Mes (menulist nativo, tipografía consistente) */
+.estudiante-crear .flatpickr-current-month .flatpickr-monthDropdown-months{
+  -webkit-appearance: menulist !important;
+  -moz-appearance: menulist !important;
+  appearance: menulist !important;
+  background: transparent !important;
+  color: #111 !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  padding: 2px 4px !important;
+  height: 30px !important;
+  line-height: 26px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+}
+.estudiante-crear .flatpickr-current-month .flatpickr-monthDropdown-months:focus{
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.06) !important;
+  border-color: #C4CCD6 !important;
+}
+.estudiante-crear .flatpickr-current-month .flatpickr-monthDropdown-months:hover{
+  border-color: #C4CCD6 !important;
+}
+
+/* Año (estilo limpio, sin borde) */
+.estudiante-crear .flatpickr-current-month .numInputWrapper{
+  position: static !important;
+  transform: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 30px !important;
+  padding: 0 4px !important;
+  margin-left: 2px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 1;
+  position: relative !important;
+}
+.estudiante-crear .flatpickr-current-month input.cur-year{
+  width: 60px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #111 !important;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+}
+
+/* Flechas de año visibles y clicables */
+.estudiante-crear .date-wrap{ position: relative; width: 100%; display: block; }
+.estudiante-crear #fecha_nacimiento{ padding-right: 42px !important; display: block; width: 100%; }
+.estudiante-crear .date-wrap > .date-icon{
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px; z-index: 3; color: #00304D;
+  cursor: pointer; pointer-events: auto;
+}
+.estudiante-crear .flatpickr-current-month .numInputWrapper .arrowUp{ top: 2px !important; }
+.estudiante-crear .flatpickr-current-month .numInputWrapper .arrowDown{ bottom: 2px !important; }
+
+/* Calendario con efecto glass sutil y sombra */
+.estudiante-crear .flatpickr-calendar{
+  overflow: visible !important;
+  z-index: 20;
+  background: rgba(255,255,255,0.72) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.10), 0 8px 18px rgba(0,0,0,.06);
+}
+
+/* Flechas navegación (mes anterior/siguiente) con verde SENA */
+.estudiante-crear .flatpickr-months .flatpickr-prev-month,
+.estudiante-crear .flatpickr-months .flatpickr-next-month{
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #39A900 !important;
+  fill: #39A900 !important;
+  opacity: .95 !important;
+}
+.estudiante-crear .flatpickr-months .flatpickr-prev-month svg,
+.estudiante-crear .flatpickr-months .flatpickr-next-month svg{
+  width: 16px !important; height: 41px !important;
+}
+
+/* Tema de días en verde */
+.estudiante-crear .flatpickr-day:hover{ border-color: rgba(57,169,0,.45) !important; }
+.estudiante-crear .flatpickr-day.today{
+  border-color: #39A900 !important;
+  color: #39A900 !important;
+  background: rgba(57,169,0,0.10) !important;
+}
+.estudiante-crear .flatpickr-day.selected,
+.estudiante-crear .flatpickr-day.startRange,
+.estudiante-crear .flatpickr-day.endRange{
+  background: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #fff !important;
+}
+.estudiante-crear .flatpickr-day.inRange{
+  background: rgba(57,169,0,0.12) !important;
+  border-color: rgba(57,169,0,0.18) !important;
+}
+
+/* Responsive: si hay poco ancho, el año baja debajo del mes */
+@media (max-width: 480px){
+  .estudiante-crear .flatpickr-current-month{
+    padding-right: 10px !important;
+    height: auto !important;
+  }
+  .estudiante-crear .flatpickr-current-month .numInputWrapper{
+    position: static !important;
+    transform: none !important;
+    margin-left: auto !important;
+    margin-top: 6px !important;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   Modal de error para formularios (usado en Registro de Aprendiz)
+   ──────────────────────────────────────────────────────────── */
+.form-error-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 11000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease-out;
+}
+
+.form-error-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.form-error-modal {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px 16px;
+  max-width: 360px;
+  width: calc(100% - 32px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(0, 48, 77, 0.10);
+}
+
+.form-error-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.form-error-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+}
+
+.form-error-close {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.form-error-body {
+  margin-bottom: 12px;
+}
+
+.form-error-message {
+  margin: 0;
+  font-size: 14px;
+  color: #111827;
+}
+
+.form-error-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form-error-actions .btn-primario,
+.form-error-actions .btn.btn-primario {
+  min-width: 110px;
+}

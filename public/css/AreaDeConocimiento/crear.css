@@ -1,0 +1,297 @@
+/* =========================================
+   Página: Materia / Crear-Actualizar (crear.css)
+   - No afecta header/footer ni otras vistas
+   - Estilo tipo card con sombras suaves
+   - Controles con focus ring verde
+   - “Agregar curso”, cards internas y “Guardar Cursos”
+========================================= */
+
+/* --- Lienzo principal --- */
+.container {
+  max-width: 1100px;
+  margin: 1rem auto; /* Centrado con margen superior e inferior */
+  padding: 20px 16px;
+  box-sizing: border-box;
+}
+
+/* --- Card principal (no tocar header/footer) --- */
+.container .card-widget {
+  position: relative; /* Necesario para posicionar el botón de volver */
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow:
+    0 14px 32px rgba(0,0,0,.12),
+    0 6px 14px rgba(0,0,0,.08),
+    0 0 0 1px rgba(2,6,23,.06);
+  /* Truco para "cortar" la sombra de arriba */
+  clip-path: inset(0 -30px -30px -30px);
+}
+
+/* Botón de Volver */
+.btn-back {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  background: #f1f5f9;
+  color: #475569;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: background-color .2s, color .2s, transform .15s;
+}
+
+.btn-back:hover {
+  background: #00304D;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* Título centrado como en el diseño */
+.container .card-widget .section-title {
+  font-weight: 800;
+  text-align: center;
+  margin: 6px 0 18px 0 !important;
+}
+  /* =======================
+     Barra “Agregar curso”
+  ======================= */
+  .container .card-widget .courses-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  
+  /* Botón primario (verde) — scopeado a la card */
+  .container .card-widget .btn.btn-primary {
+    background: #39A900;
+    border: 0;
+    color: #fff;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 10px 16px;
+    line-height: 1;
+    box-shadow:
+      0 6px 14px rgba(57,169,0,.25),
+      0 2px 6px rgba(0,0,0,.10);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .container .card-widget .btn.btn-primary:hover {
+    background: #2f8e00;
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 20px rgba(57,169,0,.28),
+      0 4px 10px rgba(0,0,0,.12);
+  }
+  .container .card-widget .btn.btn-primary:active {
+    transform: translateY(0);
+  }
+  
+  /* Variante pequeña para “Eliminar” dentro de cada card */
+  .container .card-widget .btn.btn-sm {
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 12px;
+    line-height: 1;
+  }
+  
+  /* Botón “Eliminar” estilo pastilla azul (como el mock) SOLO aquí */
+  .container .card-widget .btn.btn-danger {
+    font-family: 'Myriad Pro', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 100%;
+    letter-spacing: 0%;
+    background: #0b3b58; /* azul profundo */
+    color: #fff;
+    border: 0;
+    box-shadow: 0 4px 10px rgba(11,59,88,.25);
+  }
+  .container .card-widget .btn.btn-danger:hover {
+    background: #0a334c;
+  }
+  
+  /* =======================
+     Grid de cursos
+  ======================= */
+  .container .card-widget .course-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  /* Layout para 2 items */
+  .container .card-widget .course-grid.item-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Layout para 3 items */
+  .container .card-widget .course-grid.item-count-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  /* Layout para 4 items (y más) */
+  .container .card-widget .course-grid.item-count-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .container .card-widget .course-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  
+  /* Card de cada curso (panel gris con sombra y borde redondeado grande) */
+  .container .card-widget .course-card {
+    background: #F4F2F2; /* Color solicitado */
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow:
+      0 8px 18px rgba(0,0,0,.09),
+      0 0 0 1px rgba(2,6,23,.05);
+  }
+
+  /* Fila de campos con Flexbox para layout adaptable */
+  .container .card-widget .card-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* Campo base con Flexbox */
+  .container .card-widget .field {
+    flex: 1 1 180px; /* Crece, se encoge, y base de 180px para más espacio */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  /* Label */
+  .container .card-widget .field label,
+  .container .card-widget .form-label {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+  }
+  
+  /* Inputs / Textareas estilo soft + sombra */
+  .container .card-widget .form-control {
+    height: 42px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #0f172a;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  }
+  .container .card-widget textarea.form-control {
+    height: auto;
+    min-height: 96px;
+    resize: vertical;
+  }
+  
+  .container .card-widget .form-control::placeholder {
+    color: #94a3b8;
+  }
+  
+  /* Focus ring verde consistente con la marca */
+  .container .card-widget .form-control:focus {
+    border-color: #39A900;
+    box-shadow:
+      0 4px 12px rgba(0,0,0,.12),
+      0 0 0 3px rgba(57,169,0,.16);
+    background: #fff;
+  }
+  
+  /* =======================
+     Acciones de cada card
+  ======================= */
+  .container .card-widget .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 6px;
+  }
+  
+  /* =======================
+     Footer del formulario
+  ======================= */
+  .container .card-widget .row[style*="justify-content: flex-end"] {
+    gap: 10px;
+  }
+  
+  /* Botón “Guardar Cursos” grande, centrado y pastilla verde */
+  .container .card-widget .row .btn.btn-primary {
+    min-width: 280px;
+    height: 46px;
+    font-size: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Botón cancelar simple (si aparece en editar) */
+  .container .card-widget .btn-cancelar {
+    background: #e2e8f0;
+    color: #0f172a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  }
+  .container .card-widget .btn-cancelar:hover {
+    background: #dbe3ec;
+  }
+  
+  /* =======================
+     Estados y mensajes
+  ======================= */
+  .container .card-widget .alert {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  
+  /* =======================
+     Responsivo
+  ======================= */
+  @media (max-width: 992px) {
+    .container { padding: 16px 12px; }
+    .container .card-widget { border-radius: 24px; padding: 20px; }
+  }
+  
+  @media (max-width: 768px) {
+    .container .card-widget .card-row {
+      grid-template-columns: 1fr;
+    }
+    .container .card-widget .field-wide {
+      grid-column: span 1;
+    }
+    .container .card-widget .row .btn.btn-primary {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+  
+  /* =======================
+     Detalles visuales extra
+  ======================= */
+  /* Sombra suave al pasar sobre cada card de curso */
+  .container .card-widget .course-card:hover {
+    box-shadow:
+      0 12px 24px rgba(0,0,0,.12),
+      0 0 0 1px rgba(2,6,23,.06);
+  }
+  
+  /* Pequeña separación superior del bloque de guardado */
+  .container .card-widget form > .row:last-child {
+    margin-top: 24px !important;
+  }
+  

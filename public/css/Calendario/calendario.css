@@ -1,0 +1,588 @@
+#cal-filters select.form-select,
+#cal-filters .form-select,
+#cal-layout #cal-filters select.form-select,
+#cal-layout #cal-filters .form-select {
+  height: 20px !important;
+  min-height: 0 !important;
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+  line-height: 18px !important;
+}
+
+#cal-layout #cal-filters .cf-left > * { margin: 4px 0 !important; }
+#cal-layout #cal-filters .cf-right > * { margin: 4px 0 !important; }
+/* ===== Calendario base (mock) ===== */
+/* Fallback base para FullCalendar cuando main.min.css es bloqueado o no carga.
+   Scoped a #calendario para no afectar el calendario colaborativo. */
+#calendario .fc, 
+#calendario .fc * { box-sizing: border-box; }
+#calendario .fc {
+  --fc-border-color: #e5e7eb;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: transparent;
+  --fc-button-text-color: #111827;
+  --fc-button-bg-color: #ffffff;
+  --fc-button-border-color: #e5e7eb;
+  --fc-today-bg-color: transparent;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  line-height: 1.3;
+}
+#calendario .fc .fc-media-screen{ width:100%; height:auto; }
+#calendario .fc .fc-view-harness{ position:relative; }
+#calendario .fc .fc-scroller{ overflow: hidden; }
+#calendario .fc .fc-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+#calendario .fc .fc-button{ cursor:pointer; }
+#calendario .fc .fc-col-header, 
+#calendario .fc .fc-col-header-cell{ border:0; }
+#calendario .fc .fc-daygrid, 
+#calendario .fc .fc-timegrid{ position:relative; }
+#calendario .fc .fc-daygrid-day{ border:0; }
+#calendario .fc .fc-daygrid-day-top{ display:flex; align-items:center; }
+#calendario .fc .fc-daygrid-day-events{ margin: 0 2px; }
+#calendario .fc .fc-daygrid-event{ display:block; }
+#calendario .fc .fc-popover{ z-index: 10000; }
+
+/* Panel gris redondeado */
+.fc .fc-scrollgrid {
+  background: #efefef;
+  border: 1px solid #dedede;
+  border-radius: 28px;
+  overflow: hidden;
+  padding: 44px 12px 12px; /* espacio arriba para el nav interno y laterales más amplios */
+}
+
+/* Toolbar en grid: [izq][centro][der] para centrar el título */
+.fc .fc-toolbar.fc-header-toolbar {
+  background: transparent; border:0; box-shadow:none; padding: 8px 14px 12px;
+  display:grid; grid-template-columns: 1fr auto 1fr; align-items:center;
+}
+.fc .fc-header-toolbar .fc-toolbar-chunk:first-child { justify-self:start; display:flex; align-items:center; }
+.fc .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { justify-self:center; display:flex !important; align-items:center; gap:12px; white-space:nowrap; }
+.fc .fc-header-toolbar .fc-toolbar-chunk:last-child { justify-self:end; display:flex; align-items:center; }
+.fc .fc-header-toolbar .fc-toolbar-title { text-transform: none; font-weight: 800; letter-spacing:.2px; text-align:center; margin:0; font-size: 1rem; }
+.fc .fc-header-toolbar .fc-toolbar-title { font-size: 1rem; }
+/* Overrides para asegurar fila horizontal */
+.fc .fc-toolbar.fc-header-toolbar { display:grid !important; grid-template-columns: 1fr auto 1fr !important; }
+.fc .fc-toolbar-chunk { display:flex; align-items:center; }
+.fc .fc-toolbar-chunk:nth-child(2) { display:flex !important; flex-direction: row !important; align-items:center; gap:12px; }
+.fc .fc-toolbar-chunk .fc-button-group, .fc .fc-toolbar-chunk .fc-button { display:inline-flex; align-items:center; }
+.fc .fc-prev-button, .fc .fc-next-button {
+  background:#ffffff; border:1px solid #e5e7eb; color:#111827;
+  border-radius:12px; width:34px; height:34px; min-width:34px;
+  display:inline-grid; place-items:center; box-shadow:0 1px 2px rgba(0,0,0,.06);
+}
+.fc .fc-prev-button:hover, .fc .fc-next-button:hover { background:#f3f4f6; }
+
+/* Botones de vista: blancos con borde gris; activo verde */
+.fc .fc-button, .fc .fc-button-group .fc-button {
+  background:#ffffff; border:1px solid #e5e7eb; color:#111827;
+  border-radius:12px; font-weight:800; text-transform:none; height:36px; padding:0 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06); margin-right:8px;
+}
+.fc .fc-button-group { border:0 !important; box-shadow:none !important; overflow:visible !important; }
+.fc .fc-button-group > .fc-button { border-radius:12px !important; margin-right:8px; }
+.fc .fc-button-group > .fc-button + .fc-button { margin-left:0 !important; }
+.fc .fc-button:hover, .fc .fc-button:focus { background:#ffffff; border-color:#e5e7eb; color:#111827; }
+.fc .fc-button-primary:not(:disabled).fc-button-active { background:#e5f5e8; border:2px solid #16a34a; color:#065f46; }
+
+/* Encabezados de días */
+.fc .fc-col-header, .fc .fc-col-header-cell { background: transparent; border:0; }
+.fc .fc-col-header-cell-cushion {
+  color:#111827; font-weight:800; text-transform:none; text-align:left;
+  padding:8px 12px; letter-spacing:.2px;
+  display:inline-flex; align-items:center;
+  background:#ffffff; border:1px solid #e5e7eb; border-radius:12px;
+  text-decoration:none !important; border-bottom:none !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+}
+
+/* Celdas del mes como tarjetas */
+.fc .fc-daygrid-body table { table-layout: fixed !important; }
+.fc .fc-daygrid-day { padding: 6px; vertical-align: top; }
+.fc .fc-daygrid-day-frame {
+  background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.06);
+  overflow: visible; /* no recortar pastillas ni '+N más' */
+  min-height: 120px; /* permite 2 filas cómodas */
+  height: auto; /* dejar que el contenido determine el alto si es necesario */
+  display: flex; flex-direction: column; /* estabiliza alto interno */
+  position: relative; /* para posicionar el +N más */
+}
+.fc .fc-daygrid-day-top { padding: 8px 8px 2px 8px; flex: 0 0 auto; }
+.fc .fc-daygrid-day-events { flex: 1 1 auto; overflow: visible; }
+.fc .fc-daygrid-day-number { 
+  color:#6b7280; padding: 6px 8px; font-weight:700; background: transparent; border-radius: 0; margin: 0; display:inline; 
+  text-decoration: none !important; border-bottom: none !important;
+}
+.fc .fc-daygrid-day-number:hover,
+.fc .fc-daygrid-day-number:focus { text-decoration: none !important; border-bottom: none !important; }
+.fc .fc-day-today .fc-daygrid-day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px; margin: 6px; padding: 0;
+  border-radius: 9999px;
+  background: #00304D !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+.fc .fc-day-today .fc-daygrid-day-frame { background:#fff !important; border-color:#e5e7eb !important; box-shadow:none !important; }
+
+/* Quitar líneas de separación del grid en vista Mes */
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc .fc-daygrid-day,
+.fc .fc-daygrid-day-top,
+.fc .fc-daygrid-day-events { border: 0 !important; }
+
+/* Neutralizar resaltado del día actual (quitar amarillos/azules por defecto) */
+.fc .fc-day-today { background: transparent !important; outline: none !important; }
+.fc .fc-day-today .fc-daygrid-day-frame { 
+  background: #fff !important; 
+  border-color: #e5e7eb !important; 
+  box-shadow: none !important; 
+}
+
+/* Reducir tamaño general del calendario y centrarlo */
+#cal-container { 
+  max-width: 1120px; margin: 0 auto; position: relative;
+  background:#F4F2F2; border:1px solid #e5e7eb; border-radius:50px; 
+  box-shadow: 0 8px 24px rgba(0,0,0,.06); padding:20px; 
+  min-height: 750px !important; /* altura mínima del contenedor detrás del calendario */
+}
+#calendario { max-width: 1120px; margin: 0 auto; min-height: 100%; }
+#calendario { max-width: 1120px; margin: 0 auto; }
+
+/* === Nav personalizado: ◀ octubre de 2025 ▶ centrado y grande === */
+#cal-nav { 
+  display:grid; grid-template-columns:auto auto auto; align-items:center; 
+  column-gap:8px; width:fit-content;
+  position:absolute; left:50%; transform:translateX(-50%);
+  top: 8px; margin:0; z-index:3;
+}
+#cal-title { font-weight:800; font-size:1.05rem; letter-spacing:.2px; text-transform:none; color:#111827; text-align:center; }
+#cal-nav button { 
+  background:#ffffff; border:1px solid #e5e7eb; color:#111827;
+  width:36px; height:36px; min-width:36px; border-radius:12px;
+  display:inline-grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.06);
+  font-size: 1rem; line-height:1;
+}
+#cal-nav button:hover { background:#f3f4f6; }
+
+/* Hover lift on events (mes/semana/día) */
+.fc .fc-daygrid-event, .fc .fc-timegrid-event {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+/* Hover lift solo para Semana/Día, no para Mes */
+.fc .fc-timegrid-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 5;
+}
+
+/* === Semana/Día con el mismo estilo de "tarjetas" que Mes === */
+/* Encabezado de días (Semana/Día) */
+.fc-timegrid .fc-col-header { background: transparent !important; border: 0 !important; }
+.fc-timegrid .fc-col-header-cell { background: transparent !important; border: 0 !important; padding: 4px 6px; }
+.fc-timegrid .fc-col-header-cell-cushion {
+  color: #111827 !important; font-weight: 800; text-transform: none;
+  text-align: left; padding: 8px 12px; letter-spacing: .2px;
+  display: inline-flex; align-items: center;
+  background:#ffffff; border:1px solid #e5e7eb; border-radius:12px;
+  text-decoration:none !important; border-bottom:none !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+}
+
+/* Contenido de eventos en Semana/Día: texto legible y subtexto sutil */
+.fc-timegrid-event { cursor: pointer; }
+/* Permitir que el contenido ocupe todo el alto del bloque y envuelva líneas */
+.fc-timegrid-event .fc-event-main-frame {
+  overflow: visible !important;
+  white-space: normal !important;
+  height: 100% !important;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
+  padding: 4px 6px;
+}
+.fc-timegrid-event .fc-event-main {
+  color: #fff !important;
+  white-space: normal !important;
+  word-break: break-word;
+}
+.fc-timegrid-event .fc-event-title { white-space: normal !important; line-height: 1.2; font-weight: 800; }
+.fc-timegrid-event .fc-event-main .ev-sub { opacity: .95; font-weight: 700; font-size: 12px; }
+
+/* Cada día como tarjeta */
+.fc-timegrid .fc-timegrid-col { padding: 2px !important; box-sizing: border-box; }
+.fc-timegrid .fc-timegrid-col-frame {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.06); margin: 0 !important;
+}
+
+/* Modal Detalle: tarjeta con sombra */
+.event-detail-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 16px;
+}
+.event-detail-card .row {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: .75rem;
+}
+.event-detail-card small.text-muted { color: #6b7280 !important; }
+
+/* Botón Cerrar (modal detalle) en verde */
+.btn.btn-modal-close {
+  background: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #fff !important;
+}
+.btn.btn-modal-close:hover { filter: brightness(0.95); }
+
+/* Per-item mini cards inside modal detail */
+.event-detail-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.event-detail-item small.text-muted { color:#6b7280 !important; }
+
+/* Estado centrado con chip de color */
+.event-detail-item.edi-state { align-items: center; justify-content: center; text-align: center; }
+.event-detail-item .edi-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #fff;
+  background: var(--chip-bg, #3b82f6);
+}
+
+/* Centered content helper */
+.event-detail-item.edi-center { align-items: center; text-align: center; }
+
+/* Tabs in details modal */
+.event-detail-tabs { display:flex; gap:8px; margin:10px 0 14px; }
+.event-detail-tab {
+  cursor:pointer; user-select:none; padding:8px 12px; border-radius:10px;
+  background:#00304D; color:#fff; font-weight:700; font-size:13px; letter-spacing:.2px;
+  transition: background .2s ease, transform .2s ease;
+}
+.event-detail-tab.is-active { background:#39A900; }
+.event-detail-tab:active { transform: translateY(1px); }
+.event-detail-pane { display:none; }
+.event-detail-pane.is-active { display:block; }
+
+/* Assistencias list styling */
+#asistenciasContent { padding: 4px; }
+.asist-summary { display:flex; gap:8px; flex-wrap:wrap; margin:4px 0 10px; }
+.asist-pill { display:inline-block; padding:4px 10px; border-radius:9999px; font-weight:800; font-size:12px; color:#fff; }
+.asist-pill.presente { background:#22c55e; }
+.asist-pill.ausente { background:#ef4444; }
+.asist-pill.tardanza { background:#8b5cf6; }
+.asist-pill.justificada { background:#f59e0b; }
+.asist-list { display:flex; flex-direction:column; gap:8px; }
+.asist-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+.asist-avatar { width:32px; height:32px; border-radius:50%; background:#00304D; color:#fff; display:inline-grid; place-items:center; font-weight:900; font-size:12px; }
+.asist-name { font-weight:800; color:#111827; }
+.asist-chip { margin-left:auto; padding:4px 10px; border-radius:9999px; font-weight:800; font-size:12px; color:#fff; }
+.asist-chip.presente { background:#22c55e; }
+.asist-chip.ausente { background:#ef4444; }
+.asist-chip.tardanza { background:#8b5cf6; }
+.asist-chip.justificada { background:#f59e0b; }
+
+/* Separadores de horas sutiles */
+.fc-timegrid .fc-timegrid-slots tr { border-top: 1px dashed #e5e7eb !important; }
+.fc-timegrid .fc-timegrid-slots tr:first-child { border-top: 0 !important; }
+
+/* Eje de horas (columna izquierda) limpio y legible */
+.fc-timegrid-axis { background: transparent !important; border: 0 !important; color:#6b7280; font-weight:600; }
+.fc-timegrid .fc-timegrid-slot-label-cushion { color:#6b7280 !important; font-weight:600; }
+
+/* Reducir al mínimo el espacio entre columnas (solo Semana/Día) */
+#calendario .fc .fc-timegrid-body > table,
+#calendario .fc .fc-timegrid-cols > table{
+  width:100% !important;
+  border-collapse: separate !important;
+  border-spacing: 2px 0 !important; /* columnas más anchas, como colaborativo */
+}
+/* Eventos Mes como pastillas */
+#calendario .fc .fc-daygrid-event {
+  border: 0 !important;
+  border-radius: 8px !important;
+  padding: 2px 6px !important;
+  margin: 2px 0 !important;
+  line-height: 1.15 !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+#calendario .fc .fc-daygrid-event .fc-event-title {
+  color: #fff !important;
+  font-size: 12px !important;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#calendario .fc .fc-daygrid-event:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,.08);
+}
+
+/* Dots por estado en Mes */
+#calendario .fc .fc-daygrid-event .fc-event-dot {
+  border: 0 !important; width: 8px; height: 8px; margin-right: 6px;
+}
+#calendario .fc .ev-estado-programado  .fc-event-dot { background: #2563eb !important; }
+#calendario .fc .ev-estado-en_curso     .fc-event-dot { background: #16a34a !important; }
+#calendario .fc .ev-estado-suspendido   .fc-event-dot { background: #f59e0b !important; }
+#calendario .fc .ev-estado-finalizado   .fc-event-dot { background: #6b7280 !important; }
+#calendario .fc .ev-estado-cancelado    .fc-event-dot { background: #ef4444 !important; }
+
+/* Link “+N más” como píldora azul (estilo colaborativo) */
+#calendario .fc .fc-daygrid-day-bottom a,
+#calendario a.fc-more-link,
+#calendario a.fc-daygrid-more-link,
+#calendario .fc .fc-more-link,
+#calendario .fc .fc-daygrid-more-link,
+#calendario .fc a[class*="daygrid-more-link"]{
+  background:#2563eb !important;
+  color:#fff !important;
+  padding:2px 8px !important;
+  border-radius:9999px !important;
+  font-weight:800 !important;
+  font-size:12px !important;
+  line-height: 20px !important;
+  border: none !important;
+  text-decoration: none !important;
+  display:inline-block !important;
+}
+#calendario a.fc-more-link:link,
+#calendario a.fc-more-link:visited,
+#calendario a.fc-more-link:hover,
+#calendario a.fc-more-link:active,
+#calendario a.fc-daygrid-more-link:link,
+#calendario a.fc-daygrid-more-link:visited,
+#calendario a.fc-daygrid-more-link:hover,
+#calendario a.fc-daygrid-more-link:active{
+  color:#fff !important; text-decoration:none !important; background:#2563eb !important;
+}
+#calendario .fc .fc-more-link:hover,
+#calendario .fc .fc-daygrid-more-link:hover,
+#calendario .fc .fc-daygrid-day-bottom a:hover,
+#calendario .fc a[class*="daygrid-more-link"]:hover{ background:#1d4ed8 !important; color:#fff !important; }
+
+/* Mostrar '+N más' en la franja inferior del día, alineado a la derecha */
+#calendario .fc .fc-daygrid-day-bottom { margin-top:4px; padding: 0 6px 6px; text-align: right; position: relative; z-index: 5; }
+#calendario .fc .fc-daygrid-day .fc-more-link { position: static; margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Mes: ocultar la hora dentro de las pastillas */
+#calendario .fc .fc-daygrid-event .fc-event-time { display: none !important; }
+
+/* Mes: dot de estado al inicio de la pastilla usando pseudo-elemento */
+#calendario .fc .fc-daygrid-event.ev-pill { position: relative; padding-left: 16px !important; }
+#calendario .fc .fc-daygrid-event.ev-pill:before {
+  content: '';
+  position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%; background: #6b7280; /* default */
+}
+#calendario .fc .fc-daygrid-event.ev-estado-programado:before { background: #2563eb !important; }
+#calendario .fc .fc-daygrid-event.ev-estado-en_curso:before  { background: #16a34a !important; }
+#calendario .fc .fc-daygrid-event.ev-estado-suspendido:before{ background: #f59e0b !important; }
+#calendario .fc .fc-daygrid-event.ev-estado-finalizado:before{ background: #6b7280 !important; }
+#calendario .fc .fc-daygrid-event.ev-estado-cancelado:before { background: #ef4444 !important; }
+
+/* ===== Modal Nueva Clase: Flatpickr theming (verde/transparente, igual colaborativo) ===== */
+#modalNuevaClase .flatpickr-calendar { background: rgba(255,255,255,0.88) !important; box-shadow: 0 8px 24px rgba(0,0,0,.05) !important; border: 0 !important; border-radius: 10px; overflow: hidden; }
+#modalNuevaClase .flatpickr-months { background: rgba(57,169,0,0.90) !important; color: #fff !important; border: 0 !important; }
+#modalNuevaClase .flatpickr-months .flatpickr-prev-month,
+#modalNuevaClase .flatpickr-months .flatpickr-next-month { fill: #fff !important; color: #fff !important; }
+#modalNuevaClase .flatpickr-current-month .cur-month,
+#modalNuevaClase .flatpickr-current-month .numInputWrapper input,
+#modalNuevaClase .flatpickr-current-month input.cur-year { color: #fff !important; font-weight: 700; }
+#modalNuevaClase .flatpickr-weekdays { background: #f3faef !important; }
+#modalNuevaClase .flatpickr-weekday { color: #215f00 !important; font-weight: 700; }
+#modalNuevaClase .flatpickr-days, 
+#modalNuevaClase .flatpickr-innerContainer { background: transparent !important; }
+#modalNuevaClase .flatpickr-day { background: transparent !important; border-color: transparent !important; }
+#modalNuevaClase .flatpickr-day.selected,
+#modalNuevaClase .flatpickr-day.startRange,
+#modalNuevaClase .flatpickr-day.endRange,
+#modalNuevaClase .flatpickr-day.selected:focus,
+#modalNuevaClase .flatpickr-day.selected:hover { background: #39A900 !important; border-color: #39A900 !important; color: #fff !important; }
+#modalNuevaClase .flatpickr-day.today { border-color: #39A900 !important; box-shadow: inset 0 0 0 1px #39A900 !important; }
+#modalNuevaClase .flatpickr-day:hover { background: rgba(57,169,0,0.12) !important; border-color: rgba(57,169,0,0.12) !important; }
+
+/* Timepicker semi-transparente a juego */
+#modalNuevaClase .flatpickr-time { background: rgba(255,255,255,0.88) !important; border-top: 1px solid rgba(0,0,0,0.06) !important; }
+#modalNuevaClase .flatpickr-time .numInputWrapper input { background: transparent !important; color: #111 !important; font-weight: 700; }
+#modalNuevaClase .flatpickr-time .numInputWrapper:hover { background: rgba(57,169,0,0.06) !important; }
+#modalNuevaClase .flatpickr-time .flatpickr-am-pm { background: transparent !important; color: #215f00 !important; font-weight: 700; }
+
+/* Color chips en modal Nueva Clase */
+#modalNuevaClase .cc-color{ width:40px; height:28px; border-radius:8px; display:inline-block; border:none; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.08); margin-right:8px; }
+#modalNuevaClase .cc-color.is-selected{ box-shadow:0 6px 0 rgba(0,0,0,.08), 0 0 0 3px rgba(0,0,0,0.15) !important; }
+
+/* ===== Modal Nueva Clase: campos con sombra estilo colaborativo ===== */
+#modalNuevaClase .form-control,
+#modalNuevaClase .form-select,
+#modalNuevaClase .form-control-color,
+#modalNuevaClase input[type="text"],
+#modalNuevaClase input[type="date"],
+#modalNuevaClase input[type="time"],
+#modalNuevaClase select {
+  border-radius:12px;
+  box-shadow:0 3px 0 rgba(0,0,0,0.06);
+  border:1px solid #e5e7eb;
+}
+#modalNuevaClase .form-control:focus,
+#modalNuevaClase .form-select:focus,
+#modalNuevaClase .form-control-color:focus {
+  border-color:#cbd5e1;
+  box-shadow:0 3px 0 rgba(0,0,0,0.06), 0 0 0 3px rgba(59,130,246,.15);
+}
+
+/* Leyenda de estados (puntos de color) */
+#cal-filters .dot { display:inline-block; width:12px; height:12px; border-radius:2px; margin:0 6px 0 12px; vertical-align:middle; }
+#cal-filters .dot-blue { background:#137bba; }
+#cal-filters .dot-green { background:#39A900; }
+#cal-filters .dot-red { background:#ff0000; }
+#cal-filters .dot-black { background:#111111; }
+#cal-filters .dot-amber { background:#f59e0b; }
+#cal-filters .dot-gray { background:#6b7280; }
+
+#cal-filters {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px; background:#ffffff; border:1px solid #e5e7eb; 
+  border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,.05); 
+  max-width: 1360px; margin: 0 auto 12px; 
+  gap: 24px;
+}
+
+/* Sección izquierda: Filtros + Leyenda */
+#cal-filters .cf-left {
+  display: flex; align-items: center; gap: 16px;
+  flex: 1; min-width: 0;
+}
+
+/* Sección derecha: Contadores + Botones */
+#cal-filters .cf-right {
+  display: flex; align-items: center; gap: 16px;
+  flex-shrink: 0;
+}
+
+/* Leyenda: ahora en la izquierda */
+#cal-filters .cf-legend {
+  display: flex; align-items: center; gap: 8px;
+  color: #111827; font-weight: 600; font-size: 12.5px;
+  background: #f9fafb; padding: 4px 12px; border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+#cal-filters .legend-title {
+  color: #6b7280; font-weight: 700; margin-right: 6px;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Contadores */
+#cal-filters .cf-counts {
+  display: flex; align-items: center; gap: 12px;
+  margin-left: 8px; padding-left: 16px;
+  border-left: 1px solid #e5e7eb;
+}
+
+/* Ajuste para pantallas medianas */
+@media (max-width: 1300px) {
+  #cal-filters { flex-direction: column; gap: 12px; }
+  #cal-filters .cf-left, #cal-filters .cf-right { width: 100%; }
+  #cal-filters .cf-legend { order: 2; margin-top: 4px; }
+  #cal-filters .cf-counts { border-left: none; padding-left: 0; }
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+  #cal-filters .cf-left { flex-direction: column; align-items: stretch; gap: 10px; }
+  #cal-filters .cf-legend { justify-content: center; text-align: center; }
+  #cal-filters .form-select { width: 100%; }
+}
+#cal-filters .cf-counts .count { font-weight:800; color:#111827; margin-right:2px; font-size:12.5px; }
+#cal-filters .cf-counts .count-label { color:#6b7280; font-weight:700; margin-right:6px; font-size:12px; }
+#cal-filters .btn { border-radius:10px; font-weight:700; padding:5px 12px; box-shadow:0 2px 6px rgba(0,0,0,.05); font-size:12.5px; }
+#cal-filters #btnNuevaClase { white-space: nowrap; display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+#cal-filters .btn-success { background:#16a34a; border-color:#16a34a; }
+#cal-filters .btn-success:hover { filter:brightness(0.95); }
+#cal-filters .btn-primary { background:#0f3b64; border-color:#0f3b64; }
+#cal-filters .btn-primary:hover { filter:brightness(1.05); }
+#cal-filters .form-select { width:auto; min-width:160px; flex: 0 1 220px; height:22px !important; line-height:20px !important; border-radius:10px; padding:1px 22px 1px 8px !important; border:1px solid #e5e7eb; box-shadow:0 1px 2px rgba(0,0,0,.04) inset; font-weight:700; color:#374151; font-size:12px; }
+#cal-filters .form-select:focus { border-color:#cbd5e1; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+.cal-subtitle { margin: 6px 0 10px 0; font-weight:800; font-size: 18px; color:#111827; display:flex; align-items:center; gap:8px; }
+@media (max-width: 1300px){
+  #cal-layout #cal-filters { width:100%; position:static; } 
+}
+@media (max-width: 700px){
+  #cal-filters .form-select { min-width:140px; flex: 1 1 auto; }
+  #cal-filters .cf-actions { justify-self:start; flex-wrap:wrap; }
+}
+
+/* ===== Indicador de hora actual (---) en Semana/Día para calendario base ===== */
+#calendario .fc .fc-timegrid-now-indicator-line{
+  position: absolute !important;
+  border-top: 0 !important;
+  height: 0 !important;
+  z-index: 10 !important;
+}
+#calendario .fc .fc-timegrid-now-indicator-line::after{
+  content: '';
+  position: absolute; left: 0; right: 0; top: -2px; height: 4px;
+  background-image: repeating-linear-gradient(to right, #dc2626 0 14px, rgba(220,38,38,0) 14px 24px);
+  background-repeat: repeat-x;
+  filter: drop-shadow(0 0 1px rgba(220,38,38,.5));
+}
+#calendario .fc .fc-timegrid-now-indicator-arrow{ border-color: transparent transparent transparent #ef4444 !important; }
+
+/* ===== Badge de hora actual en vista Mes (calendario base) ===== */
+#calendario .cc-now-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-left:8px;
+  margin-top:0;
+  padding:2px 10px;
+  border-radius:9999px;
+  background:#111827;
+  color:#fff;
+  font-weight:800;
+  font-size:12px;
+  line-height:1;
+  width:max-content;
+  z-index:3;
+}
+
+/* Colorear las horas del eje (Semana/Día) en negro */
+#calendario .fc .fc-timegrid-slot-label-cushion,
+#calendario .fc .fc-timegrid-axis-cushion,
+#calendario .fc .fc-timegrid-axis .fc-timegrid-time,
+#calendario .fc .fc-timegrid-slot-label { color:#111827 !important; }
+
+#cal-layout { position: relative; width:100%; margin:0 auto; }
+@media (min-width: 1200px){ #cal-layout { margin-left: 0; } }
+#cal-layout #cal-filters { display:flex; flex-direction:column; align-items:stretch; width:300px; padding:12px 14px; background:#ffffff; border:1px solid #e5e7eb; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,.05); gap:12px; position:absolute; left: max(16px, calc(50% - min(1120px, 100vw - 64px)/2 - 300px - 8px)); top:0; z-index:2; }
+#cal-layout #cal-filters .cf-left { display:flex; flex-direction:column; align-items:stretch; gap:10px; }
+#cal-layout #cal-filters .cf-right { display:flex; flex-direction:column; align-items:stretch; gap:10px; }
+#cal-layout #cal-filters .cf-left, 
+#cal-layout #cal-filters .cf-right { background: transparent; padding: 0; border: 0; box-shadow: none; }
+#cal-layout #cal-filters .form-select { width:100% !important; max-width:none; min-width:0; margin:0; height:40px !important; min-height:40px !important; max-height:40px !important; padding:6px 14px !important; line-height:1.2 !important; font-size:13px !important; font-weight:700; border-radius:10px; border:1px solid #e5e7eb; box-shadow:0 2px 6px rgba(0,0,0,.05); -webkit-appearance:none; appearance:none; background-position:right 10px center; background-size:12px 12px; }
+#cal-layout #cal-filters .form-select.form-select-sm { height:20px !important; padding:1px 16px 1px 8px !important; font-size:11px !important; }
+#cal-layout #cal-filters .cf-legend { width:100%; background:#f9fafb; padding:12px; border:1px solid #e5e7eb; border-radius:12px; display:flex; flex-direction:column; align-items:center; }
+#cal-layout #cal-filters .cf-legend .legend-title { display:block; width:100%; text-align:center !important; font-weight:800; font-size:12px; color:#6b7280; letter-spacing:.5px; text-transform:uppercase; margin:0 0 10px 0; }
+#cal-layout #cal-filters .cf-legend .legend-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px 16px; align-items:center; }
+#cal-layout #cal-filters .cf-actions { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; margin-top:4px; }
+#cal-layout #cal-filters .cf-actions .btn { width:100%; justify-content:center; }
+#cal-layout #cal-filters .cf-counts { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:6px; padding-top:4px; border-top:1px solid #e5e7eb; gap:16px; }
+#cal-layout #cal-filters .cf-counts .count,
+#cal-layout #cal-filters .cf-counts .count-label { flex:1; text-align:center; font-size:11.5px; }

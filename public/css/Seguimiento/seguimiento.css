@@ -1,0 +1,78 @@
+/* Seguimiento por ausencia – Estilos propios, consistentes con la paleta del proyecto */
+:root{
+  --blue:#00304D;
+  --green:#39A900;
+  --white:#ffffff;
+  --black:#000000;
+  --blue-10: rgba(0,48,77,.10);
+  --green-08: rgba(57,169,0,.08);
+  --green-12: rgba(57,169,0,.12);
+  --line:#E6EAEF;
+  --muted:#6B6B6B;
+  --r:16px; --r-lg:20px; --r-xl:24px; --r-pill:999px;
+  --sh:0 6px 14px rgba(0,0,0,.08);
+  --tr:all .25s ease;
+}
+
+html,body{height:100%}
+body{
+  background:#F5F7FB;
+  margin:0;
+  font-family:'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+  color:var(--black);
+}
+
+/* Layout */
+.sg-wrap{ max-width: 980px; margin: 22px auto; padding: 0 16px; }
+.sg-card{ background:#fff; border:2px solid var(--green); border-radius:22px; box-shadow: var(--sh); overflow:hidden }
+.sg-header{ background: var(--blue); color:#fff; padding:14px 18px; display:flex; align-items:center; justify-content: space-between }
+.sg-title{ margin:0; font-weight:800; letter-spacing:.02em; font-size:1.05rem }
+.sg-header .sg-back{ background:#fff; color:var(--blue); border:0; border-radius:14px; font-weight:800; padding:8px 12px; cursor:pointer; text-decoration:none }
+.sg-body{ padding: 18px; }
+
+/* Grid simple */
+.sg-row{ display:flex; flex-wrap:wrap; gap:14px }
+.sg-col{ flex:1 1 280px }
+
+/* Etiquetas y valores */
+.sg-label{ color:var(--muted); font-size:.85rem; margin-bottom:6px }
+.sg-value{ font-weight:800; color:var(--black) }
+.sg-section{ color:var(--black); font-weight:800; margin: 14px 0 8px; text-align:left }
+
+/* Campos */
+.sg-field{ margin-bottom:12px }
+.sg-input, .sg-select, .sg-textarea{
+  width:100%;
+  border: 2px solid var(--green);
+  border-radius: 14px;
+  padding: 8px 10px;
+  outline: none; font-size:.95rem; color:var(--black);
+  background:#fff;
+}
+.sg-input[readonly]{ background:#f8fafc; color:#475569; cursor:not-allowed }
+.sg-input:focus, .sg-select:focus, .sg-textarea:focus{ box-shadow:0 0 0 3px rgba(57,169,0,.15) }
+.sg-textarea{ min-height: 110px; resize: vertical; line-height:1.4 }
+
+/* Acciones */
+.sg-actions{ padding:14px 18px; border-top:1px solid #eef2f7; display:flex; gap:10px; justify-content:flex-end }
+.btn{ display:inline-block; padding:10px 16px; border-radius:18px; font-weight:800; cursor:pointer; border:none; transition:var(--tr) }
+.btn:disabled{ opacity:.6; cursor:not-allowed }
+.btn-primary{ background: var(--blue); color:#fff }
+.btn-outline{ background:#fff; color:var(--blue); border:2px solid var(--blue) }
+.btn:hover{ filter: brightness(.96) }
+
+/* Tabla historial */
+.sg-table-wrap{ overflow:auto }
+.sg-table{ width:100%; border-collapse: collapse; }
+.sg-table th{ text-align:left; padding:10px; background:#fff; color:#000; border-bottom:2px solid var(--green) }
+.sg-table td{ padding:10px; border-bottom:1px solid var(--line) }
+.sg-table tr:hover{ background: var(--green-08) }
+
+/* Select2 y Datepicker armonizados */
+.select2-container{ width:100% !important }
+.select2-container--default .select2-selection--single{
+  height: 40px; border:2px solid var(--green); border-radius:14px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{ line-height:40px; padding-left:12px }
+.select2-container--default .select2-selection--single .select2-selection__arrow{ height:40px; right:10px }
+.ui-datepicker{ font-family: inherit; border-radius:14px; border:2px solid var(--green); box-shadow:0 8px 18px rgba(0,0,0,.08); padding:.5rem }

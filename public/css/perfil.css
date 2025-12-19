@@ -1,0 +1,454 @@
+.perfil-container * {
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden !important;
+    overflow-y: auto !important; /* Permitir scroll vertical */
+}
+
+.perfil-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: white;
+    padding: 0 20px 20px; /* Eliminar padding superior */
+    margin-top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centrar verticalmente */
+    min-height: 100vh;
+}
+
+.perfil-container .container {
+    max-width: 85%; /* Reducido para dar más espacio */
+    width: 100%;
+    margin: 0 auto; /* Sin margen vertical */
+    background: rgb(252, 252, 252);
+    border-radius: 50px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+    transform: scale(0.9); /* Reducir tamaño general */
+}
+
+.perfil-container .header {
+    background: #39a900;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}   
+
+.perfil-container .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.perfil-container .header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.perfil-container .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.perfil-container .btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+}
+
+.perfil-container .btn-outline:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.perfil-container .btn-primary {
+    background: #ef4444;
+    color: white;
+}
+
+.perfil-container .btn-primary:hover {
+    background: #dc2626;
+}
+
+.perfil-container .main-content {
+    display: grid;
+    grid-template-columns: 450px 1fr;
+    min-height: 550px; /* Altura reducida */
+}
+
+.perfil-container .profile-section {
+    background: linear-gradient(to bottom right, #39A900, #19a65e);
+    color: white;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    border-radius: 70px;
+    margin: 0;
+    margin-left: -20px;
+    margin-right: -25px;
+    margin-top: -10px;
+    margin-bottom: -10px;
+    padding-left: 50px;
+    padding-right: 55px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    width: calc(100% + 45px);
+}
+
+.perfil-container .profile-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.perfil-container .profile-title {
+    font-size: 24px;
+    font-weight: 600;
+
+    margin-bottom: 5px;
+}
+
+.perfil-container .profile-subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.perfil-container .profile-avatar {
+    width: 140px;
+    height: 140px;
+    background: #60a5fa;
+    border-radius: 50%;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 4px solid rgba(255,255,255,0.3);
+}
+
+.perfil-container .avatar-icon {
+    width: 200px;
+    height: 200px;
+    background: rgb(255, 255, 255);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 100px;
+    margin: 0 auto 20px;
+    color: #2c3e50;
+    border: 6px solid rgba(255,255,255,0.8);
+}
+
+.perfil-container .profile-id {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-top: 10px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.perfil-container .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.perfil-container .action-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+
+.perfil-container .btn-green {
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+}
+
+.perfil-container .btn-green:hover {
+    background-color: #f0f0f0;
+}
+
+.perfil-container .btn-blue {
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+}
+
+.perfil-container .btn-blue:hover {
+    background-color: #f0f0f0;
+}
+
+.perfil-container .btn-orange {
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+}
+
+.perfil-container .btn-orange:hover {
+    background-color: #f0f0f0;
+}
+
+.perfil-container .content-right {
+    padding: 40px;
+    background: white;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    align-content: start;
+    align-items: stretch; /* Forzar misma altura en las tarjetas */
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    width: calc(100% + 40px);
+    margin-right: -40px;
+    padding-right: 80px;
+}
+
+.perfil-container .info-section {
+    background: white;
+    border-radius: 50px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.perfil-container .info-section:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.30);
+}
+
+.perfil-container .info-section h3 {
+    font-size: 18px;
+    color: #000000;
+    margin-bottom: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.perfil-container .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.perfil-container .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    margin: 0 -32px;
+    border-bottom: 1px solid #94a3b8;
+    transition: all 0.2s ease;
+}
+
+.perfil-container .info-row:hover {
+    background: #f8fafc;
+    margin: 0 -32px;
+    padding: 16px 32px;
+    border-radius: 12px;
+    border-bottom: 1px solid transparent;
+}
+
+.perfil-container .info-row:last-child {
+    border-bottom: none;
+}
+
+.perfil-container .password-row {
+    border-bottom: 1px solid #94a3b8 !important;
+}
+
+.perfil-container .info-label {
+    font-size: 18px;
+    color: #000000;
+    font-weight: 600;
+    flex: 0 0 auto;
+    min-width: 140px;
+}
+
+.perfil-container .info-value {
+    font-size: 15px;
+    color: #454545;
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+}
+
+.perfil-container .academic-section {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 50px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25) !important;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .academic-section h3 {
+    font-size: 18px;
+    color: #000000;
+    margin-bottom: 25px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-container .academic-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.perfil-container .stat-item {
+    text-align: center;
+    padding: 30px 20px;
+    background: #00304D;
+    border-radius: 25px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.perfil-container .stat-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.perfil-container .stat-label {
+    font-size: 14px;
+    color: white;
+    font-weight: 500;
+    line-height: 1.3;
+    opacity: 0.9;
+}
+
+.perfil-container .status-badge {
+    background:  #D7EECC;
+    color: #000000;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid  #D7EECC;
+    gap: 6px;
+}
+
+.perfil-container .status-badge::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background: #39A900;
+    border-radius: 50%;
+
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.perfil-container .recent-section {
+    grid-column: 1 / -1;
+    background: white;
+    border-radius: 45px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25) !important;
+    border: 1px solid #e5e7eb;
+}
+
+.perfil-container .recent-section h3 {
+    font-size: 16px;
+    color: #000000;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perfil-container .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.perfil-container .recent-item {
+    text-align: left;
+}
+
+.perfil-container .recent-item h4 {
+    font-size: 11px;
+    color: #000000;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.perfil-container .recent-value {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.perfil-container .editable-field {
+    position: relative;
+}
+
+.perfil-container .edit-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+    background: #f9fafb;
+}
+
+.perfil-container .edit-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+@media (max-width: 1200px) {
+    .perfil-container .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .perfil-container .content-right {
+        grid-template-columns: 1fr;
+    }
+    
+    .perfil-container .academic-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .perfil-container .recent-grid {
+        grid-template-columns: 1fr;
+    }
+}
