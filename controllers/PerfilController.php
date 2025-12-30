@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/Usuario.php';
+require_once __DIR__ . '/../config/db.php';
 
 class PerfilController {
     public function ver() {
@@ -59,10 +60,38 @@ class PerfilController {
                 exit;
             }
             
+            // Validar política de contraseña (igual que en cambio inicial)
+            $policy = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{9,}$/';
+            if (!preg_match($policy, (string)$passwordNueva)) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'La nueva contraseña no cumple la política: mínimo 9 caracteres con mayúscula, minúscula, número y carácter especial.']);
+                exit;
+            }
+            // Evitar que sea igual al documento (para evitar forzado en esquemas legados)
+            $doc = (string)($usuario['numero_documento'] ?? '');
+            if ($doc !== '' && hash_equals((string)$passwordNueva, $doc)) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'La nueva contraseña no puede ser igual a tu número de documento.']);
+                exit;
+            }
+
             // ACTUALIZACIÓN: Hashear nueva contraseña y guardar en BD
             $passwordHash = password_hash($passwordNueva, PASSWORD_DEFAULT);
             $resultado = $usuarioModel->actualizarPassword($usuarioId, $passwordHash);
             
+            // Asegurar que no se vuelva a forzar el cambio en próximos inicios
+            if ($resultado) {
+                try {
+                    $pdo = Database::conectar();
+                    $st = $pdo->prepare("UPDATE usuarios SET debe_cambiar_password = 0 WHERE id = ?");
+                    $st->execute([$usuarioId]);
+                } catch (\PDOException $e) { /* esquema legacy sin columna; ignorar */ }
+                // Limpiar bandera de la sesión actual si existía
+                if (isset($_SESSION['must_change_password'])) {
+                    $_SESSION['must_change_password'] = 0;
+                }
+            }
+
             header('Content-Type: application/json');
             echo json_encode(['success' => $resultado, 'message' => $resultado ? 'Contraseña actualizada correctamente' : 'Error al actualizar la contraseña']);
             exit;

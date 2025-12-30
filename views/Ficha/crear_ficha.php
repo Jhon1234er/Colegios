@@ -4,11 +4,11 @@ start_secure_session(); // ⚡ inicia la sesión segura antes de todo
 
 require_once __DIR__ . '/../../models/Colegio.php';
 require_once __DIR__ . '/../../models/Ficha.php';
-require_once __DIR__ . '/../../models/Materia.php';
+require_once __DIR__ . '/../../models/AreaDeConocimiento.php';
 
 $fichaModel = new Ficha();
 $fichas = $fichaModel->obtenerTodas();
-$materiaModel = new Materia();
+$materiaModel = new AreaDeConocimiento();
 $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
     return ($m['estado'] ?? 'activa') !== 'suspendida';
 });
@@ -52,7 +52,7 @@ $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
                 </div>
             </div>
             <div class="">
-                <label class="alinear-label-dias">Días de clases</label>
+                <label class="alinear-label-dias alinear-label-dias-custom">Días de clases</label>
                 <div class="dias-semana-container">
                     <div class="checkbox-group">
                         <label class="checkbox-item">
@@ -60,39 +60,44 @@ $cursos = array_filter($materiaModel->obtenerTodas(), function($m){
                                                         <span class="checkmark"></span>
                                                         <span class="dia-nombre">Lunes</span>
                                                         <select name="jornadas[lunes]" class="select-jornada">
-                                                            <option value="mañana">Mañana</option>
-                                                            <option value="tarde">Tarde</option>
-                                                        </select>
+                                    <option value="mañana">Mañana</option>
+                                    <option value="tarde">Tarde</option>
+                                    <option value="nocturna">Nocturna</option>
+                                </select>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" name="dias_semana[]" value="martes" checked data-dia="martes">
                             <span class="checkmark"></span>
                             <span class="dia-nombre">Martes</span>
-                            <select name="jornadas[martes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                            <select name="jornadas[martes]" class="select-jornada">
+                                <option value="mañana">Mañana</option>
+                                <option value="tarde">Tarde</option>
+                                <option value="nocturna">Nocturna</option>
+                            </select>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" name="dias_semana[]" value="miercoles" checked data-dia="miercoles">
                             <span class="checkmark"></span>
                             <span class="dia-nombre">Miércoles</span>
-                            <select name="jornadas[miercoles]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                            <select name="jornadas[miercoles]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option><option value="nocturna">Nocturna</option></select>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" name="dias_semana[]" value="jueves" checked data-dia="jueves">
                             <span class="checkmark"></span>
                             <span class="dia-nombre">Jueves</span>
-                            <select name="jornadas[jueves]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                            <select name="jornadas[jueves]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option><option value="nocturna">Nocturna</option></select>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" name="dias_semana[]" value="viernes" checked data-dia="viernes">
                             <span class="checkmark"></span>
                             <span class="dia-nombre">Viernes</span>
-                            <select name="jornadas[viernes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                            <select name="jornadas[viernes]" class="select-jornada"><option value="mañana">Mañana</option><option value="tarde">Tarde</option><option value="nocturna">Nocturna</option></select>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" name="dias_semana[]" value="sabado" data-dia="sabado">
                             <span class="checkmark"></span>
                             <span class="dia-nombre">Sábado</span>
-                            <select name="jornadas[sabado]" class="select-jornada" disabled><option value="mañana">Mañana</option><option value="tarde">Tarde</option></select>
+                            <select name="jornadas[sabado]" class="select-jornada" disabled><option value="mañana">Mañana</option><option value="tarde">Tarde</option><option value="nocturna">Nocturna</option></select>
                         </label>
                     </div>
                 </div>

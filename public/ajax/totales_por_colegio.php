@@ -14,25 +14,59 @@ if (!$colegio_id) {
 try {
     $pdo = Database::conectar();
 
-    // Contar materias
-    $stmt_materias = $pdo->prepare("SELECT COUNT(DISTINCT materia_id) AS total FROM colegio_materia WHERE colegio_id = ?");
+    // Contar cursos/materias asociados al colegio (colegio_curso)
+    $stmt_materias = $pdo->prepare("SELECT COUNT(DISTINCT curso_id) AS total FROM colegio_curso WHERE colegio_id = ?");
     $stmt_materias->execute([$colegio_id]);
-    $materias = $stmt_materias->fetchColumn();
+    $materias = (int)$stmt_materias->fetchColumn();
 
-    // Contar profesores
-    $stmt_profesores = $pdo->prepare("SELECT COUNT(DISTINCT id) AS total FROM profesores WHERE colegio_id = ?");
-    $stmt_profesores->execute([$colegio_id]);
-    $profesores = $stmt_profesores->fetchColumn();
+    // Contar facilitadores (profesores) por fichas del colegio (nuevo esquema usando ficha_colegio)
+    try {
+        $stmt_profesores = $pdo->prepare("SELECT COUNT(DISTINCT p.id) AS total
+                                          FROM facilitadores p
+                                          JOIN facilitador_ficha pf ON p.id = pf.facilitador_id
+                                          JOIN ficha_colegio fc ON fc.ficha_id = pf.ficha_id
+                                          WHERE fc.colegio_id = ?");
+        $stmt_profesores->execute([$colegio_id]);
+        $profesores = (int)$stmt_profesores->fetchColumn();
+    } catch (PDOException $e) {
+        if ($e->getCode() !== '42S22' && $e->getCode() !== '42S02') throw $e;
+        // Fallback legacy: profesor_ficha y fichas.colegio
+        $stmt_profesores = $pdo->prepare("SELECT COUNT(DISTINCT p.id) AS total
+                                          FROM facilitadores p
+                                          JOIN profesor_ficha pf ON p.id = pf.profesor_id
+                                          JOIN fichas f ON pf.ficha_id = f.id
+                                          WHERE (f.colegio_id = ? OR f.colegio = ?)");
+        $stmt_profesores->execute([$colegio_id, $colegio_id]);
+        $profesores = (int)$stmt_profesores->fetchColumn();
+    }
 
-    // Contar fichas
-    $stmt_fichas = $pdo->prepare("SELECT COUNT(DISTINCT f.id) AS total FROM fichas f JOIN colegio_materia cm ON f.materia_id = cm.materia_id WHERE cm.colegio_id = ?");
-    $stmt_fichas->execute([$colegio_id]);
-    $fichas = $stmt_fichas->fetchColumn();
+    // Contar fichas del colegio (nuevo esquema usando ficha_colegio)
+    try {
+        $stmt_fichas = $pdo->prepare("SELECT COUNT(DISTINCT f.id) AS total
+                                      FROM ficha_colegio fc
+                                      JOIN fichas f ON f.id = fc.ficha_id
+                                      WHERE fc.colegio_id = ?");
+        $stmt_fichas->execute([$colegio_id]);
+        $fichas = (int)$stmt_fichas->fetchColumn();
+    } catch (PDOException $e) {
+        if ($e->getCode() !== '42S22' && $e->getCode() !== '42S02') throw $e;
+        // Fallback legacy: contar desde fichas directamente
+        try {
+            $stmt_fichas = $pdo->prepare("SELECT COUNT(DISTINCT f.id) AS total FROM fichas f WHERE f.colegio_id = ?");
+            $stmt_fichas->execute([$colegio_id]);
+            $fichas = (int)$stmt_fichas->fetchColumn();
+        } catch (PDOException $e2) {
+            if ($e2->getCode() !== '42S22') throw $e2;
+            $stmt_fichas = $pdo->prepare("SELECT COUNT(DISTINCT f.id) AS total FROM fichas f WHERE f.colegio = ?");
+            $stmt_fichas->execute([$colegio_id]);
+            $fichas = (int)$stmt_fichas->fetchColumn();
+        }
+    }
 
-    // Contar estudiantes
-    $stmt_estudiantes = $pdo->prepare("SELECT COUNT(DISTINCT e.id) AS total FROM estudiantes e JOIN fichas f ON e.ficha_id = f.id JOIN colegio_materia cm ON f.materia_id = cm.materia_id WHERE cm.colegio_id = ?");
+    // Contar aprendices (estudiantes)
+    $stmt_estudiantes = $pdo->prepare("SELECT COUNT(DISTINCT id) AS total FROM aprendices WHERE colegio_id = ?");
     $stmt_estudiantes->execute([$colegio_id]);
-    $estudiantes = $stmt_estudiantes->fetchColumn();
+    $estudiantes = (int)$stmt_estudiantes->fetchColumn();
 
     echo json_encode([
         'materias' => $materias,

@@ -1,0 +1,38 @@
+{
+  "name": "colegios-electron-client",
+  "version": "1.0.0",
+  "description": "Cliente de escritorio Electron para la aplicación PHP Colegios",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.colegios.desktop",
+    "productName": "Colegios Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "config.json",
+      "package.json"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.education"
+    },
+    "win": {
+      "target": "nsis",
+      "artifactName": "Colegios-Setup-${version}.exe"
+    }
+  }
+}

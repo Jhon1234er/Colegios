@@ -2,29 +2,35 @@
     box-sizing: border-box;
 }
 
+html, body {
+    overflow-x: hidden !important;
+    overflow-y: auto !important; /* Permitir scroll vertical */
+}
+
 .perfil-container {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: white;
-    padding: 20px;
+    padding: 0 20px 20px; /* Eliminar padding superior */
     margin-top: 0;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; /* Centrar verticalmente */
     min-height: 100vh;
 }
 
 .perfil-container .container {
-    max-width: 95%;
+    max-width: 85%; /* Reducido para dar más espacio */
     width: 100%;
-    margin: 0 auto;
+    margin: 0 auto; /* Sin margen vertical */
     background: rgb(252, 252, 252);
     border-radius: 50px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.25);
     overflow: hidden;
+    transform: scale(0.9); /* Reducir tamaño general */
 }
 
 .perfil-container .header {
-    background:linear-gradient(to bottom right, #17784d, #19a65e);
+    background: #39a900;
     color: white;
     padding: 20px 30px;
     display: flex;
@@ -74,7 +80,7 @@
 .perfil-container .main-content {
     display: grid;
     grid-template-columns: 450px 1fr;
-    min-height: 700px;
+    min-height: 550px; /* Altura reducida */
 }
 
 .perfil-container .profile-section {
@@ -205,6 +211,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 35px;
     align-content: start;
+    align-items: stretch; /* Forzar misma altura en las tarjetas */
     border-top-right-radius: 50px;
     border-bottom-right-radius: 50px;
     width: calc(100% + 40px);
@@ -312,7 +319,7 @@
 .perfil-container .stat-item {
     text-align: center;
     padding: 30px 20px;
-    background: #64748b;
+    background: #00304D;
     border-radius: 25px;
     border: none;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -335,7 +342,7 @@
 }
 
 .perfil-container .status-badge {
-    background: #dcfce7;
+    background:  #D7EECC;
     color: #000000;
     padding: 4px 12px;
     border-radius: 12px;
@@ -345,7 +352,7 @@
     letter-spacing: 0.3px;
     display: inline-flex;
     align-items: center;
-    border: 1px solid #D7EECC;
+    border: 1px solid  #D7EECC;
     gap: 6px;
 }
 

@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", function () {
             "numero_documento",
             "correo_electronico",
             "genero",
-            "password",
             "fecha_nacimiento"
         ];
 
@@ -39,11 +38,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         requiredFields.forEach((id) => {
             const input = document.getElementById(id);
-            if (!input || !input.value.trim()) {
-                input.classList.add("input-error");
+            if (!input) return; // si el campo no existe en este formulario, omitir
+            if (!String(input.value || '').trim()) {
+                try { input.classList.add("input-error"); } catch(_) {}
                 valid = false;
             } else {
-                input.classList.remove("input-error");
+                try { input.classList.remove("input-error"); } catch(_) {}
             }
         });
 
@@ -60,20 +60,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 📅 Flatpickr: solo fechas pasadas, mayor o igual a 18 años
+    // 📅 Flatpickr: solo fechas pasadas, mayor o igual a 18 años (formularios generales)
     const fechaInput = document.getElementById("fecha_nacimiento");
     if (fechaInput) {
         const today = new Date();
         const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
 
-        flatpickr(fechaInput, {
-            dateFormat: "Y-m-d",
-            maxDate: maxDate.toISOString().split("T")[0],
-            altInput: true,
-            altFormat: "d-m-Y",
-            locale: "es",
-            allowInput: true,
-        });
+        if (!fechaInput._flatpickr && typeof flatpickr !== 'undefined') {
+            flatpickr(fechaInput, {
+                dateFormat: "Y-m-d",
+                maxDate: maxDate.toISOString().split("T")[0],
+                altInput: true,
+                altFormat: "d-m-Y",
+                locale: "es",
+                allowInput: true,
+            });
+        }
 
         if (!fechaInput.value) {
             fechaInput.setAttribute("placeholder", "Seleccionar fecha");
@@ -87,7 +89,8 @@ document.addEventListener("DOMContentLoaded", function () {
             searchEnabled: false,
             itemSelectText: '',
             classNames: {
-                containerOuter: 'choices dark-compatible'
+                containerOuter: 'choices',
+                containerOuterDark: 'dark-compatible'
             }
         });
     });

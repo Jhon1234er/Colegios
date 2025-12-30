@@ -17,36 +17,65 @@ $usuario = $usuarioModel->obtenerPorId($usuarioId);
 $estadisticas = [];
 if ($rolId == 1) { // Administrador
     require_once '../models/Colegio.php';
-    require_once '../models/Estudiante.php';
-    require_once '../models/Profesor.php';
+    require_once '../models/Aprendiz.php';
+    require_once '../models/Facilitador.php';
     
     $colegioModel = new Colegio();
-    $estudianteModel = new Estudiante();
-    $profesorModel = new Profesor();
+    $estudianteModel = new Aprendiz();
+    $profesorModel = new Facilitador();
     
     $estadisticas = [
         'colegios' => $colegioModel->contarColegios(),
-        'estudiantes' => $estudianteModel->contarEstudiantes(),
-        'profesores' => $profesorModel->contarProfesores(),
+        'estudiantes' => $estudianteModel->contarAprendices(),
+        'profesores' => $profesorModel->contarFacilitadores(),
         'fichas' => 0 // Se puede agregar después
+    ];
+} elseif ($rolId == 4) { // Asistente (mostrar como Admin)
+    require_once '../models/Colegio.php';
+    require_once '../models/Aprendiz.php';
+    require_once '../models/Facilitador.php';
+
+    $colegioModel = new Colegio();
+    $estudianteModel = new Aprendiz();
+    $profesorModel = new Facilitador();
+
+    $estadisticas = [
+        'colegios' => $colegioModel->contarColegios(),
+        'estudiantes' => $estudianteModel->contarAprendices(),
+        'profesores' => $profesorModel->contarFacilitadores(),
+        'fichas' => 0
     ];
 } elseif ($rolId == 2) { // Profesor
     require_once '../models/Ficha.php';
-    require_once '../models/Estudiante.php';
+    require_once '../models/Aprendiz.php';
     
     $fichaModel = new Ficha();
-    $estudianteModel = new Estudiante();
+    $estudianteModel = new Aprendiz();
     
-    // Obtener profesor_id del usuario actual
     require_once '../config/db.php';
     $pdo = Database::conectar();
-    $stmt = $pdo->prepare("SELECT id FROM profesores WHERE usuario_id = ?");
-    $stmt->execute([$usuarioId]);
-    $profesor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $facilitadorId = null;
+    try {
+        $stmt = $pdo->prepare("SELECT id FROM facilitadores WHERE usuario_id = ?");
+        $stmt->execute([$usuarioId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && isset($row['id'])) { $facilitadorId = (int)$row['id']; }
+    } catch (PDOException $e) { }
+    if (!$facilitadorId) {
+        try {
+            $st2 = $pdo->prepare("SELECT id FROM facilitadores WHERE usuario = ?");
+            $st2->execute([$usuarioId]);
+            $row2 = $st2->fetch(PDO::FETCH_ASSOC);
+            if ($row2 && isset($row2['id'])) { $facilitadorId = (int)$row2['id']; }
+        } catch (PDOException $e2) { }
+    }
+    if (!$facilitadorId && isset($_SESSION['usuario']['facilitador_id'])) {
+        $facilitadorId = (int)$_SESSION['usuario']['facilitador_id'];
+    }
     
     $fichasProfesor = [];
-    if ($profesor) {
-        $fichasProfesor = $fichaModel->obtenerTodasPorProfesor($profesor['id']);
+    if ($facilitadorId) {
+        $fichasProfesor = $fichaModel->obtenerTodasPorProfesor($facilitadorId);
     }
     $totalEstudiantes = 0;
     foreach ($fichasProfesor as $ficha) {
@@ -234,20 +263,19 @@ if (empty($iniciales)) $iniciales = 'US';
                                 <input type="email" class="edit-input" value="<?= htmlspecialchars($usuario['correo_institucional'] ?? '') ?>" style="display: none;">
                             </span>
                         </div>
-                        
-                        <?php if ($rolId == 2): ?>
-                        <!-- 
-                        CAMBIO REALIZADO: Visualización segura de contraseña para profesores
-                        - Solo muestra contraseña hasheada (asteriscos)
-                        -->
-                        <div class="info-row">
+                        <div class="info-row password-row">
                             <span class="info-label">Contraseña:</span>
                             <span class="info-value">
-                                <!-- Solo contraseña enmascarada -->
-                                <?= str_repeat('*', 8) ?>
+                                *****
                             </span>
                         </div>
-                        <?php endif; ?>
+                        <div class="info-row">
+                            <span class="info-label">&nbsp;</span>
+                            <span class="info-value">&nbsp;</span>
+                        </div>
+                        
+                        <?php if ($rolId == 2): ?>
+                            <?php endif; ?>
                         <?php if ($rolId == 3): ?>
                         <div class="info-row">
                             <span class="info-label">Acudiente:</span>
@@ -268,10 +296,10 @@ if (empty($iniciales)) $iniciales = 'US';
                             <rect width="22" height="5.5" rx="1" transform="matrix(1 0 0 -1 0 12.8333)" fill="black"/>
                             <rect width="22" height="5.5" rx="1" transform="matrix(1 0 0 -1 0 20.1667)" fill="black"/>
                         </svg>
-                        <?= $rolId == 1 ? 'Estadísticas del Sistema' : ($rolId == 2 ? 'Información Académica' : 'Datos Académicos') ?>
+                        <?= ($rolId == 1 || $rolId == 4) ? 'Estadísticas del Sistema' : ($rolId == 2 ? 'Información Académica' : 'Datos Académicos') ?>
                     </h3>
                     <div class="academic-stats">
-                        <?php if ($rolId == 1): // Administrador ?>
+                        <?php if ($rolId == 1 || $rolId == 4): // Administrador y Asistente ?>
                         <div class="stat-item">
                             <div class="stat-number"><?= $estadisticas['colegios'] ?? 0 ?></div>
                             <div class="stat-label">Colegios Registrados</div>
@@ -351,15 +379,24 @@ if (empty($iniciales)) $iniciales = 'US';
                             <h4>Área de Trabajo</h4>
                             <p class="recent-value"><?= htmlspecialchars($usuario['nombre_colegio'] ?? 'No asignado') ?></p>
                         </div>
+                        <?php elseif ($rolId == 4): ?>
+                        <div class="recent-item">
+                            <h4>Colegios Registrados</h4>
+                            <p class="recent-value"><?= (int)($estadisticas['colegios'] ?? 0) ?></p>
+                        </div>
+                        <div class="recent-item">
+                            <h4>Permisos</h4>
+                            <p class="recent-value">Gestión y Calendario</p>
+                        </div>
                         <?php else: ?>
-                        <div class="recent-item">
-                            <h4>Ficha Académica</h4>
-                            <p class="recent-value"><?= htmlspecialchars($usuario['nombre_ficha'] ?? 'No asignada') ?></p>
-                        </div>
-                        <div class="recent-item">
-                            <h4>Estado Académico</h4>
-                            <p class="recent-value"><?= htmlspecialchars($usuario['estado_estudiante'] ?? 'Activo') ?></p>
-                        </div>
+                            <div class="recent-item">
+                                <h4>Ficha Académica</h4>
+                                <p class="recent-value"><?= htmlspecialchars($usuario['nombre_ficha'] ?? 'No asignada') ?></p>
+                            </div>
+                            <div class="recent-item">
+                                <h4>Estado Académico</h4>
+                                <p class="recent-value"><?= htmlspecialchars($usuario['estado_estudiante'] ?? 'Activo') ?></p>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -382,19 +419,19 @@ MODAL AGREGADO: Formulario para cambiar contraseña
                 <!-- Campo: Contraseña Actual -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; margin: 0 -32px; border-bottom: 1px solid #94a3b8;">
                     <span style="font-size: 18px; color: #000000; font-weight: 600; flex: 0 0 auto; min-width: 180px;">Contraseña Actual:</span>
-                    <input type="password" id="password_actual" name="password_actual" required 
+                    <input type="password" id="password_actual" name="password_actual" required autocomplete="current-password"
                            style="font-size: 15px; color: #454545; font-weight: 500; border: none; outline: none; background: transparent; width: 100%; text-align: right;">
                 </div>
                 <!-- Campo: Contraseña Nueva -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; margin: 0 -32px; border-bottom: 1px solid #94a3b8;">
                     <span style="font-size: 18px; color: #000000; font-weight: 600; flex: 0 0 auto; min-width: 180px;">Contraseña Nueva:</span>
-                    <input type="password" id="password_nueva" name="password_nueva" required 
+                    <input type="password" id="password_nueva" name="password_nueva" required autocomplete="new-password"
                            style="font-size: 15px; color: #454545; font-weight: 500; border: none; outline: none; background: transparent; width: 100%; text-align: right;">
                 </div>
                 <!-- Campo: Confirmar Contraseña -->
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; margin: 0 -32px; border-bottom: 1px solid #94a3b8;">
                     <span style="font-size: 18px; color: #000000; font-weight: 600; flex: 0 0 auto; min-width: 180px;">Confirmar Contraseña:</span>
-                    <input type="password" id="password_confirmar" name="password_confirmar" required 
+                    <input type="password" id="password_confirmar" name="password_confirmar" required autocomplete="new-password"
                            style="font-size: 15px; color: #454545; font-weight: 500; border: none; outline: none; background: transparent; width: 100%; text-align: right;">
                 </div>
             </div>
@@ -410,6 +447,17 @@ MODAL AGREGADO: Formulario para cambiar contraseña
         </form>
     </div>
 </div>
+
+<!-- Modal de éxito genérico -->
+<div id="modalSuccess" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 50px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); border: 1px solid #e5e7eb; width: 90%; max-width: 620px; text-align: center;">
+    <h3 style="font-size: 18px; color: #000000; margin-bottom: 12px; font-weight: 700;">Operación exitosa</h3>
+    <p id="modalSuccessText" style="font-size: 15px; color: #111827; margin-bottom: 20px;">Contraseña cambiada exitosamente</p>
+    <div style="display:flex; gap: 12px; justify-content: center;">
+      <button type="button" id="modalSuccessClose" style="background: #39A900; color: #fff; padding: 12px 28px; border: none; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 15px; box-shadow: 0 4px 15px rgba(57,169,0,.28);">Aceptar</button>
+    </div>
+  </div>
+  </div>
 
 </body>
 </html>
@@ -606,8 +654,8 @@ MODAL AGREGADO: Formulario para cambiar contraseña
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        alert('Contraseña cambiada exitosamente');
         cerrarModalCambiarPassword();
+        showSuccessModal('Contraseña cambiada exitosamente');
       } else {
         alert(data.message || 'Error al cambiar la contraseña');
       }
@@ -617,6 +665,20 @@ MODAL AGREGADO: Formulario para cambiar contraseña
       alert('Error al cambiar la contraseña');
     });
   });
+
+  function showSuccessModal(message){
+    var overlay = document.getElementById('modalSuccess');
+    var text = document.getElementById('modalSuccessText');
+    if (text) { text.textContent = message || 'Operación realizada con éxito'; }
+    if (overlay) { overlay.style.display = 'flex'; }
+  }
+  (function(){
+    var btn = document.getElementById('modalSuccessClose');
+    if (btn){ btn.addEventListener('click', function(){
+      var overlay = document.getElementById('modalSuccess');
+      if (overlay) overlay.style.display = 'none';
+    }); }
+  })();
 </script>
 
 <?php include '../views/Componentes/footer.php'; ?>

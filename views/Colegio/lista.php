@@ -29,8 +29,9 @@
                         <th>Correo</th>
                         <th>Municipio</th>
                         <th>Departamento</th>
+                        <th>Grados</th>
+                        <th>Jornadas</th>
                         <th>Cursos</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,10 +43,22 @@
                             <td><span class="nit"><?= htmlspecialchars($colegio['nit']) ?></span></td>
                             <td><span class="tipo-institucion"><?= htmlspecialchars($colegio['tipo_institucion']) ?></span></td>
                             <td><span class="direccion"><?= htmlspecialchars($colegio['direccion']) ?></span></td>
-                            <td><span class="telefono"><?= htmlspecialchars($colegio['telefono']) ?></span></td>
+                            <td><span class="telefono"><?= htmlspecialchars($colegio['telefono'] ?? '') ?></span></td>
                             <td><a href="mailto:<?= htmlspecialchars($colegio['correo']) ?>" class="email"><?= htmlspecialchars($colegio['correo']) ?></a></td>
                             <td><span class="municipio"><?= htmlspecialchars($colegio['municipio']) ?></span></td>
                             <td><span class="departamento"><?= htmlspecialchars($colegio['departamento']) ?></span></td>
+                            <td>
+                                <?php 
+                                  $grados = isset($colegio['grados']) && is_array($colegio['grados']) ? $colegio['grados'] : [];
+                                  echo $grados ? htmlspecialchars(implode(', ', $grados)) : '—';
+                                ?>
+                            </td>
+                            <td>
+                                <?php 
+                                  $jornadas = isset($colegio['jornada']) && is_array($colegio['jornada']) ? $colegio['jornada'] : [];
+                                  echo $jornadas ? htmlspecialchars(implode(', ', $jornadas)) : '—';
+                                ?>
+                            </td>
                             <td>
                                 <?php if (!empty($colegio['materias'])): ?>
                                     <ul class="materias-list">
@@ -56,13 +69,6 @@
                                 <?php else: ?>
                                     <span class="sin-materias">Sin Cursos</span>
                                 <?php endif; ?>
-                            </td>
-                            <td>
-                                <a href="/?page=eliminar_colegio&id=<?= $colegio['id'] ?>" 
-                                   class="btn-danger" 
-                                   onclick="return confirm('¿Eliminar este colegio?')">
-                                    <i class="fas fa-ban"></i> Suspender
-                                </a>
                             </td>
                         </tr>
                     <?php endforeach ?>

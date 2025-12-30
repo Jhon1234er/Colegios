@@ -1,0 +1,318 @@
+:root{
+  --sena-green: #39A900;
+  --sena-green-strong: #2f8c00;
+  --glass-white: rgba(255,255,255,.90);
+}
+
+/* Contenedor de creación de profesor */
+.profesor-crear{
+  width: 860px;                  /* un poco más ancho */
+  min-height: 850px;             /* altura mínima solicitada */
+  height: auto;                  /* crecer según contenido */
+  margin: 96px auto;             /* mismo espacio arriba y abajo */
+  border-radius: 29px;
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(0,0,0,.12), 0 10px 18px rgba(0,0,0,.06); /* sombra más marcada */
+  overflow: hidden;              /* mantener contenido dentro del borde */
+  z-index: 10;
+  display: flex;                 /* permitir anclar el botón al fondo */
+  flex-direction: column;
+}
+
+/* Hacer que el formulario ocupe el contenedor */
+.profesor-crear form{
+  width: 100%;
+  display: flex;                 /* distribuir campos arriba y botón abajo */
+  flex-direction: column;
+  flex: 1;                       /* ocupar todo el alto disponible del contenedor */
+  justify-content: space-between;
+  align-items: center;           /* centra horizontalmente los hijos (botón) */
+  padding: 24px; /* más aire interno */
+  box-sizing: border-box;
+  overflow: auto; /* scroll si el contenido supera el alto */
+}
+
+/* Utilidades opcionales para layout interno */
+.profesor-crear .fila{ display:flex; gap:12px }
+.profesor-crear .col{ flex:1 }
+
+/* Título del formulario (especificación solicitada) */
+.profesor-crear .form-title{
+  font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-weight: 700;          /* Bold */
+  font-style: normal;
+  font-size: 30px;
+  line-height: 100%;
+  letter-spacing: 0;
+  text-align: center;
+  margin: 56px 0 28px;      /* bajar más el título y separar del grid */
+  color: #000;
+}
+
+/* ===== Layout a 2 columnas como el mock ===== */
+.profesor-crear .form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;     /* simétrico */
+  row-gap: 32px;                      /* aún más separación vertical */
+  column-gap: 36px;                   /* aún más separación horizontal */
+  align-items: start;
+  margin-top: 16px;
+  align-self: stretch;                /* que el grid ocupe todo el ancho */
+  width: 100%;
+}
+.profesor-crear .columna{ display:flex; flex-direction:column }
+.profesor-crear .columna label{
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  margin: 2px 8px 10px;               /* mayor separación bajo el label */
+}
+
+/* ===== Inputs tipo píldora con borde azul (mock) ===== */
+.profesor-crear .columna input,
+.profesor-crear .columna select{
+  width: 100%;
+  min-height: 48px;                   /* más altos para equilibrio visual */
+  padding: 12px 16px;
+  border: 2px solid rgba(0,48,77,.65);  /* azul #00304D con transparencia */
+  border-radius: 999px;                 /* píldora */
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
+  margin-bottom: 6px;                  /* separación clara entre filas */
+}
+.profesor-crear .columna input::placeholder{ color:#9aa3ad }
+.profesor-crear .columna input:focus,
+.profesor-crear .columna select:focus{
+  border-color: #00304D;
+  box-shadow: 0 0 0 3px rgba(0,48,77,.12);
+}
+
+/* caret del select a la derecha (simple) */
+.profesor-crear .columna select{
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300304D' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center; background-size:12px;
+  padding-right:42px;
+}
+
+/* ===== Choices.js con estilo de píldora (para ambos selects) ===== */
+.profesor-crear .choices{ width:100%; margin-bottom: 6px }
+.profesor-crear .choices__list--dropdown{ border-radius: 16px !important }
+.profesor-crear .choices__inner{
+  border: 2px solid rgba(0,48,77,.65) !important;
+  border-radius: 999px !important;
+  min-height: 48px !important;            /* igual a inputs */
+  padding: 12px 16px !important;           /* igual a inputs */
+  background:#fff !important; color:#111 !important;
+  box-shadow:none !important;
+  font-size: 14px !important;
+}
+.profesor-crear .choices[data-type*="select-one"]::after{ display:none !important }
+.profesor-crear .choices__list--single .choices__item{ padding:0 !important; margin:0 !important }
+.profesor-crear .is-focused .choices__inner,
+.profesor-crear .is-open .choices__inner{
+  border-color:#00304D !important;
+  box-shadow:0 0 0 3px rgba(0,48,77,.12) !important;
+}
+
+/* ===== Botón Registrar verde grande ===== */
+.profesor-crear .btn-registrar{
+  display: block;                        /* centrar con margin auto */
+  height: 58px;
+  margin: 34px auto 28px;             /* centrado y con más aire al final */
+  align-self: center;                  /* asegurar centrado adicional */
+  padding: 0 34px;
+  border: none;
+  border-radius: 999px;
+  background: #39A900;           /* verde SENA */
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0,0,0,.10);
+  transition: transform .03s ease, box-shadow .2s ease, filter .15s ease;
+}
+.profesor-crear .btn-registrar:hover{ filter: brightness(1.05); box-shadow: 0 14px 30px rgba(0,0,0,.12) }
+.profesor-crear .btn-registrar:active{ transform: translateY(1px) }
+/* ========== Flatpickr — header compacto y claro ========== */
+
+/* El header ocupa todo el ancho y NO recorta contenido */
+.profesor-crear .flatpickr-months,
+.profesor-crear .flatpickr-months .flatpickr-month{
+  position: relative !important;
+  width: 100% !important;
+  height: 65px !important;
+  overflow: visible !important;
+}
+
+/* Contenedor Mes + Año */
+.profesor-crear .flatpickr-current-month{
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;                 /* mes y año más pegados */
+  padding: 4px 8px !important;         /* sin hueco a la derecha */
+  line-height: 1 !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+/* Reset duro de las reglas del core (.flatpickr-current-month absoluta) dentro de esta vista */
+.profesor-crear .flatpickr-months .flatpickr-current-month,
+.profesor-crear .flatpickr-calendar .flatpickr-current-month{
+  position: relative !important;
+  width: 60% !important;
+  height: 81px !important;
+  padding: 4px 90px 4px 8px !important;
+  -webkit-transform: none !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  white-space: nowrap !important;
+}
+
+/* MES: estilo sutil (nativo, pero con mejor legibilidad) */
+.profesor-crear .flatpickr-current-month .flatpickr-monthDropdown-months{
+  -webkit-appearance: menulist !important;
+  -moz-appearance: menulist !important;
+  appearance: menulist !important;
+  background: transparent !important;   /* fondo transparente */
+  color: #111 !important;
+  border: 0 !important;                 /* sin borde */
+  border-radius: 6px !important;
+  padding: 2px 4px !important;
+  height: 30px !important;
+  line-height: 26px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;          /* mes ancho */
+}
+.profesor-crear .flatpickr-current-month .flatpickr-monthDropdown-months:focus{
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.06) !important;
+  border-color: #C4CCD6 !important;
+}
+.profesor-crear .flatpickr-current-month .flatpickr-monthDropdown-months:hover{
+  border-color: #C4CCD6 !important;
+}
+
+/* AÑO: diseño verde */
+.profesor-crear .flatpickr-current-month .numInputWrapper{
+  position: static !important;                  /* en flujo, pegado al mes */
+  transform: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 30px !important;
+  padding: 0 4px !important;
+  margin-left: 2px !important;                  /* casi pegado al mes */
+  background: transparent !important;           /* fondo transparente */
+  border: 0 !important;                         /* sin borde */
+  border-radius: 6px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 1;
+  position: relative !important;                /* para posicionar flechas */
+}
+.profesor-crear .flatpickr-current-month input.cur-year{
+  width: 60px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;          /* año delgado */
+  color: #111 !important;               /* legible sobre fondo transparente */
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+}
+
+/* Campo fecha: icono dentro del input */
+.date-wrap{ position: relative; width: 100%; display: block; }
+#fecha_nacimiento{ padding-right: 42px !important; }
+.date-icon{
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; z-index: 2; pointer-events: none; color: #00304D;
+}
+
+/* Mostrar y estilizar flechas del año (subir/bajar) */
+.profesor-crear .flatpickr-current-month .numInputWrapper .arrowUp,
+.profesor-crear .flatpickr-current-month .numInputWrapper .arrowDown{
+  position: absolute !important;        /* apiladas a la derecha */
+  right: 0 !important;
+  width: 16px !important; height: 12px !important;
+  display: flex !important;
+  align-items: center !important; justify-content: center !important;
+  opacity: .9 !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 12px !important;
+  cursor: pointer !important;
+}
+.profesor-crear .flatpickr-current-month .numInputWrapper .arrowUp{ top: 2px !important; }
+.profesor-crear .flatpickr-current-month .numInputWrapper .arrowDown{ bottom: 2px !important; }
+
+/* (limpieza) sin borde verde adicional ni cambio de peso */
+.profesor-crear .flatpickr-calendar{
+  overflow: visible !important;
+  z-index: 20;
+  background: rgba(255,255,255,0.72) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.10), 0 8px 18px rgba(0,0,0,.06);
+}
+
+/* Flechas navegación (opcional) */
+.profesor-crear .flatpickr-months .flatpickr-prev-month,
+.profesor-crear .flatpickr-months .flatpickr-next-month{
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #39A900 !important;
+  fill: #39A900 !important;
+  opacity: .95 !important;
+}
+.profesor-crear .flatpickr-months .flatpickr-prev-month svg,
+.profesor-crear .flatpickr-months .flatpickr-next-month svg{
+  width: 16px !important; height: 41px !important;
+}
+
+/* Responsive: si hay poco ancho, el año baja debajo del mes */
+@media (max-width: 480px){
+  .profesor-crear .flatpickr-current-month{
+    padding-right: 10px !important;
+    height: auto !important;
+  }
+  .profesor-crear .flatpickr-current-month .numInputWrapper{
+    position: static !important;
+    transform: none !important;
+    margin-left: auto !important;
+    margin-top: 6px !important;
+  }
+}
+
+/* ====== Colores de días con tema verde ====== */
+.profesor-crear .flatpickr-day:hover{
+  border-color: rgba(57,169,0,.45) !important;
+}
+.profesor-crear .flatpickr-day.today{
+  border-color: #39A900 !important;
+  color: #39A900 !important;
+  background: rgba(57,169,0,0.10) !important;
+}
+.profesor-crear .flatpickr-day.selected,
+.profesor-crear .flatpickr-day.startRange,
+.profesor-crear .flatpickr-day.endRange{
+  background: #39A900 !important;
+  border-color: #39A900 !important;
+  color: #fff !important;
+}
+.profesor-crear .flatpickr-day.inRange{
+  background: rgba(57,169,0,0.12) !important;
+  border-color: rgba(57,169,0,0.18) !important;
+}
+
+/* (limpieza) eliminar override verde heredado */

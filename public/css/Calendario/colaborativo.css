@@ -1,0 +1,456 @@
+:root{
+  --cc-border:#e5e7eb; --cc-bg:#ffffff; --cc-muted:#6b7280; --cc-green:#16a34a; --cc-blue:#2563eb; --cc-soft:#f8fafc; --cc-shadow:0 8px 24px rgba(0,0,0,.06);
+  --cc-badge-blue:#e5f3ff; --cc-badge-green:#e8f8f0; --cc-badge-amber:#fff7ed; --cc-badge-red:#fee2e2;
+}
+
+/* card base */
+#calcolab-hero, #calcolab-root > section, #calcolab-sidebar{
+  background:var(--cc-bg); border:1px solid var(--cc-border); border-radius:14px; box-shadow:var(--cc-shadow);
+}
+
+/* hero */
+.cc-hero{ width:1790px; margin:0 auto 12px; }
+.cc-hero-inner{ background:var(--cc-bg); border:1px solid var(--cc-border); border-radius:12px; box-shadow:var(--cc-shadow); padding:8px 12px; display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; height:60px; min-height:60px; }
+.cc-hero-group{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.cc-hero-right{ justify-content:flex-end; }
+.cc-btn{ padding:6px 12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#fff; border:1px solid var(--cc-border); height:36px; }
+.cc-btn-primary{ background: rgb(3,16,47); color:#fff; border-color: rgb(26,32,57); }
+.cc-btn-primary:hover{ filter:brightness(1.05); }
+.cc-btn-success{ background:#10b981; color:#fff; }
+.cc-btn-green{ background:#39A900; color:#fff; border-color:#2f8d00; }
+.cc-btn-wide{ min-width: 220px; padding-left:20px; padding-right:20px; }
+.cc-btn-icon{ display:inline-flex; align-items:center; gap:6px; }
+.cc-select, .cc-input{ border:1px solid var(--cc-border); border-radius:8px; padding:7px 10px; height:36px; background:#fff; }
+.cc-hero .cc-select{ min-width: 180px; }
+.cc-hero .cc-input{ min-width: 260px; }
+.cc-divider{ width:1px; height:28px; background:var(--cc-border); margin:0 4px; }
+.cc-stat{ text-align:center; }
+.cc-stat-num{ font-weight:700; }
+
+/* grid layout */
+#calcolab-root{ column-gap:0; row-gap:18px; align-items: stretch; }
+#calcolab-root{ width:1790px; margin:0 auto; }
+#calcolab-root > section{ width:100%; }
+#calcolab-sidebar{ padding:10px; border-radius:26px; background:#fff; border:1px solid var(--cc-border); position:relative; z-index:2; overflow:hidden; box-shadow:var(--cc-shadow); align-self:flex-start; }
+#calcolab-sidebar h3{ margin:4px 0 4px; font-size:16px; font-weight:800; text-align:center; letter-spacing:.2px; }
+.cc-sidebar-header{ display:flex; align-items:center; justify-content:center; gap:8px; margin:0 0 8px; }
+.cc-sidebar-toggle{ width:28px; height:28px; border-radius:9999px; border:1px solid var(--cc-border); background:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.12); cursor:pointer; padding:0; }
+.cc-sidebar-toggle-icon{ font-size:14px; line-height:1; }
+#calcolab-sidebar.cc-sidebar-is-collapsed{ padding:12px 6px; }
+#calcolab-sidebar.cc-sidebar-is-collapsed h3{ display:none; }
+#calcolab-sidebar.cc-sidebar-is-collapsed #calcolab-instructors{ display:none; }
+
+#calcolab-controls{ padding:10px; border-radius:26px; background:#fff; border:1px solid var(--cc-border); box-shadow:var(--cc-shadow); display:flex; align-items:flex-start; align-self:flex-start; }
+.cc-controls-inner{ display:flex; flex-direction:column; gap:8px; width:100%; }
+.cc-controls-main{ display:flex; flex-direction:column; gap:5px; margin-bottom:2px; }
+.cc-controls-main .cc-btn-wide{ width:100%; }
+.cc-controls-main #calcolab-newclass{ height:38px; border-radius:9999px; font-size:14px; letter-spacing:.2px; box-shadow:0 4px 0 rgba(0,0,0,.08); }
+.cc-controls-main .cc-select,
+.cc-controls-main .cc-input{
+  width:100%;
+  font-size:12px;
+  height:30px;
+  padding:4px 8px;
+}
+.cc-controls-bottom{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.cc-controls-bottom #calcolab-export{ width:100%; justify-content:center; border-radius:9999px; height:34px; }
+.cc-controls-stats{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; justify-content:space-between; gap:4px 12px; padding-top:6px; border-top:1px solid var(--cc-border); }
+.cc-controls-stats .cc-stat{ padding:2px 0; }
+.cc-controls-stats .cc-stat-num{ font-size:11px; font-weight:600; }
+.cc-controls-stats small{ font-size:11px; }
+
+/* ligeramente más compacto el panel en pantallas pequeñas grandes */
+@media (max-width: 1400px){
+  #calcolab-root{ width:100%; }
+}
+
+/* instructores: alto fijo aprox. 12 tarjetas, luego scroll */
+#calcolab-instructors{
+  height: 520px;
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+  padding:8px 8px 10px 2px;
+  margin-top:4px;
+  background:#f9fafb;
+  border-radius:18px;
+  border:1px solid var(--cc-border);
+}
+#calcolab-instructors .input-buscar{ width:100%; border:1px solid var(--cc-border); border-radius:8px; padding:6px 10px; font-size:12px; }
+#calcolab-instructors .tarjeta--mini{ border:1px solid var(--cc-border); border-radius:14px; box-shadow: 0 6px 18px rgba(0,0,0,.06); background:#fff; }
+#calcolab-instructors label.tarjeta{ transition:background .15s ease; }
+#calcolab-instructors label.tarjeta:hover{ background:var(--cc-soft); box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+#calcolab-instructors label.tarjeta span:last-child{ font-size:12px; }
+/* Chic toggle for Mostrar instructores sin relación */
+.cc-toggle{ display:flex; align-items:center; gap:10px; margin:0 0 8px; cursor:pointer; user-select:none; }
+.cc-toggle input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none; }
+.cc-toggle .cc-toggle-label{
+  font-weight:700;
+  color:#111827;
+  font-size:12px;
+  line-height:1.25;
+  flex:1 1 auto;
+  white-space:normal;
+  word-break:keep-all;
+}
+.cc-switch{ position:relative; width:46px; height:26px; background:#e5e7eb; border-radius:9999px; box-shadow:inset 0 0 0 1px #d1d5db; transition:background .2s ease; flex:0 0 auto; }
+.cc-switch::before{ content:""; position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:9999px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:transform .2s ease; }
+/* LTR: knob moves left->right when turning on */
+.cc-toggle input:checked + .cc-switch{ background:#16a34a; box-shadow:inset 0 0 0 1px #16a34a; }
+.cc-toggle input:checked + .cc-switch::before{ transform: translateX(20px); }
+/* RTL variant: default knob on the right; when ON it slides to the left */
+.cc-toggle[data-dir="rtl"] .cc-switch::before{ transform: translateX(20px); }
+.cc-toggle[data-dir="rtl"] input:checked + .cc-switch::before{ transform: translateX(0); }
+.cc-toggle[data-dir="rtl"] input:checked + .cc-switch{ background:#16a34a; box-shadow:inset 0 0 0 1px #16a34a; }
+.cc-avatar{
+  width:34px;
+  height:34px;
+  aspect-ratio: 1 / 1;
+  display:inline-grid;
+  place-items:center;
+  border-radius:9999px;
+  background:#00304D;
+  color:#fff;
+  font-weight:800;
+  line-height:1;
+  box-sizing:border-box;
+  flex: 0 0 auto;
+}
+
+/* panel calendario (tarjeta independiente del sidebar) */
+#calcolab-root > section{
+  padding:12px;
+  background:#F4F2F2;
+  border:1px solid var(--cc-border);
+  border-radius:26px;
+  position:relative;
+  z-index:1;
+  margin:0 0 28px 0;
+  padding-bottom:24px;
+  box-shadow:var(--cc-shadow);
+}
+#calcolab-views .btn{ border:1px solid var(--cc-border); background:#fff; border-radius:8px; padding:6px 10px; font-weight:600 }
+#calcolab-views .btn.active{ background:#e5f5e8; border-color:#16a34a; color:#065f46 }
+#calcolab-nav .btn{ border:1px solid var(--cc-border); background:#fff; border-radius:8px; padding:6px 10px; font-weight:600 }
+#calcolab-today{ border:1px solid var(--cc-border); background:#fff; border-radius:8px; padding:6px 10px; font-weight:600 }
+#calcolab-title{ font-size:1.25rem; font-weight:800; letter-spacing:.2px; }
+
+/* barra superior del calendario */
+.cc-calbar{ display:block; margin:12px 0 10px; position:relative; padding-top:40px; }
+.cc-calbar-left{ display:none; }
+.cc-calbar-center{ display:block; }
+#calcolab-nav{
+  position:absolute;
+  left:50%;
+  top:4px;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 40px;
+}
+#calcolab-nav button[data-nav="prev"],
+#calcolab-nav button[data-nav="next"]{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+}
+#calcolab-nav button[data-nav="prev"]{ left:0; }
+#calcolab-nav button[data-nav="next"]{ right:0; }
+#calcolab-title{ text-align:center; display:block; }
+
+/* fila de vistas debajo del mes */
+.cc-views-below{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  padding-top:6px;
+}
+.cc-views-below #calcolab-views{ display:flex; gap:6px; }
+
+/* leyenda */
+#calcolab-legend{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:6px 10px; background:#f9fafb; border:1px solid var(--cc-border); border-radius:10px; }
+#calcolab-legend .cc-legend-title{ font-size:12px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; color:var(--cc-muted); }
+#calcolab-legend .cc-legend-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 10px; }
+#calcolab-legend .cc-legend-item{ display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12px; color:#111827; }
+#calcolab-legend small{ color:inherit; }
+.cc-dot{ width:12px; height:12px; border-radius:2px; display:inline-block; }
+.cc-dot-blue{ background:#137bba; }
+.cc-dot-green{ background:#39A900; }
+.cc-dot-red{ background:#ff0000; }
+.cc-dot-black{ background:#111111; }
+
+/* Indicador de tiempo actual (vista mensual) */
+.cc-now-badge{
+  position:absolute;
+  top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:2px 10px;
+  border-radius:9999px;
+  background:#00304D;
+  color:#fff;
+  font-weight:800;
+  font-size:12px;
+  line-height:1;
+  z-index:3;
+  pointer-events:none;
+}
+
+/* +N más (vista mensual) */
+.cc-more-pill,
+.fc .fc-daygrid-more-link{
+  background:#2563eb;
+  color:#fff;
+  padding:2px 6px;
+  border-radius:9999px;
+  font-weight:800;
+  font-size:11px;
+  display:inline-block;
+  text-decoration:none;
+  transition: background .15s ease;
+}
+.cc-more-pill:hover,
+.fc .fc-daygrid-more-link:hover{ background:#1d4ed8; color:#fff; }
+
+/* Asegurar que el enlace +N más no quede tapado por eventos y tenga margen superior */
+.fc .fc-daygrid-day-bottom{ margin-top: 4px; padding: 0 6px; position: relative; z-index: 5; }
+
+/* Línea de ahora punteada en Semana/Día */
+.fc .fc-timegrid-now-indicator-line{
+  border-top: 2px dashed #ef4444 !important;
+}
+.fc .fc-timegrid-now-indicator-arrow{
+  border-color: transparent transparent transparent #ef4444 !important;
+}
+
+/* fullcalendar tweaks */
+/* Quitar bordes de tabla para permitir "gaps" y crear tarjetas de día */
+.fc-theme-standard td, .fc-theme-standard th{ border: none; }
+.fc-theme-standard .fc-day-today{ background: transparent !important; }
+.fc .fc-day-today{ background: transparent !important; }
+.fc .fc-daygrid-day.fc-day-today{ background: transparent !important; }
+.fc-theme-standard .fc-daygrid-day.fc-day-today{ background: transparent !important; }
+.fc .fc-day-today .fc-daygrid-day-top{ background: transparent !important; }
+.fc .fc-col-header{ border: none !important; background: transparent !important; }
+.fc .fc-col-header-cell{ background: transparent !important; border-bottom: none !important; }
+.fc .fc-col-header-cell{ padding: 0 0 2px !important; }
+.fc .fc-col-header-cell-cushion{
+  color:#111 !important;
+  display:inline-block;
+  padding:3px 10px;
+  margin-top:-4px;
+  margin-bottom:2px;
+  text-align:center;
+  text-transform: capitalize;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background:#fff;
+  border:1px solid var(--cc-border);
+  border-radius:10px;
+  box-shadow: var(--cc-shadow);
+}
+/* Neutralizar fondo/bordes del header en scrollgrid (v6) */
+.fc .fc-scrollgrid{ border: 0 !important; }
+.fc .fc-scrollgrid thead{ background: transparent !important; border: 0 !important; }
+.fc .fc-scrollgrid-section-header{ background: transparent !important; border: 0 !important; }
+.fc .fc-scrollgrid-section-header td,
+.fc .fc-scrollgrid-section-header th{ background: transparent !important; border: 0 !important; }
+.fc .fc-scrollgrid-sync-table{ border:0 !important; }
+.fc .fc-scrollgrid-section-body{ border:0 !important; }
+.fc .fc-daygrid-body{ border:0 !important; }
+.fc .fc-daygrid-body table{ border:0 !important; }
+.fc .fc-daygrid-day, 
+.fc .fc-daygrid-day-top, 
+.fc .fc-daygrid-day-frame, 
+.fc .fc-daygrid-day-events, 
+.fc .fc-daygrid-day-bottom{ border:0 !important; }
+.fc .fc-daygrid-day:before, 
+.fc .fc-daygrid-day:after{ display:none !important; }
+.fc .fc-daygrid-day{ padding: 4px 6px; }
+.fc .fc-daygrid-day-top{ border-bottom:none !important; }
+.fc .fc-daygrid-day-number{ text-decoration:none; border-bottom:none !important; }
+.fc .fc-daygrid-event{ border:0; background:transparent; }
+.cc-evrow{ display:flex; align-items:center; gap:6px; }
+.cc-ev-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; flex:0 0 8px; }
+.cc-ev{ background:#00304D; color:#fff; border-radius:8px; padding:3px 7px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-left:4px; }
+.cc-ev-text{ color:#fff; font-weight:600; font-size:.78rem; }
+#calcolab-root .fc .fc-daygrid-day-frame{
+  background:#fff;
+  border:1px solid var(--cc-border);
+  border-radius: 10px;
+  overflow: hidden; /* mantener contenido dentro del día */
+  box-shadow: var(--cc-shadow);
+  min-height: 110px;
+  padding-bottom: 6px; /* espacio para el enlace +N más */
+  position: relative; /* para centrar el badge de 'Ahora' */
+}
+.fc .fc-day-today .fc-daygrid-day-frame{ 
+  background: aliceblue !important; /* #F0F8FF */
+  border-color: #dbeafe !important; /* azul muy claro */
+  box-shadow: 0 6px 18px rgba(0,0,0,.08) !important; /* sombra gris neutra */
+}
+.fc .fc-daygrid-day-number{ color:#64748b; padding: 6px; font-size:.9rem; }
+.fc .fc-day-today .fc-daygrid-day-number{
+  background:#00304D;
+  color:#fff !important;
+  border-radius:9999px;
+  width:28px;
+  height:28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0; /* el alto/ancho ya dan el tamaño */
+  font-weight:800;
+}
+.fc .fc-button{ border-radius:8px }
+
+/* Ocultar fila all-day en semanal */
+#calcolab-root .fc-timegrid .fc-timegrid-allday,
+#calcolab-root .fc-timegrid .fc-timegrid-divider{ display:none !important; }
+
+/* Mini calendario (2 semanas anteriores) */
+#calcolab-prevweeks{ margin-bottom: 8px; }
+#calcolab-prevweeks .fc .fc-daygrid-day{ padding: 2px; }
+#calcolab-prevweeks .fc .fc-col-header-cell-cushion{ padding:6px 8px; font-size:.85rem; }
+#calcolab-prevweeks .fc .fc-daygrid-day-frame{ border-radius:8px; }
+#calcolab-prevweeks .cc-ev{ transform: scale(.9); transform-origin: left center; }
+
+/* ===== Vista Semanal (timeGridWeek): tarjetas por día (respetando espacios actuales) ===== */
+#calcolab-root .fc-timegrid .fc-col-header{ background:transparent !important; border:0 !important; }
+#calcolab-root .fc-timegrid .fc-col-header-cell{ background:transparent !important; border:0 !important; padding:4px 6px; }
+#calcolab-root .fc-timegrid .fc-col-header-cell-cushion{
+  color:#111 !important;
+  padding:8px 10px;
+  text-align:left;
+  display:block;
+  text-transform:capitalize;
+  font-weight:800;
+  font-size:.9rem;
+  background:#fff;
+  border:1px solid var(--cc-border);
+  border-radius:10px;
+  box-shadow: var(--cc-shadow);
+}
+
+#calcolab-root .fc-timegrid .fc-timegrid-col{ padding:4px 12px; box-sizing:border-box; }
+#calcolab-root .fc-timegrid .fc-timegrid-col-frame{
+  background:#fff;
+  border:1px solid var(--cc-border);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow: var(--cc-shadow);
+}
+
+/* all-day como tarjeta, manteniendo separación actual */
+#calcolab-root .fc-timegrid .fc-daygrid{ border:0 !important; background:transparent; }
+#calcolab-root .fc-timegrid .fc-daygrid .fc-daygrid-day{ padding:4px 6px; border:0 !important; }
+#calcolab-root .fc-timegrid .fc-daygrid .fc-daygrid-day-frame{
+  background:#fff;
+  border:1px solid var(--cc-border);
+  border-radius:10px;
+  box-shadow: var(--cc-shadow);
+}
+
+/* ===== Ajustes: columna de horas blanca y separadores horizontales ===== */
+/* Columna/etiquetas de horas en blanco y por encima de eventos */
+#calcolab-root .fc-timegrid .fc-timegrid-axis,
+#calcolab-root .fc-timegrid .fc-timegrid-slot-label,
+#calcolab-root .fc-timegrid .fc-timegrid-slot-label-frame{
+  background:#ffffff !important;
+  z-index:20;
+}
+
+#calcolab-root .fc-timegrid .fc-timegrid-axis{
+  position: sticky;
+  left: 0;
+  border-right:1px solid var(--cc-border) !important;
+}
+
+/* Separadores horizontales por hora (líneas punteadas) */
+#calcolab-root .fc-timegrid .fc-timegrid-slots tr{
+  border-bottom:1px dashed #d1d5db !important;
+}
+#calcolab-root .fc-timegrid .fc-timegrid-slots tr:last-child{ border-bottom:none !important; }
+
+/* Quitar líneas verticales: solo líneas horizontales por hora */
+#calcolab-root .fc-timegrid .fc-timegrid-col-frame{
+  background:#ffffff !important;
+}
+
+/* Sutil guía horizontal por hora dentro de cada día */
+#calcolab-root .fc-timegrid .fc-timegrid-cols .fc-timegrid-col-frame{
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 49px, #e5e7eb 49px, #e5e7eb 50px);
+}
+
+/* Mejorar legibilidad del texto de horas */
+#calcolab-root .fc-timegrid .fc-timegrid-slot-label,
+#calcolab-root .fc-timegrid .fc-timegrid-slot-label-cushion{
+  color:#111827 !important;
+  font-weight:600;
+}
+
+/* responsive */
+@media (max-width: 992px){
+  .cc-hero{ width:100%; }
+  #calcolab-root{ grid-template-columns: 1fr; width:100%; }
+}
+
+/* page title */
+.cc-page-title{ margin: 8px 0 12px; }
+.cc-page-title .cc-title-inner{ width:1790px; margin:0 auto; display:flex; align-items:center; gap:8px; }
+.cc-title-inner h2{ margin:0; font-size:20px; font-weight:700; }
+.cc-title-icon{ color:#111827; display:inline-flex; }
+
+/* ===== Modal: Flatpickr (semi-transparente con acentos verdes) ===== */
+#modalNewClass .flatpickr-calendar { background: rgba(255,255,255,0.88) !important; box-shadow: 0 8px 24px rgba(0,0,0,.05) !important; border: 0 !important; border-radius: 10px; overflow: hidden; }
+#modalNewClass .flatpickr-months { background: rgba(57,169,0,0.90) !important; color: #fff !important; border: 0 !important; }
+#modalNewClass .flatpickr-months .flatpickr-prev-month,
+#modalNewClass .flatpickr-months .flatpickr-next-month { fill: #fff !important; color: #fff !important; }
+#modalNewClass .flatpickr-current-month .cur-month,
+#modalNewClass .flatpickr-current-month .numInputWrapper input,
+#modalNewClass .flatpickr-current-month input.cur-year { color: #fff !important; font-weight: 700; }
+#modalNewClass .flatpickr-weekdays { background: #f3faef !important; }
+#modalNewClass .flatpickr-weekday { color: #215f00 !important; font-weight: 700; }
+#modalNewClass .flatpickr-days, 
+#modalNewClass .flatpickr-innerContainer { background: transparent !important; }
+#modalNewClass .flatpickr-day { background: transparent !important; border-color: transparent !important; }
+#modalNewClass .flatpickr-day.selected,
+#modalNewClass .flatpickr-day.startRange,
+#modalNewClass .flatpickr-day.endRange,
+#modalNewClass .flatpickr-day.selected:focus,
+#modalNewClass .flatpickr-day.selected:hover { background: #39A900 !important; border-color: #39A900 !important; color: #fff !important; }
+#modalNewClass .flatpickr-day.today { border-color: #39A900 !important; box-shadow: inset 0 0 0 1px #39A900 !important; }
+#modalNewClass .flatpickr-day:hover { background: rgba(57,169,0,0.12) !important; border-color: rgba(57,169,0,0.12) !important; }
+
+/* Timepicker semi-transparente a juego */
+#modalNewClass .flatpickr-time { background: rgba(255,255,255,0.88) !important; border-top: 1px solid rgba(0,0,0,0.06) !important; }
+#modalNewClass .flatpickr-time .numInputWrapper input { background: transparent !important; color: #111 !important; font-weight: 700; }
+#modalNewClass .flatpickr-time .numInputWrapper:hover { background: rgba(57,169,0,0.06) !important; }
+#modalNewClass .flatpickr-time .flatpickr-am-pm { background: transparent !important; color: #215f00 !important; font-weight: 700; }
+
+/* ===== Modal: Color chips ===== */
+#modalNewClass .cc-color{ width:48px; height:32px; border-radius:10px; display:inline-block; border:none; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.08); transition: transform .12s ease, box-shadow .12s ease; }
+#modalNewClass .cc-color:hover{ transform: translateY(-1px); box-shadow:0 8px 0 rgba(0,0,0,.10); }
+#modalNewClass .cc-color[aria-pressed="true"],
+#modalNewClass .cc-color.is-selected{ box-shadow:0 6px 0 rgba(0,0,0,.08), 0 0 0 3px rgba(0,0,0,0.15) !important; }
+
+/* ===== Modal: Flatpickr theming ===== */
+#modalNewClass .flatpickr-calendar { box-shadow: var(--cc-shadow); border-radius: 10px; overflow: hidden; }
+#modalNewClass .flatpickr-months { background: #39A900; color: #fff; }
+#modalNewClass .flatpickr-months .flatpickr-month { height: 42px; }
+#modalNewClass .flatpickr-current-month .cur-month,
+#modalNewClass .flatpickr-current-month .numInputWrapper input,
+#modalNewClass .flatpickr-current-month input.cur-year { color: #fff; font-weight: 700; }
+#modalNewClass .flatpickr-months .flatpickr-prev-month,
+#modalNewClass .flatpickr-months .flatpickr-next-month { fill: #fff; color: #fff; }
+#modalNewClass .flatpickr-weekdays { background: #eef7e9; }
+#modalNewClass .flatpickr-weekday { color: #215f00; font-weight: 700; }
+#modalNewClass .flatpickr-day.selected,
+#modalNewClass .flatpickr-day.startRange,
+#modalNewClass .flatpickr-day.endRange,
+#modalNewClass .flatpickr-day.selected:focus,
+#modalNewClass .flatpickr-day.selected:hover { background: #39A900; border-color: #39A900; color: #fff; }
+#modalNewClass .flatpickr-day.today { border-color: #39A900; box-shadow: inset 0 0 0 1px #39A900; }
+#modalNewClass .flatpickr-day:hover { background: #e2f4d6; border-color: #e2f4d6; }

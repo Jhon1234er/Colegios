@@ -1,25 +1,5 @@
-/* Alinear el label de Días de clases con Seleccione Curso (más a la derecha) */
-.alinear-label-dias {
-    display: block;
-    margin-left: 400px;
-    /* igual a .ficha-select-container max-width */
-}
-@media (max-width: 900px) {
-    .alinear-label-dias {
-        margin-left: 10px;
-    }
-}
-/* Alinear el label de Días de clases con Seleccione Curso */
-.alinear-label-dias {
-    display: block;
-    margin-left: 0;
-}
-
-@media (min-width: 900px) {
-    .alinear-label-dias {
-        margin-left: 220px;
-        /* igual a .ficha-select-container min-width */
-    }
+.alinear-label-dias-custom {
+    margin-left: 10px;
 }
 /* Borde verde en todo el select cuando está abierto (focus) */
 .choices[data-type*=select-one].is-open {
@@ -242,13 +222,6 @@
     background: #38bb01;
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(57,185,0,0.18);
-}
-
-/* Estados de validación sutiles */
-.container input:invalid:not(:focus):not(:placeholder-shown) {
-    border-color:#00304D;
-
-    box-shadow: 0 0 0 3px rgb(0, 48, 77, 0.1);
 }
 
 .container input:valid:not(:focus):not(:placeholder-shown) {

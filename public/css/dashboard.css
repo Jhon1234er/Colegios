@@ -39,12 +39,18 @@ body{
 }
 
 /* ===== LAYOUT GENERAL ===== */
-.dashboard-panel{padding:20px; width:100%; min-height:100vh}
+.dashboard-panel{
+  padding:20px 20px 96px; /* espacio extra abajo para que la tabla no quede tapada por el footer fijo */
+  width:100%;
+  min-height:100vh;
+}
 .parent{
   display:grid;
   grid-template-columns:1fr 2.2fr 1.1fr;
-  grid-template-rows:auto auto minmax(560px,1fr) auto;
-  gap:20px;
+  /* La tercera fila (indicaciones + gráfico + contadores) se ajusta al contenido */
+  grid-template-rows:auto auto auto auto;
+  /* Muy poca separación vertical entre "Bienvenido" y los contenedores, mismo espacio horizontal */
+  gap:6px 20px; /* row-gap 6px, column-gap 20px */
   grid-template-areas:
     "bienvenida bienvenida bienvenida"
     "indicaciones grafico contadores"
@@ -59,7 +65,7 @@ body{
   background:var(--blue);
   color:#fff;
   border-radius:var(--r-pill);
-  padding:18px 26px;
+  padding:14px 26px 10px; /* menos padding abajo para acercar los contenedores */
   box-shadow:var(--sh);
   display:flex; align-items:center; justify-content:space-between;
   gap: 24px; /* separación visible entre "Bienvenido" y "Rol" */
@@ -102,17 +108,37 @@ body{
 }
 
 /* ===== TARJETA TIPO MAQUETA  ===== */
-/* Contenedor verde con borde grueso y sombra suave */
-.div1, .div2{
+/* Contenedores verdes con borde grueso y sombra suave */
+.div1,
+.div2{
   background:#fff;
   border: 2px solid #39A900; /* borde verde delgado (mismo estilo que contadores) */
   border-radius:22px;            /* igual que .div5..div11 */
-  padding:14px 16px;             /* igual que contadores */
-  box-shadow: var(--sh);         /* sombra sutil, no tan grande */
-  min-height: 220px;             /* asegurar que el borde se vea aun sin contenido */
-  max-height: 320px;             /* mismo alto que ya tenías */
-  overflow: hidden;              /* evita que crezca */
-  display:flex; flex-direction:column; gap:10px;
+  padding:14px;                  /* interior: 14px para filtros y tarjetas */
+  box-shadow:var(--sh);
+  transition:var(--tr);
+  width: 100%;                   /* ocupa todo el ancho disponible */
+  max-width: 100%;               /* usar todo el ancho de la columna */
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;              /* mantener marco estable */
+  display:flex; 
+  flex-direction:column; 
+  gap:10px;
+}
+
+/* .div1 (Facilitadores) mantiene altura fija para alinearse con el diseño original */
+.div1{
+  height: 320px;
+}
+
+/* .div2 (Aprendices): un poco más alta que Facilitadores, sin estirar la columna completa */
+.indicaciones-column .div2{
+  height: 400px; /* un poco más alta para ocupar el espacio que quedaba y dar aire a las tarjetas */
+}
+
+@media (max-width: 920px){
+  .div1, .div2{ max-width: 100%; }
 }
 
 /* Título centrado y fuerte (Facilitadores/Aprendices) */
@@ -126,6 +152,7 @@ body{
 /* Barra de filtros como píldora verde (Ficha + Buscar + botón) */
 .filter-bar{
   display:flex; align-items:center; gap:8px;
+  flex-wrap: nowrap;                   /* no saltar de línea */
   background: var(--green-12);
   border:3px solid var(--green);
   border-radius:14px;
@@ -137,9 +164,16 @@ body{
   background:#fff; font-weight:700;
   padding:6px 10px; border-radius:10px;
   border:2px solid var(--green);
+  flex: 0 0 auto;                     /* no crecer, conservar ancho de contenido */
+  max-width: 38%;                     /* limitar ancho cuando hay 2 selects */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;            /* cortar etiquetas largas */
 }
 .filter-bar .filter-input{
-  flex:1; border:2px solid var(--green);
+  flex:1 1 auto;                      /* ocupar resto del espacio */
+  min-width: 0;                       /* permitir encogimiento sin romper */
+  border:2px solid var(--green);
   border-radius:10px; padding:7px 10px; outline:0;
 }
 .filter-bar .filter-btn{
@@ -211,13 +245,15 @@ body{
   padding:16px;
   box-shadow:var(--sh-lg);
   display:flex; flex-direction:column; min-height:auto; /* evitar espacio blanco extra */
-  margin-top: var(--title-offset); /* alinear con barra superior de Profesores */
+  margin-top: 0; /* subir el contenedor para que no quede hueco arriba */
 }
 .div3 h3{color:var(--black); margin-bottom:12px; text-align:center; font-weight:800; font-size:1.05rem}
 
 #chart-container{
-  height:560px; width:100%;
-  display:block; /* evitar expansión por flex */
+  /* ocupa todo el alto disponible dentro de .div3 */
+  flex: 1 1 auto;
+  min-height: 260px;
+  width:100%;
   position: relative;
   overflow: hidden; /* no permitir que el lienzo sobresalga */
   background: var(--green-12);            /* verde muy claro */
@@ -235,8 +271,13 @@ body{
 .alertas li{background:var(--white); border:1px solid #f0d3d3; border-radius:12px; padding:10px 12px; color:var(--black)}
 
 /* ===== CONTADORES (píldoras blancas con borde verde) ===== */
-.contadores-column{grid-area:contadores; display:flex; flex-direction:column; gap:14px}
-.contadores-column{ margin-top: var(--title-offset); }
+.contadores-column{
+  grid-area:contadores;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-top: 0; /* mismo alineado vertical que el gráfico */
+}
 .div5,.div6,.div7,.div8,.div10,.div11{
   background:var(--white);
   border:2px solid var(--green);
@@ -259,21 +300,43 @@ body{
   font-weight:700; font-size:.85rem; cursor:pointer;
   transition:var(--tr); box-shadow:0 2px 6px rgba(0,0,0,.12);
 }
-.btn:hover{filter:brightness(.9)}
+ .btn:hover{filter:brightness(.9)}
 
 /* Botones especiales dentro de contadores (PDF/Excel) */
-.div10 .btn{background: var(--green)}
-.div11 .btn{background: var(--green)}
+.div10 .btn,
+.div11 .btn{
+  background: var(--green);
+  color:#ffffff;
+  border:2px solid var(--green);
+  border-radius:999px;
+  padding:10px 22px;
+  font-weight:800;
+  font-size:.95rem;
+  letter-spacing:.01em;
+  box-shadow:0 8px 18px rgba(57,169,0,.35);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.div10 .btn:hover,
+.div11 .btn:hover{
+  filter:brightness(1.03);
+  transform:translateY(-1px);
+  box-shadow:0 12px 24px rgba(57,169,0,.40);
+}
+.div10 .btn:active,
+.div11 .btn:active{
+  transform:translateY(0);
+  box-shadow:0 4px 10px rgba(57,169,0,.30);
+}
 
 /* ===== TABLA ===== */
 .div4{
   grid-area:tabla;
   background:var(--white);
   border-radius:var(--r-xl);
-  padding:18px;
+  padding:18px 18px 28px; /* un poco más de espacio en la parte inferior */
   box-shadow:var(--sh-lg);
-  overflow:hidden;
-  height:80%;
+  overflow:visible; /* permitir que la última fila y sombras se vean completas */
+  height:auto; /* altura automática */
 }
 #tabla-title{
   text-align: center;
@@ -300,17 +363,103 @@ body{
 #tabla-colegios tbody tr:nth-child(even){background: var(--blue-10)}
 #tabla-colegios tbody tr:hover{background: var(--green-08)}
 #tabla-colegios td{padding:12px; color:var(--black); font-size:.92rem}
+#tabla-colegios tbody tr:last-child td{
+  padding-bottom:18px; /* colchón extra para que la última fila no se vea "cortada" contra el borde redondeado */
+}
 .btn-ver-colegio{background:var(--green); color:#fff; border:none; padding:8px 12px; border-radius:14px; font-weight:700; font-size:.8rem}
 .btn-ver-colegio:hover{filter:brightness(.9)}
 
 /* ===== PANELES DINÁMICOS ===== */
 #dashboard-resultados{
-  position:fixed; top:80px; left:20px; right:20px; bottom:20px;
-  background:rgba(255,255,255,.96); backdrop-filter:blur(8px);
-  border-radius:24px; box-shadow:var(--sh-lg); border:1px solid var(--line);
-  overflow-y:auto; z-index:1000; max-height:calc(100vh - 100px);
+  top: 160px; 
+  bottom: 110px;
+  left: 31px;
+  transform: none;
+  width: 50%;
+  max-width: 1000px;
+  background: #ffffff; /* blanco puro para evitar gris */
+  backdrop-filter: none;
+  border-radius: 24px;
+  box-shadow: var(--sh-lg);
+  border: 1px solid var(--line);
+  overflow-y: auto;               /* scroll interno si hay overflow */
+  z-index: 900;
+  height: calc(100vh - 270px);    /* alto fijo: 100vh - (top + bottom) */
+  min-height: calc(100vh - 270px);
+  overscroll-behavior: contain;   /* evita scroll anidado molesto */
 }
-#dashboard-overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; display:none}
+#dashboard-overlay{position:fixed; inset:0; background:transparent; z-index:899; display:none}
+
+/* Responsive: en pantallas pequeñas, usar casi todo el ancho */
+@media (max-width: 992px){
+  #dashboard-resultados{
+    width: calc(100% - 40px);
+    left: 20px;
+    transform: none;
+    bottom: 120px; /* un poco más en móviles */
+    height: calc(100vh - (160px + 120px)); /* recalcular alto en responsive */
+    min-height: calc(100vh - (160px + 120px));
+  }
+}
+
+/* Botón Volver al Dashboard (inyectado por JS) */
+.back-to-dashboard-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  background:#39A900; color:#fff; /* fondo verde, letra blanca */
+  border:2px solid #39A900;
+  border-radius:14px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-family:'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-weight:700; /* Peso 700 */
+  font-size:18px;  /* Tamaño 18px */
+  line-height:100%;
+  letter-spacing:0;
+  transition: transform .15s ease, filter .15s ease;
+  position: absolute; /* dentro del contenedor */
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  pointer-events: auto;
+}
+.back-to-dashboard-btn:hover{ transform: translateY(-1px); filter:brightness(0.98) }
+
+/* Contenedor de resultados fijo */
+#dashboard-resultados{ position:fixed }
+
+/* El botón vive dentro de .back-btn-hero, no dentro de #dashboard-resultados */
+
+/* ===== Backbar (barra del botón Volver) ===== */
+#dashboard-backbar.backbar{
+  position: relative; /* Posicionado por JS con margin-left + max-width */
+  align-items: center;           /* centrado vertical */
+  justify-content: flex-start;   /* alineado a la izquierda */
+  gap: 14px;
+  padding: 16px 22px;            /* más alto/espaciado */
+  min-height: 72px;              /* hacer el contenedor más largo (alto) */
+  margin: 14px 0;
+  background: rgba(57,169,0,0.12); /* más claro que 20% */
+  border-radius: 15px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.05);
+}
+
+#dashboard-backbar .backbar__btn{
+  display: inline-flex;
+  align-items: center; gap: .6rem;
+  padding: 12px 18px;
+  border: 0; border-radius: 999px;
+  background: #39A900;           /* botón verde */
+  color: #ffffff;                 /* texto blanco */
+  font-weight: 800; font-size: 1rem; line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06) inset;
+  transition: transform .06s ease, filter .15s ease;
+}
+#dashboard-backbar .backbar__btn:hover{ filter: brightness(.95); }
+#dashboard-backbar .backbar__btn:active{ transform: translateY(1px); }
+
+#dashboard-backbar .backbar__icon{ display:inline-block; font-size:1.1rem; line-height:1; transform: translateY(-1px); }
 
 
 /* =========================================================
@@ -459,10 +608,11 @@ body{
   border: 2px solid var(--green) !important;
   border-radius: 10px;             /* efecto pastilla en cabeceras */
   font-weight: 800; font-size: .9rem;
-  text-align: center;
+  text-align: center; vertical-align: middle;
 }
 .table.table-bordered tbody td{
   border: 1.8px solid var(--green) !important;
+  text-align: center; vertical-align: middle;
 }
 
 /* Footer: dos botones AZULES (como en la maqueta) */
@@ -503,10 +653,44 @@ body{
   #fichasContainerExcel .form-check{ width: 100%; }
 }
 
-/* Ensanchar el modal grande para acomodar 4 fichas y el calendario */
-.modal-lg{ max-width: 1000px; }
-@media (max-width: 992px){
-  .modal-lg{ max-width: 95%; }
+/* Ensanchar el modal grande para acomodar más contenido */
+.modal-lg{ max-width: 1200px; }
+@media (max-width: 992px){ .modal-lg{ max-width: 95%; } }
+@media (min-width: 1400px){
+  .modal-lg{ max-width: 1280px; }
+  /* En pantallas muy grandes mostrar 5 columnas de fichas */
+  #fichasContainerPDF,
+  #fichasContainerExcel{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Vista previa: área desplazable para ver más filas sin salir del modal */
+#previewContainerPDF .table-responsive,
+#previewContainerExcel .table-responsive{
+  max-height: 55vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* Estilo mejorado para tablas de vista previa (PDF/Excel) */
+#previewTablePDF thead th,
+#previewTableExcel thead th{
+  background: var(--blue) !important; /* #00304D */
+  color: #fff !important;
+  border: none !important; /* quitar líneas de referencia en encabezado */
+}
+#previewTablePDF tbody td,
+#previewTableExcel tbody td{
+  background: #ffffff;
+  border-color: var(--line) !important; /* líneas grises */
+}
+#previewTablePDF tbody tr:nth-child(even) td,
+#previewTableExcel tbody tr:nth-child(even) td{
+  background: #f3f5f7; /* gris clarito */
+}
+#previewTablePDF tbody tr:hover td,
+#previewTableExcel tbody tr:hover td{
+  background: rgba(57,169,0,0.08); /* leve realce al pasar */
 }
 
 /* ===== RESPONSIVE ===== */
@@ -548,9 +732,24 @@ body{
 }
 .tarjeta.tarjeta--mini{ max-height:none }
 /* El contenido NO lleva borde ni sombra ni color distinto para que no se note separación */
-.mockup{ background: transparent; border: none; border-radius: 0; padding: 0; box-shadow: none }
+.mockup{
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
 /* Encabezado: solo una línea negra muy fina como separador */
-.mockup__header{ border: none; border-bottom: 1px solid var(--black); border-radius: 0; padding: 6px 0 8px; font-weight: 800; color: var(--black); margin-bottom: 10px; background: transparent }
+.mockup__header{
+  border: none;
+  border-bottom: 1px solid var(--black);
+  border-radius: 0;
+  padding: 6px 0 8px;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 10px;
+  background: transparent;
+}
 
 /* ===== TÍTULOS DE SECCIÓN (fuera del contenedor) ===== */
 .section-title{
@@ -567,7 +766,7 @@ body{
 }
 
 /* ===== Filtros dentro del contenedor (selects e input) ===== */
-.tarjeta__filters{ display:flex; align-items:center; gap:8px; background: var(--green-12); border:3px solid var(--green); border-radius:14px; padding:8px 10px }
+.tarjeta__filters{ display:flex; align-items:center; gap:8px; flex-wrap: nowrap; background: var(--green-12); border:3px solid var(--green); border-radius:14px; padding:8px 10px }
 
 /* Select tipo chip con flecha personalizada */
 .chip-select{
@@ -581,12 +780,16 @@ body{
   cursor:pointer; outline:none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   background-repeat:no-repeat; background-position: right 10px center; background-size:16px 16px;
+  flex: 0 0 auto;                     /* no crecer */
+  max-width: 42%;                     /* limitar tamaño cuando convive con otro select e input */
+  white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
 }
 .chip-select:focus{ box-shadow: 0 0 0 3px rgba(57,169,0,.28); }
 
 /* Input buscar con fondo verde claro y lupa interna */
 .input-buscar{
-  flex:1;
+  flex:1 1 auto;
+  min-width:0;                        /* clave para que no empuje a los selects */
   background: var(--green-12);
   border: 2px solid var(--green);
   border-radius: 10px;

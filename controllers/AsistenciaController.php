@@ -55,7 +55,7 @@ class AsistenciaController {
 
             require_once __DIR__ . '/../config/db.php';
             $pdo = Database::conectar();
-            $sql = "SELECT id, titulo, fecha_inicio, fecha_fin, estado FROM horarios_fichas 
+            $sql = "SELECT id, titulo, fecha_inicio, fecha_fin FROM horarios_fichas 
                     WHERE ficha_id = ? AND DATE(fecha_inicio) = CURDATE() AND fecha_inicio > NOW()
                     ORDER BY fecha_inicio ASC LIMIT 1";
             $stmt = $pdo->prepare($sql);
@@ -93,7 +93,7 @@ class AsistenciaController {
             require_once __DIR__ . '/../config/db.php';
             $pdo = Database::conectar();
             // Validar que el bloque existe y ya es hora de iniciar
-            $stmt = $pdo->prepare("SELECT id, ficha_id, fecha_inicio, fecha_fin, estado FROM horarios_fichas WHERE id = ? LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id, ficha_id, fecha_inicio, fecha_fin FROM horarios_fichas WHERE id = ? LIMIT 1");
             $stmt->execute([$horario_id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$row) throw new Exception('Horario no encontrado');
@@ -102,13 +102,7 @@ class AsistenciaController {
                 throw new Exception('Aún no es hora de iniciar');
             }
 
-            // Cambiar a en_curso si no está cancelado o finalizado
-            if (in_array($row['estado'], ['cancelado','finalizado'])) {
-                throw new Exception('No se puede iniciar este bloque por su estado actual');
-            }
-
-            $up = $pdo->prepare("UPDATE horarios_fichas SET estado = 'en_curso' WHERE id = ?");
-            $up->execute([$horario_id]);
+            // Esquema actual no guarda estado textual; se considera "en curso" por NOW() entre fecha_inicio y fecha_fin.
             echo json_encode(['success' => true]);
         } catch (Exception $e) {
             http_response_code(400);
@@ -126,11 +120,44 @@ class AsistenciaController {
             // Validar datos de entrada
             $datos = $this->validarDatosAsistencia();
             
+            // Resolver profesor_id de forma robusta
+            $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
+            if (!$profesor_id) {
+                try {
+                    require_once __DIR__ . '/../config/db.php';
+                    $pdoTmp = Database::conectar();
+                    // Preferir columna usuario_id; fallback a usuario
+                    try {
+                        $st = $pdoTmp->prepare("SELECT id FROM facilitadores WHERE usuario_id = ? LIMIT 1");
+                        $st->execute([$_SESSION['usuario']['id'] ?? 0]);
+                        $profesor_id = $st->fetchColumn() ?: null;
+                    } catch (\PDOException $e1) {
+                        if ($e1->getCode() !== '42S22') { /* continuar fallback */ }
+                        try {
+                            $st2 = $pdoTmp->prepare("SELECT id FROM facilitadores WHERE usuario = ? LIMIT 1");
+                            $st2->execute([$_SESSION['usuario']['id'] ?? 0]);
+                            $profesor_id = $st2->fetchColumn() ?: null;
+                        } catch (\PDOException $e2) { /* noop */ }
+                    }
+                } catch (\Throwable $_) { /* noop */ }
+            }
+
+            // Fallback: si no se resolvió profesor_id desde facilitadores, tomarlo del bloque en curso
+            if (!$profesor_id) {
+                try {
+                    require_once __DIR__ . '/../config/db.php';
+                    $pdoTmp2 = Database::conectar();
+                    $stH = $pdoTmp2->prepare("SELECT facilitador_id FROM horarios_fichas WHERE ficha_id = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin ORDER BY fecha_inicio DESC LIMIT 1");
+                    $stH->execute([$datos['ficha_id']]);
+                    $profesor_id = $stH->fetchColumn() ?: null;
+                } catch (\Throwable $_) { /* noop */ }
+            }
+
             // Registrar asistencia
             $resultado = $this->asistenciaModel->registrarAsistencia([
                 'ficha_id' => $datos['ficha_id'],
                 'estudiante_id' => $datos['estudiante_id'],
-                'profesor_id' => $_SESSION['usuario']['profesor_id'],
+                'profesor_id' => $profesor_id,
                 'fecha' => $datos['fecha'],
                 'hora_entrada' => date('H:i:s'),
                 'estado' => $datos['estado'],
@@ -169,23 +196,47 @@ class AsistenciaController {
             }
             
             $id = (int)$_POST['id'];
-            $estado = $_POST['estado'] ?? '';
-            // Normalizar estados desde UI a valores de BD
-            if ($estado === 'no_asistio' || $estado === 'falla') { $estado = Asistencia::ESTADO_FALLA; }
-            if ($estado === 'tardanza') { $estado = Asistencia::ESTADO_TARDANZA; }
-            if ($estado === 'justificada') { $estado = Asistencia::ESTADO_JUSTIFICADA; }
+            $estado = strtolower(trim($_POST['estado'] ?? ''));
+            // Normalizar variantes legacy a los nuevos estados textuales
+            if (in_array($estado, ['no_asistio', 'falla', 'ausente'], true)) {
+                $estado = Asistencia::ESTADO_NO_ASISTIO;
+            } elseif (in_array($estado, ['tarde', 'tardanza'], true)) {
+                $estado = Asistencia::ESTADO_TARDE;
+            } elseif (in_array($estado, ['justificado', 'justificada'], true)) {
+                $estado = Asistencia::ESTADO_JUSTIFICADO;
+            } elseif ($estado === 'presente') {
+                $estado = Asistencia::ESTADO_PRESENTE;
+            }
             $observaciones = $_POST['observaciones'] ?? '';
             
             // Validar estado
             $estadosValidos = [
                 Asistencia::ESTADO_PRESENTE,
-                Asistencia::ESTADO_FALLA,
-                Asistencia::ESTADO_JUSTIFICADA,
-                Asistencia::ESTADO_TARDANZA
+                Asistencia::ESTADO_NO_ASISTIO,
+                Asistencia::ESTADO_JUSTIFICADO,
+                Asistencia::ESTADO_TARDE
             ];
             
             if (!in_array($estado, $estadosValidos)) {
                 throw new Exception('Estado de asistencia no válido');
+            }
+            // Bloquear edición si la clase ya terminó (solo se permite editar durante la clase)
+            try {
+                require_once __DIR__ . '/../config/db.php';
+                $pdoTmp = Database::conectar();
+                $stA = $pdoTmp->prepare("SELECT ficha_id, DATE(fecha) AS fecha_dia FROM asistencias WHERE id = ? LIMIT 1");
+                $stA->execute([$id]);
+                $rowA = $stA->fetch(PDO::FETCH_ASSOC);
+                if ($rowA) {
+                    $stH = $pdoTmp->prepare("SELECT id FROM horarios_fichas WHERE ficha_id = ? AND DATE(fecha_inicio) = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin LIMIT 1");
+                    $stH->execute([(int)$rowA['ficha_id'], $rowA['fecha_dia']]);
+                    $enCurso = $stH->fetch(PDO::FETCH_ASSOC);
+                    if (!$enCurso) {
+                        throw new Exception('La clase ya terminó; no es posible editar desde el tablero del instructor.');
+                    }
+                }
+            } catch (Exception $eChk) {
+                throw $eChk;
             }
             
             // Actualizar asistencia
@@ -288,8 +339,8 @@ class AsistenciaController {
 
             require_once __DIR__ . '/../config/db.php';
             $pdo = Database::conectar();
-            $sql = "SELECT id, titulo, fecha_inicio, fecha_fin, estado FROM horarios_fichas 
-                    WHERE ficha_id = ? AND estado = 'en_curso' AND NOW() BETWEEN fecha_inicio AND fecha_fin
+            $sql = "SELECT id, titulo, fecha_inicio, fecha_fin FROM horarios_fichas 
+                    WHERE ficha_id = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin
                     ORDER BY fecha_inicio DESC LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$ficha_id]);
@@ -376,16 +427,23 @@ class AsistenciaController {
         }
         
         // Validar estado
-        $estado = $_POST['estado'] ?? '';
-        // Normalizar estados desde UI a valores de BD
-        if ($estado === 'no_asistio' || $estado === 'falla') { $estado = Asistencia::ESTADO_FALLA; }
-        if ($estado === 'tardanza') { $estado = Asistencia::ESTADO_TARDANZA; }
-        if ($estado === 'justificada') { $estado = Asistencia::ESTADO_JUSTIFICADA; }
+        $estado = strtolower(trim($_POST['estado'] ?? ''));
+        // Normalizar variantes legacy a los nuevos estados textuales
+        if (in_array($estado, ['no_asistio', 'falla', 'ausente'], true)) {
+            $estado = Asistencia::ESTADO_NO_ASISTIO;
+        } elseif (in_array($estado, ['tarde', 'tardanza'], true)) {
+            $estado = Asistencia::ESTADO_TARDE;
+        } elseif (in_array($estado, ['justificado', 'justificada'], true)) {
+            $estado = Asistencia::ESTADO_JUSTIFICADO;
+        } elseif ($estado === 'presente') {
+            $estado = Asistencia::ESTADO_PRESENTE;
+        }
+
         $estadosValidos = [
             Asistencia::ESTADO_PRESENTE,
-            Asistencia::ESTADO_FALLA,
-            Asistencia::ESTADO_JUSTIFICADA,
-            Asistencia::ESTADO_TARDANZA
+            Asistencia::ESTADO_NO_ASISTIO,
+            Asistencia::ESTADO_JUSTIFICADO,
+            Asistencia::ESTADO_TARDE
         ];
         
         if (!in_array($estado, $estadosValidos)) {
@@ -449,14 +507,41 @@ class AsistenciaController {
             $profesor_id = $_SESSION['usuario']['profesor_id'] ?? null;
             $creado_por = $_SESSION['usuario']['id'] ?? null;
 
-            // Validar que exista clase en curso para esta ficha y fecha (usa NOW y estado en_curso)
+            // Validar que exista clase en curso para esta ficha y fecha (usa NOW entre fecha_inicio y fecha_fin)
             require_once __DIR__ . '/../config/db.php';
             $pdo = Database::conectar();
-            $stmt = $pdo->prepare("SELECT id FROM horarios_fichas WHERE ficha_id = ? AND estado = 'en_curso' AND DATE(fecha_inicio) = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin LIMIT 1");
+            $stmt = $pdo->prepare("SELECT id FROM horarios_fichas WHERE ficha_id = ? AND DATE(fecha_inicio) = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin LIMIT 1");
             $stmt->execute([(int)$ficha_id, $fecha]);
             $enCurso = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$enCurso) {
                 throw new Exception('NO TIENEN CLASE: cree una clase en el calendario y póngala en curso para registrar asistencia.');
+            }
+
+            // Derivar profesor_id si no está en sesión (compatibilidad esquemas usuario_id/usuario)
+            if (!$profesor_id) {
+                try {
+                    try {
+                        $st = $pdo->prepare("SELECT id FROM facilitadores WHERE usuario_id = ? LIMIT 1");
+                        $st->execute([$_SESSION['usuario']['id'] ?? 0]);
+                        $profesor_id = $st->fetchColumn() ?: null;
+                    } catch (\PDOException $e1) {
+                        if ($e1->getCode() !== '42S22') { /* continuar fallback */ }
+                        try {
+                            $st2 = $pdo->prepare("SELECT id FROM facilitadores WHERE usuario = ? LIMIT 1");
+                            $st2->execute([$_SESSION['usuario']['id'] ?? 0]);
+                            $profesor_id = $st2->fetchColumn() ?: null;
+                        } catch (\PDOException $e2) { /* noop */ }
+                    }
+                } catch (\Throwable $_) { /* noop */ }
+            }
+
+            // Fallback adicional: si sigue sin resolverse, tomar el facilitador del bloque en curso de hoy
+            if (!$profesor_id) {
+                try {
+                    $stH = $pdo->prepare("SELECT facilitador_id FROM horarios_fichas WHERE ficha_id = ? AND DATE(fecha_inicio) = ? AND NOW() BETWEEN fecha_inicio AND fecha_fin ORDER BY fecha_inicio DESC LIMIT 1");
+                    $stH->execute([(int)$ficha_id, $fecha]);
+                    $profesor_id = $stH->fetchColumn() ?: null;
+                } catch (\Throwable $_) { /* noop */ }
             }
 
             $ok = true; $errores = [];
@@ -487,10 +572,7 @@ class AsistenciaController {
                 }
             }
 
-            // Generar notificaciones para asistente/admin si hubo ausentes
-            if (!empty($ausentes)) {
-                try { $this->notificarAusencias((int)$ficha_id, $ausentes, $fecha); } catch (Exception $e) { /* noop */ }
-            }
+            // Ya no se notifica aquí; se notificará al finalizar la clase mediante endpoint dedicado
 
             if ($ok) {
                 echo json_encode(['success' => true, 'message' => 'Asistencias registradas']);
@@ -504,6 +586,45 @@ class AsistenciaController {
         }
     }
 
+    // Notificar ausentes del día cuando la clase ya finalizó
+    public function notificarAusentesDia() {
+        header('Content-Type: application/json');
+        try {
+            // Permitir JSON o form-data
+            $payload = null; $ct = $_SERVER['CONTENT_TYPE'] ?? '';
+            if (stripos($ct, 'application/json') !== false) {
+                $raw = file_get_contents('php://input');
+                $payload = json_decode($raw, true);
+            } else { $payload = $_POST; }
+            $ficha_id = isset($payload['ficha_id']) ? (int)$payload['ficha_id'] : 0;
+            $fecha    = isset($payload['fecha']) ? (string)$payload['fecha'] : date('Y-m-d');
+            if ($ficha_id <= 0 || !strtotime($fecha)) { throw new Exception('Datos inválidos'); }
+
+            require_once __DIR__ . '/../config/db.php';
+            $pdo = Database::conectar();
+            // Verificar que la clase del día ya finalizó
+            $stH = $pdo->prepare("SELECT id, fecha_fin FROM horarios_fichas WHERE ficha_id = ? AND DATE(fecha_inicio) = ? ORDER BY fecha_fin DESC LIMIT 1");
+            $stH->execute([$ficha_id, $fecha]);
+            $h = $stH->fetch(PDO::FETCH_ASSOC);
+            if (!$h) { echo json_encode(['success'=>false,'message'=>'No hay clase programada ese día']); return; }
+            $fin = strtotime($h['fecha_fin']);
+            if ($fin === false || time() < $fin) {
+                echo json_encode(['success'=>true,'message'=>'Clase aún en curso; no se notifica.']); return;
+            }
+            // Obtener usuarios ausentes (estado no_asistio) para ese día y ficha
+            $stA = $pdo->prepare("SELECT estudiante_id FROM asistencias WHERE ficha_id = ? AND DATE(fecha) = ? AND estado_asistencia = 'no_asistio'");
+            $stA->execute([$ficha_id, $fecha]);
+            $uids = array_map('intval', $stA->fetchAll(PDO::FETCH_COLUMN));
+            if (empty($uids)) { echo json_encode(['success'=>true,'message'=>'Sin ausentes que notificar']); return; }
+            // Disparar notificaciones
+            $this->notificarAusencias($ficha_id, $uids, $fecha);
+            echo json_encode(['success'=>true,'message'=>'Notificaciones enviadas']);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success'=>false,'message'=>$e->getMessage()]);
+        }
+    }
+
     // Crea notificaciones individuales por estudiante ausente con CTA para iniciar proceso
     private function notificarAusencias(int $ficha_id, array $estudiantesIds, string $fecha) {
         require_once __DIR__ . '/../config/db.php';
@@ -512,7 +633,7 @@ class AsistenciaController {
         // Datos de ficha
         $stmtF = $pdo->prepare("SELECT id, nombre, numero FROM fichas WHERE id = ?");
         $stmtF->execute([$ficha_id]);
-        $ficha = $stmtF->fetch(PDO::FETCH_ASSOC) ?: ['nombre' => 'Ficha', 'numero' => (string)$ficha_id];
+        $ficha = $stmtF->fetch(PDO::FETCH_ASSOC) ?: ['nombre' => 'Ficha'];
 
         // Destinatarios: asistentes (rol 4) y administradores (rol 1)
         $usuariosDestino = [];
@@ -520,40 +641,23 @@ class AsistenciaController {
         $usuariosDestino = $qDest->fetchAll(PDO::FETCH_COLUMN) ?: [];
         if (!$usuariosDestino) return; // no hay a quién notificar
 
-        // Datos de estudiantes
+        // Datos de estudiantes (por usuarios.id)
         if (empty($estudiantesIds)) return;
         $in = implode(',', array_fill(0, count($estudiantesIds), '?'));
-        $stmtE = $pdo->prepare("SELECT e.id, u.nombres, u.apellidos FROM estudiantes e JOIN usuarios u ON u.id = e.usuario_id WHERE e.id IN ($in)");
+        $stmtE = $pdo->prepare("SELECT u.id AS usuario_id, u.nombres, u.apellidos FROM usuarios u WHERE u.id IN ($in)");
         $stmtE->execute($estudiantesIds);
-        $estudiantes = $stmtE->fetchAll(PDO::FETCH_ASSOC);
+        $estudiantes = $stmtE->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         foreach ($estudiantes as $est) {
             $aprendiz = trim(($est['nombres'] ?? '') . ' ' . ($est['apellidos'] ?? ''));
             $titulo = 'Ausencia registrada: ' . $aprendiz;
-            $cta = '/?page=seguimiento_ausencia_iniciar&ficha_id=' . urlencode($ficha_id) . '&estudiante_id=' . urlencode($est['id']) . '&fecha=' . urlencode($fecha);
-            // Agregar marcador para filtros: [seguimiento:estudiante_id=ID;ficha_id=ID]
-            $marker = sprintf('[seguimiento:estudiante_id=%d;ficha_id=%d]', (int)$est['id'], (int)$ficha_id);
             $mensaje = sprintf(
-                "El aprendiz %s no asistió a la ficha %s (%s). <a href=\"%s\" class=\"btn btn-sm btn-primary\">Iniciar proceso</a> %s",
-                htmlspecialchars($aprendiz), htmlspecialchars($ficha['numero']), htmlspecialchars($ficha['nombre']), $cta, $marker
+                "El aprendiz %s no asistió a la ficha %s el %s.",
+                htmlspecialchars($aprendiz), htmlspecialchars($ficha['nombre']), htmlspecialchars($fecha)
             );
-            // Insert compatible con encabezado (tabla con columnas: usuario_id, tipo_usuario, mensaje, fecha, estado)
             foreach ($usuariosDestino as $uId) {
-                // obtener tipo_usuario segun rol del destinatario
-                $stRol = $pdo->prepare("SELECT rol_id FROM usuarios WHERE id = ? LIMIT 1");
-                $stRol->execute([(int)$uId]);
-                $rolId = (int)($stRol->fetchColumn() ?: 0);
-                $tipoUsuario = ($rolId === 1) ? 'administrador' : (($rolId === 2) ? 'profesor' : 'rector');
-                try {
-                    $stmtN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, tipo_usuario, mensaje, fecha, estado) VALUES (?, ?, ?, NOW(), 'no_leida')");
-                    $stmtN->execute([(int)$uId, $tipoUsuario, $titulo . ' - ' . strip_tags($mensaje)]);
-                } catch (Exception $ex) {
-                    // Fallback a esquema simple
-                    try {
-                        $stmtNF = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje) VALUES (?, ?, ?)");
-                        $stmtNF->execute([(int)$uId, $titulo, $mensaje]);
-                    } catch (Exception $e2) { /* noop */ }
-                }
+                $stmtNF = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje) VALUES (?, ?, ?)");
+                try { $stmtNF->execute([(int)$uId, $titulo, $mensaje]); } catch (Exception $e2) { /* noop */ }
             }
         }
     }

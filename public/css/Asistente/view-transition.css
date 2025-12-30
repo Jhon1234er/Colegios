@@ -1,0 +1,30 @@
+/* public/css/Asistente/view-transition.css */
+
+.view-main, .view-secondary {
+    transition: opacity 300ms ease-in-out, transform 300ms ease-in-out, visibility 300ms;
+}
+
+/* Estado inicial: la vista secundaria está oculta */
+.view-secondary {
+    opacity: 0;
+    transform: scale(0.98);
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute; /* Evita que ocupe espacio */
+}
+
+/* Cuando se activa la vista secundaria */
+.parent.show-secondary .view-main {
+    opacity: 0;
+    transform: scale(0.98);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.parent.show-secondary .view-secondary {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+    pointer-events: auto;
+    position: relative; /* Restaura su posición en el layout */
+}

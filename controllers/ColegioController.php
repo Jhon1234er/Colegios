@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/../models/Colegio.php';
-require_once __DIR__ . '/../models/Profesor.php';
+require_once __DIR__ . '/../models/Facilitador.php';
 
 class ColegioController {
     private $colegioModel;
-    private $profesorModel;
+    private $facilitadorModel;
 
     public function __construct() {
         $this->colegioModel = new Colegio();
-        $this->profesorModel = new Profesor();
+        $this->facilitadorModel = new Facilitador();
     }
 
     public function index() {
@@ -44,11 +44,33 @@ class ColegioController {
         require_once __DIR__ . '/../models/Colegio.php';
         $colegioModel = new Colegio();
 
-        if ($colegioModel->guardar($datos)) {
-            header("Location: /?page=colegios&success=1");
+        try {
+            $ok = $colegioModel->guardar($datos, $datos['materias'] ?? []);
+        } catch (\PDOException $e) {
+            // Error específico de base de datos (incluye chk_tel_colegio)
+            $msg = 'No se pudo registrar el colegio. ';
+            $raw = $e->getMessage();
+            if (strpos($raw, 'chk_tel_colegio') !== false) {
+                $msg .= 'El teléfono recibido desde la API no cumple el formato que impone la base de datos (chk_tel_colegio).';
+            } else {
+                $msg .= 'Ocurrió un error en la base de datos al guardar los datos.';
+            }
+            header('Location: /?page=colegios&action=crear&error=' . urlencode($msg));
+            exit;
+        } catch (\Throwable $e) {
+            $msg = 'No se pudo registrar el colegio. Inténtalo nuevamente.';
+            header('Location: /?page=colegios&action=crear&error=' . urlencode($msg));
             exit;
         }
-        echo "❌ Error al guardar colegio.";
+
+        if ($ok) {
+            header("Location: /?page=dashboard&success=1");
+            exit;
+        }
+
+        $msg = 'No se pudo registrar el colegio. Verifica los datos e inténtalo de nuevo.';
+        header('Location: /?page=colegios&action=crear&error=' . urlencode($msg));
+        exit;
     }
 
 
@@ -66,15 +88,17 @@ class ColegioController {
         $colegioId = $_POST['colegio_id'] ?? null;
 
         if ($colegioId) {
-            $profesores = $this->profesorModel->obtenerPorColegio($colegioId);
+            $profes = $this->facilitadorModel->obtenerPorColegio($colegioId);
 
-            // Asegúrate que los alias coincidan con lo que usas en el JS:
+            // Mapear a estructura esperada por el frontend
             $respuesta = array_map(function ($p) {
+                $nombre = trim(($p['apellidos'] ?? '') . ' ' . ($p['nombres'] ?? ''));
+                if ($nombre === '') { $nombre = ($p['nombres'] ?? '') . ' ' . ($p['apellidos'] ?? ''); }
                 return [
-                    'nombre_completo' => $p['nombre'],  // usa 'nombre' si así viene de la consulta
-                    'materia' => $p['materia']
+                    'nombre_completo' => trim($nombre),
+                    'materia' => $p['tipo_contrato'] ?? ''
                 ];
-            }, $profesores);
+            }, $profes);
 
             echo json_encode($respuesta);
         } else {

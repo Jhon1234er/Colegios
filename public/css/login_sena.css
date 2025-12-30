@@ -7,6 +7,7 @@
     --text:#000000;
     --shadow-1:rgba(0,0,0,.08);
     --shadow-2:rgba(0,0,0,.14);
+    --field-bg:#FFFFFF;
   }
   
   /* ========================================
@@ -34,6 +35,9 @@
     /* —— centrado del formulario —— */
     display:flex; align-items:center; justify-content:center;
     position:relative; padding:2rem; min-height:100vh;
+  }
+  .page-brand{
+    position:absolute; top:14px; left:14px; width:56px; height:auto; z-index:3;
   }
   
   /* Esquina verde y logo arriba derecha */
@@ -128,7 +132,7 @@
     padding:1rem 1.2rem;
     border:2px solid var(--sena-green);
     border-radius:36px;
-    background:#fff; color:var(--text); font-size:1.05rem;
+    background:var(--field-bg); color:var(--text); font-size:1.05rem;
     box-shadow:0 2px 4px var(--shadow-1); outline:none;
     transition:border-color .25s ease, box-shadow .25s ease, transform .05s ease;
   }
@@ -144,6 +148,10 @@
     padding-top: 1.35rem;
     padding-bottom: .85rem;
   }
+  .form-group.floating select{
+    padding-top: 1.35rem;
+    padding-bottom: .85rem;
+  }
   .form-group.floating label{
     position:absolute;
     top:50%;
@@ -151,13 +159,38 @@
     transform: translateY(-50%);
     font-size: .95rem;
     color: #6f6f6f;
-    background: #fff;
+    background: var(--field-bg);
     padding: 0 .35rem;
+    border-radius:8px;
+    line-height:1;
     pointer-events: none;
     transition: all .18s ease;
   }
   .form-group.floating input:focus + label,
   .form-group.floating input:not(:placeholder-shown) + label{
+    top: -8px;
+    transform: none;
+    font-size: .78rem;
+    color: var(--sena-green);
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  .form-group.floating select:focus + label,
+  .form-group.floating.filled label{
+    top: -8px;
+    transform: none;
+    font-size: .78rem;
+    color: var(--sena-green);
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+
+  .form-group input:-webkit-autofill{
+    -webkit-box-shadow: 0 0 0 1000px var(--field-bg) inset;
+    -webkit-text-fill-color: var(--text);
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  .form-group.floating input:-webkit-autofill + label{
     top: -8px;
     transform: none;
     font-size: .78rem;
@@ -179,6 +212,30 @@
     width:24px; height:24px; opacity:.8; cursor:pointer; user-select:none;
   }
   .toggle-password:hover{opacity:1}
+  .email-hint{margin:.65rem 0; text-align:center; color:#6f6f6f; font-size:.95rem}
+
+  /* Forgot password specific overrides */
+  .forgot-card .form-group input,
+  .forgot-card .form-group select{
+    border-color:#cbd5e1; /* slate-300 */
+  }
+  .forgot-card .form-group input:focus,
+  .forgot-card .form-group select:focus{
+    border-color:var(--sena-green);
+    box-shadow:0 0 0 3px rgba(57,169,0,.15), 0 6px 16px var(--shadow-1);
+  }
+  .alternate-actions{margin-top:16px; display:flex; align-items:center; justify-content:center; gap:12px; color:#6f6f6f; font-size:.92rem}
+  .alternate-actions .pill-secondary{display:inline-flex; align-items:center; gap:8px; padding:9px 14px; background:#0b3a53; color:#fff; border-radius:999px; text-decoration:none; font-weight:700; font-size:.9rem}
+  
+  /* Forgot card layout fixes: ensure true center on page */
+  .forgot-card{
+    position:relative !important;
+    left:auto !important; top:auto !important;
+    transform:none !important;
+    margin:0 auto;
+    align-self:center; justify-self:center;
+  }
+  .forgot-card .form-title{font-size:1.5rem}
   
   /* ========================================
      LINKS — peso 200
