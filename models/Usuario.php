@@ -127,7 +127,7 @@ class Usuario {
             }
         } catch (\PDOException $e) {
             // Si faltan columnas/tablas (42S22), caer a consulta mínima compatible
-            if ($e->getCode() !== '42S22') {
+            if ($e->getCode() !== '42S22' && $e->getCode() !== '42S02') {
                 throw $e;
             }
         }

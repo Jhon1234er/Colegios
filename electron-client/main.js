@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const CONFIG_FILE = path.join(__dirname, 'config.json');
-const DEFAULT_SERVER_URL = 'http://localhost:8000/';
+const DEFAULT_SERVER_URL = 'http://localhost/Colegios/public/';
 
 function loadConfig() {
   try {

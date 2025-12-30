@@ -147,6 +147,23 @@ $usuario = $_SESSION['usuario'];
     </div>
 </div>
 
+<div class="modal fade" id="modalDetalleProceso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detalleProcesoTitle">Detalle del proceso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="detalleProcesoBody">
+        <div style="padding:12px;">Cargando...</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Reporte PDF -->
 <div class="modal fade" id="modalReportesPDF" tabindex="-1">
   <div class="modal-dialog modal-lg">
@@ -350,36 +367,35 @@ $usuario = $_SESSION['usuario'];
                   const obs = d.observaciones || '';
 
                   bodyEl.innerHTML = `
-                <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-                  <div style="margin-bottom:12px;">
-                    <div style="font-size:1.1rem;font-weight:700;">${nombre || 'Aprendiz'}</div>
-                    <div style="color:#64748b;">Ficha: ${ficha || '—'}</div>
-                  </div>
-                  <div class="row" style="row-gap:10px;">
-                    <div class="col-md-6">
-                      <strong>Fecha del proceso:</strong><br>
-                      <span>${fechaProc || '—'}</span>
-                    </div>
-                    <div class="col-md-6">
-                      <strong>Vía de contacto:</strong><br>
-                      <span>${via}</span>
-                    </div>
-                    <div class="col-md-6" style="margin-top:10px;">
-                      <strong>Contacto:</strong><br>
-                      <span>${contacto}</span>
-                    </div>
-                    <div class="col-md-6" style="margin-top:10px;">
-                      <strong>Teléfono:</strong><br>
-                      <span>${tel}</span>
+                <div class="proceso-detalle">
+                  <div class="proceso-detalle-header">
+                    <div class="proceso-detalle-name">${nombre || 'Aprendiz'}</div>
+                    <div class="proceso-detalle-ficha">
+                      <span class="proceso-chip">Ficha ${ficha || '—'}</span>
+                      ${fechaProc ? `<span class="proceso-chip proceso-chip-fecha">Fecha del proceso: ${fechaProc}</span>` : ''}
                     </div>
                   </div>
-                  <div style="margin-top:16px;">
-                    <strong>Motivo informado:</strong>
-                    <div>${motivo}</div>
+                  <div class="proceso-detalle-grid">
+                    <div class="proceso-detalle-group">
+                      <div class="proceso-label">Vía de contacto</div>
+                      <div class="proceso-value">${via}</div>
+                    </div>
+                    <div class="proceso-detalle-group">
+                      <div class="proceso-label">Contacto</div>
+                      <div class="proceso-value">${contacto}</div>
+                    </div>
+                    <div class="proceso-detalle-group">
+                      <div class="proceso-label">Teléfono</div>
+                      <div class="proceso-value">${tel}</div>
+                    </div>
                   </div>
-                  <div style="margin-top:12px;">
-                    <strong>Observaciones:</strong>
-                    <div style="white-space:pre-wrap;">${obs || 'Sin observaciones registradas.'}</div>
+                  <div class="proceso-detalle-section">
+                    <div class="proceso-label">Motivo informado</div>
+                    <div class="proceso-value">${motivo}</div>
+                  </div>
+                  <div class="proceso-detalle-section">
+                    <div class="proceso-label">Observaciones</div>
+                    <div class="proceso-observaciones">${obs || 'Sin observaciones registradas.'}</div>
                   </div>
                 </div>`;
               })

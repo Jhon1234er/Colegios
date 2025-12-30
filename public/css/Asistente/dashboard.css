@@ -404,6 +404,74 @@
     box-shadow: 0 0 0 3px rgba(57,169,0,.15);
   }
 
+  .proceso-detalle{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    font-size:.95rem;
+    color:var(--black);
+  }
+  .proceso-detalle-header{
+    margin-bottom:12px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .proceso-detalle-name{
+    font-weight:800;
+    font-size:1.1rem;
+  }
+  .proceso-detalle-ficha{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .proceso-chip{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 10px;
+    border-radius:999px;
+    border:2px solid var(--green);
+    background:var(--green-12);
+    font-weight:700;
+    font-size:.8rem;
+    color:var(--black);
+  }
+  .proceso-chip-fecha{
+    border-color:var(--blue);
+    background:var(--blue-10);
+  }
+  .proceso-detalle-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px 18px;
+    margin-bottom:16px;
+  }
+  @media (max-width:576px){
+    .proceso-detalle-grid{grid-template-columns:1fr;}
+  }
+  .proceso-label{
+    font-size:.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    margin-bottom:3px;
+  }
+  .proceso-value{
+    font-size:.95rem;
+    color:var(--black);
+  }
+  .proceso-detalle-section{
+    margin-top:10px;
+  }
+  .proceso-observaciones{
+    white-space:pre-wrap;
+    background:var(--green-08);
+    border-radius:10px;
+    padding:8px 10px;
+    border:1px solid var(--green-18);
+    font-size:.9rem;
+  }
+
   /* Flatpickr: selección en VERDE y acentos de marca */
   .flatpickr-calendar{
     background: rgba(255,255,255,.85) !important; /* más transparente */

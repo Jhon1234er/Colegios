@@ -140,11 +140,30 @@ class Ficha {
             $stmt->execute([$profesor_id]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            if ($e->getCode() !== '42S22') { throw $e; }
+            if ($e->getCode() !== '42S22' && $e->getCode() !== '42S02') { throw $e; }
             // Fallback solo para columna de estado legacy
-            $stmt = $this->pdo->prepare("\n                SELECT f.id, f.numero, f.nombre, f.cupo_total, f.cupo_usado, f.estado AS estado, f.token, f.dias_semana\n                FROM fichas f\n                INNER JOIN facilitador_ficha pf ON f.id = pf.ficha_id\n                WHERE pf.facilitador_id = ?\n                ORDER BY f.id DESC\n            ");
-            $stmt->execute([$profesor_id]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            try {
+                $stmt = $this->pdo->prepare("\n                SELECT f.id, f.numero, f.nombre, f.cupo_total, f.cupo_usado, f.estado AS estado, f.token, f.dias_semana\n                FROM fichas f\n                INNER JOIN profesor_ficha pf ON f.id = pf.ficha_id\n                WHERE pf.profesor_id = ?\n                ORDER BY f.id DESC\n            ");
+                $stmt->execute([$profesor_id]);
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (\PDOException $e2) {
+                if ($e2->getCode() !== '42S22' && $e2->getCode() !== '42S02') { throw $e2; }
+                try {
+                    $stmt = $this->pdo->prepare("\n                SELECT f.id, f.numero, f.nombre, f.cupo_total, f.cupo_usado, COALESCE(f.estado_id, 1) AS estado, f.token, f.dias_semana\n                FROM fichas f\n                WHERE f.facilitador_id = ?\n                ORDER BY f.id DESC\n            ");
+                    $stmt->execute([$profesor_id]);
+                    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (\PDOException $e3) {
+                    if ($e3->getCode() !== '42S22' && $e3->getCode() !== '42S02') { throw $e3; }
+                    try {
+                        $stmt = $this->pdo->prepare("\n                SELECT f.id, f.numero, f.nombre, f.cupo_total, f.cupo_usado, f.estado AS estado, f.token, f.dias_semana\n                FROM fichas f\n                WHERE f.facilitador_id = ?\n                ORDER BY f.id DESC\n            ");
+                        $stmt->execute([$profesor_id]);
+                        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    } catch (\PDOException $e4) {
+                        if ($e4->getCode() !== '42S22' && $e4->getCode() !== '42S02') { throw $e4; }
+                        return [];
+                    }
+                }
+            }
         }
     }
 
