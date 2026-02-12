@@ -41,9 +41,9 @@ $profesores = $model->obtenerTodos();
                             <td><span class="documento"><?= htmlspecialchars($profesor['numero_documento']) ?></span></td>
                             <td><a href="mailto:<?= htmlspecialchars($profesor['correo_electronico']) ?>" class="email"><?= htmlspecialchars($profesor['correo_electronico']) ?></a></td>
                             <td><span class="telefono"><?= htmlspecialchars($profesor['telefono']) ?></span></td>
-                            <td><span class="titulo-academico"><?= htmlspecialchars($profesor['titulo_academico']) ?></span></td>
-                            <td><span class="especialidad"><?= htmlspecialchars($profesor['especialidad']) ?></span></td>
-                            <td><span class="fecha-ingreso"><?= htmlspecialchars($profesor['fecha_ingreso']) ?></span></td>
+                            <td><span class="titulo-academico"><?= htmlspecialchars((string)($profesor['titulo_academico'] ?? '')) ?></span></td>
+                            <td><span class="especialidad"><?= htmlspecialchars((string)($profesor['especialidad'] ?? '')) ?></span></td>
+                            <td><span class="fecha-ingreso"><?= htmlspecialchars((string)($profesor['fecha_ingreso'] ?? '')) ?></span></td>
                             <td class="materias-container">
                                 <?php if (!empty($fichas)): ?>
                                     <?php foreach ($fichas as $ficha): ?>

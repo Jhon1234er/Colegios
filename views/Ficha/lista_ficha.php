@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../Componentes/encabezado.php';
+require_once __DIR__ . '/../../helpers/estado_ficha_helper.php';
+?>
 <table class="tabla-lista">
     <thead>
         <tr>
@@ -14,7 +18,9 @@
                 <td><?= htmlspecialchars($ficha['nombre']) ?></td>
                 <td><?= htmlspecialchars($ficha['numero']) ?></td>
                 <td><?= $ficha['cupo_usado'] ?>/<?= $ficha['cupo_total'] ?></td>
-                <td><?= ucfirst($ficha['estado']) ?></td>
+                <td>
+                    <?= htmlspecialchars(getEstadoFichaDescripcion((int)($ficha['estado_id'] ?? 1))) ?>
+                </td>
                 <td>
                     <a href="/?page=fichas&action=ver&id=<?= urlencode($ficha['id']) ?>" class="btn btn-info">Ver</a>
                     <a href="/?page=fichas&action=editar&id=<?= urlencode($ficha['id']) ?>" class="btn btn-warning">Editar</a>

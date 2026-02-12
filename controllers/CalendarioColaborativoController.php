@@ -246,26 +246,26 @@ class CalendarioColaborativoController {
 
             // Inserción específica de tu esquema: SOLO facilitador_id (sin profesor_id)
             try {
-                $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado, estado_id, creado_por)
-                        VALUES (?,?,?,?,?,?,?,?,?,?)";
+                $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado_id, creado_por)
+                            VALUES (?,?,?,?,?,?,?,?,?)";
                 $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado, $estado_id, $profesor_id]);
+                $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado_id, $profesor_id]);
             } catch (\PDOException $e) {
                 // Si la columna creado_por no existe en tu tabla, usar inserción sin ella
                 if ($e->getCode() === '42S22' || stripos($e->getMessage(), 'Unknown column') !== false) {
                     // Intento sin creado_por
                     try {
-                        $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado, estado_id)
-                                VALUES (?,?,?,?,?,?,?,?,?)";
+                        $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado_id)
+                                VALUES (?,?,?,?,?,?,?,?)";
                         $stmt = $this->pdo->prepare($sql);
-                        $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado, $estado_id]);
+                        $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado_id]);
                     } catch (\PDOException $e2) {
                         // Intento final sin estado_id (si no existiera la columna)
                         if ($e2->getCode() === '42S22' || stripos($e2->getMessage(), 'Unknown column') !== false) {
-                            $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado)
+                            $sql = "INSERT INTO horarios_fichas (facilitador_id, ficha_id, titulo, fecha_inicio, fecha_fin, aula, color, estado_id)
                                     VALUES (?,?,?,?,?,?,?,?)";
                             $stmt = $this->pdo->prepare($sql);
-                            $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado]);
+                            $stmt->execute([$profesor_id, $ficha_id, $titulo, $fi, $ff, $aula, $color, $estado_id]);
                         } else { throw $e2; }
                     }
                 } else {
@@ -318,11 +318,11 @@ class CalendarioColaborativoController {
                         } catch (\PDOException $eN2) {
                             if ($eN2->getCode() !== '42S22') { throw $eN2; }
                             try {
-                                $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                 $stN->execute([$usuarioDestinoId, $tituloNoti, $msg]);
                             } catch (\PDOException $eN3) {
                                 if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                                $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                 $stN->execute([$usuarioDestinoId, $tituloNoti, $msg]);
                             }
                         }
@@ -758,259 +758,85 @@ class CalendarioColaborativoController {
             $rol = (int)($_SESSION['usuario']['rol_id'] ?? 0);
             if (!in_array($rol, [1,4], true)) { http_response_code(403); echo json_encode(['error'=>'No autorizado']); return; }
 
-            $start = $_GET['start'] ?? null; // ISO
-            $end   = $_GET['end'] ?? null;   // ISO
+            $start = $_GET['start'] ?? null;
+            $end   = $_GET['end'] ?? null;
             $idsCsv = $_GET['instructores'] ?? '';
             $ids = array_filter(array_map('intval', array_filter(array_map('trim', explode(',', (string)$idsCsv)))));
             $estado = strtolower(trim((string)($_GET['estado'] ?? '')));
             $fichaQ = trim((string)($_GET['ficha'] ?? ''));
 
-            // Normalizar estados en DB según la hora actual (excluye 'suspendido')
-            try {
-                // finalizado: NOW() > fin
-                $this->pdo->exec("UPDATE horarios_fichas SET estado='finalizado' WHERE COALESCE(LOWER(estado),'') <> 'suspendido' AND NOW() > fecha_fin AND estado <> 'finalizado'");
-                // en_curso: NOW() entre inicio y fin
-            } catch (Exception $e) { /* sin bloquear */ }
+            // Consulta única y simplificada para evitar duplicación
             $params = [];
-            $buildBase = function($joinPf, $idCol) use ($start, $end, $estado, $fichaQ, &$params) {
-                $sql = "
-                    SELECT 
-                        hf.id,
-                        hf.titulo,
-                        hf.fecha_inicio,
-                        hf.fecha_fin,
-                        hf.aula,
-                        COALESCE(hf.color, '#3b82f6') AS color,
-                        CASE 
-                          WHEN NOW() BETWEEN hf.fecha_inicio AND hf.fecha_fin THEN 'en_curso'
-                          WHEN NOW() < hf.fecha_inicio THEN 'programado'
-                          ELSE 'finalizado'
-                        END AS estado,
-                        hf.ficha_id,
-                        COALESCE(f.numero, f.id) AS ficha_numero,
-                        f.nombre AS ficha_nombre,
-                        fc.colegio_id AS ficha_colegio_id,
-                        NULL AS ficha_colegio_legacy,
-                        MIN($idCol) AS profesor_id,
-                        COALESCE(GROUP_CONCAT(DISTINCT TRIM(CONCAT(u.nombres,' ',u.apellidos)) ORDER BY u.apellidos SEPARATOR ', '), '') AS profesor_nombre,
-                        c.id AS colegio_id,
-                        COALESCE(
-                          c.nombre,
-                          (SELECT c2.nombre FROM colegios c2 INNER JOIN aprendices a2 ON a2.colegio_id = c2.id WHERE a2.ficha_id = f.id LIMIT 1)
-                        ) AS colegio_nombre
-                    FROM horarios_fichas hf
-                    INNER JOIN fichas f ON f.id = hf.ficha_id
-                    $joinPf
-                    LEFT JOIN ficha_colegio fc ON fc.ficha_id = f.id
-                    LEFT JOIN facilitadores p ON p.id = $idCol
-                    LEFT JOIN usuarios u ON u.id = p.usuario
-                    LEFT JOIN colegios c ON c.id = fc.colegio_id
-                    WHERE 1=1
-                ";
-                if ($start && $end) {
-                    $ds = $this->toMysqlDateTime($start);
-                    $de = $this->toMysqlDateTime($end);
-                    if ($ds && $de) { $sql .= " AND hf.fecha_inicio < ? AND hf.fecha_fin > ?"; $params[] = $de; $params[] = $ds; }
-                }
-                if ($estado !== '') {
-                    if ($estado === 'suspendido') { $sql .= " AND 1=0"; } /* estado suspendido no se soporta si no hay columna */
-                    elseif ($estado === 'en_curso') { $sql .= " AND NOW() >= hf.fecha_inicio AND NOW() <= hf.fecha_fin"; }
-                    elseif ($estado === 'finalizado') { $sql .= " AND NOW() > hf.fecha_fin"; }
-                    elseif ($estado === 'programado') { $sql .= " AND NOW() < hf.fecha_inicio"; }
-                }
-                if ($fichaQ !== '') {
-                    $sql .= " AND (CAST(COALESCE(f.numero, f.id) AS CHAR) LIKE ? OR f.nombre LIKE ?)";
-                    $like = "%" . $fichaQ . "%";
-                    $params[] = $like; $params[] = $like;
-                }
-                $sql .= " GROUP BY hf.id, hf.titulo, hf.fecha_inicio, hf.fecha_fin, hf.aula, hf.color, hf.estado, hf.ficha_id, f.numero, f.id, f.nombre, c.id, c.nombre ORDER BY hf.fecha_inicio";
-                return $sql;
-            };
-
-            // Intento 0 (prioritario): usar directamente hf.facilitador_id
-            $rows = [];
-            try {
-                $params0 = [];
-                $sql0 = "
-                    SELECT 
-                        hf.id,
-                        hf.titulo,
-                        hf.fecha_inicio,
-                        hf.fecha_fin,
-                        hf.aula,
-                        COALESCE(hf.color, '#3b82f6') AS color,
-                        CASE 
-                          WHEN NOW() BETWEEN hf.fecha_inicio AND hf.fecha_fin THEN 'en_curso'
-                          WHEN NOW() < hf.fecha_inicio THEN 'programado'
-                          ELSE 'finalizado'
-                        END AS estado,
-                        hf.ficha_id,
-                        COALESCE(f.numero, f.id) AS ficha_numero,
-                        f.nombre AS ficha_nombre,
-                        fc.colegio_id AS ficha_colegio_id,
-                        NULL AS ficha_colegio_legacy,
-                        hf.facilitador_id AS profesor_id,
-                        TRIM(CONCAT(u.nombres,' ',u.apellidos)) AS profesor_nombre,
-                        c.id AS colegio_id,
-                        COALESCE(
-                          c.nombre,
-                          (SELECT c2.nombre FROM colegios c2 INNER JOIN aprendices a2 ON a2.colegio_id = c2.id WHERE a2.ficha_id = f.id LIMIT 1)
-                        ) AS colegio_nombre
-                    FROM horarios_fichas hf
-                    INNER JOIN fichas f ON f.id = hf.ficha_id
-                    LEFT JOIN ficha_colegio fc ON fc.ficha_id = f.id
-                    LEFT JOIN facilitadores p ON p.id = hf.facilitador_id
-                    LEFT JOIN usuarios u ON u.id = p.usuario
-                    LEFT JOIN colegios c ON c.id = fc.colegio_id
-                    WHERE 1=1
-                ";
-                if ($start && $end) {
-                    $ds = $this->toMysqlDateTime($start);
-                    $de = $this->toMysqlDateTime($end);
-                    if ($ds && $de) { $sql0 .= " AND hf.fecha_inicio < ? AND hf.fecha_fin > ?"; $params0[] = $de; $params0[] = $ds; }
-                }
-                if (!empty($ids)) {
-                    $in = implode(',', array_fill(0, count($ids), '?'));
-                    $sql0 .= " AND hf.facilitador_id IN ($in)";
-                    $params0 = array_merge($params0, $ids);
-                }
-                if ($estado !== '') {
-                    if ($estado === 'suspendido') { $sql0 .= " AND 1=0"; }
-                    elseif ($estado === 'en_curso') { $sql0 .= " AND NOW() >= hf.fecha_inicio AND NOW() <= hf.fecha_fin"; }
-                    elseif ($estado === 'finalizado') { $sql0 .= " AND NOW() > hf.fecha_fin"; }
-                    elseif ($estado === 'programado') { $sql0 .= " AND NOW() < hf.fecha_inicio"; }
-                }
-                if ($fichaQ !== '') {
-                    $sql0 .= " AND (CAST(COALESCE(f.numero, f.id) AS CHAR) LIKE ? OR f.nombre LIKE ?)";
-                    $like = "%".$fichaQ."%"; $params0[] = $like; $params0[] = $like;
-                }
-                $sql0 .= " ORDER BY hf.fecha_inicio";
-                list($sqlExec0, $paramsExec0) = $this->alignParams($sql0, $params0);
-                $stmt0 = $this->pdo->prepare($sqlExec0);
-                $stmt0->execute($paramsExec0);
-                $rows = $stmt0->fetchAll(PDO::FETCH_ASSOC) ?: [];
-            } catch (\PDOException $e0) {
-                // Si falla por columna desconocida (colegio_id), intentar con columna legacy 'colegio'
-                if ($e0->getCode() === '42S22' || stripos($e0->getMessage(), 'Unknown column') !== false) {
-                    try {
-                        $params0b = [];
-                        $sql0b = str_replace('LEFT JOIN colegios c ON c.id = f.colegio_id', 'LEFT JOIN colegios c ON c.id = f.colegio', $sql0);
-                        // reconstruir filtros con los mismos parámetros
-                        if ($start && $end) {
-                            $ds = $this->toMysqlDateTime($start);
-                            $de = $this->toMysqlDateTime($end);
-                            if ($ds && $de) { $params0b[] = $de; $params0b[] = $ds; }
-                        }
-                        if (!empty($ids)) { $params0b = array_merge($params0b, $ids); }
-                        if ($estado !== '') { /* no añade params extra */ }
-                        if ($fichaQ !== '') { $like = "%".$fichaQ."%"; $params0b[] = $like; $params0b[] = $like; }
-                        list($sqlExec0b, $paramsExec0b) = $this->alignParams($sql0b, $params0b);
-                        $stmt0b = $this->pdo->prepare($sqlExec0b);
-                        $stmt0b->execute($paramsExec0b);
-                        $rows = $stmt0b->fetchAll(PDO::FETCH_ASSOC) ?: [];
-                    } catch (\PDOException $e0b) {
-                        if (!in_array($e0b->getCode(), ['42S02','42S01','42000'], true)) { throw $e0b; }
-                    }
-                } else if (!in_array($e0->getCode(), ['42S02','42S01','42000'], true)) { throw $e0; }
-            }
-
-            // Intento 1: facilitador_ficha (facilitador_id) si el intento 0 no devolvió filas
-            if ($rows === []) {
-                $params1 = $params;
-                $sql1 = $buildBase("LEFT JOIN facilitador_ficha pf ON pf.ficha_id = f.id", "pf.facilitador_id");
-                if (!empty($ids)) {
-                    $in = implode(',', array_fill(0, count($ids), '?'));
-                    $sql1 = str_replace('WHERE 1=1', 'WHERE 1=1 AND pf.facilitador_id IN ('.$in.')', $sql1);
-                    $params1 = array_merge($params1, $ids);
-                }
-                try {
-                    list($sqlExec, $paramsExec) = $this->alignParams($sql1, $params1);
-                    $stmt = $this->pdo->prepare($sqlExec);
-                    $stmt->execute($paramsExec);
-                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-                } catch (\PDOException $e1) {
-                    if (!in_array($e1->getCode(), ['42S02','42S01','42000'], true)) { throw $e1; }
+            $sql = "
+                SELECT DISTINCT
+                    hf.id,
+                    hf.titulo,
+                    hf.fecha_inicio,
+                    hf.fecha_fin,
+                    hf.aula,
+                    COALESCE(hf.color, '#3b82f6') AS color,
+                    CASE 
+                      WHEN NOW() BETWEEN hf.fecha_inicio AND hf.fecha_fin THEN 'en_curso'
+                      WHEN NOW() < hf.fecha_inicio THEN 'programado'
+                      ELSE 'finalizado'
+                    END AS estado,
+                    hf.ficha_id,
+                    COALESCE(f.numero, f.id) AS ficha_numero,
+                    f.nombre AS ficha_nombre,
+                    hf.facilitador_id AS profesor_id,
+                    TRIM(CONCAT(u.nombres,' ',u.apellidos)) AS profesor_nombre,
+                    c.id AS colegio_id,
+                    COALESCE(c.nombre, 'Sin colegio') AS colegio_nombre
+                FROM horarios_fichas hf
+                INNER JOIN fichas f ON f.id = hf.ficha_id
+                LEFT JOIN facilitadores p ON p.id = hf.facilitador_id
+                LEFT JOIN usuarios u ON u.id = p.usuario
+                LEFT JOIN colegios c ON c.id = f.colegio_id
+                WHERE 1=1
+            ";
+            
+            if ($start && $end) {
+                $ds = $this->toMysqlDateTime($start);
+                $de = $this->toMysqlDateTime($end);
+                if ($ds && $de) { 
+                    $sql .= " AND hf.fecha_inicio < ? AND hf.fecha_fin > ?"; 
+                    $params[] = $de; 
+                    $params[] = $ds; 
                 }
             }
-
-            // Intento 2: profesor_ficha (profesor_id)
-            if ($rows === []) {
-                $params2 = $params; // reset filtros base
-                $sql2 = $buildBase("LEFT JOIN profesor_ficha pf ON pf.ficha_id = f.id", "pf.profesor_id");
-                if (!empty($ids)) {
-                    $in = implode(',', array_fill(0, count($ids), '?'));
-                    $sql2 = str_replace('WHERE 1=1', 'WHERE 1=1 AND pf.profesor_id IN ('.$in.')', $sql2);
-                    $params2 = array_merge($params2, $ids);
-                }
-                try {
-                    list($sqlExec2, $paramsExec2) = $this->alignParams($sql2, $params2);
-                    $stmt = $this->pdo->prepare($sqlExec2);
-                    $stmt->execute($paramsExec2);
-                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-                } catch (\PDOException $e2) {
-                    if (!in_array($e2->getCode(), ['42S02','42S01','42000'], true)) { throw $e2; }
-                }
+            
+            if (!empty($ids)) {
+                $in = implode(',', array_fill(0, count($ids), '?'));
+                $sql .= " AND hf.facilitador_id IN ($in)";
+                $params = array_merge($params, $ids);
             }
-
-            // Fallback 3: sin columna profesor en horarios_fichas; tomar instructor por relación de ficha si existe
-            if ($rows === []) {
-                $params3 = [];
-                $sql3 = "
-                    SELECT 
-                        hf.id,
-                        hf.titulo,
-                        hf.fecha_inicio,
-                        hf.fecha_fin,
-                        hf.aula,
-                        COALESCE(hf.color, '#3b82f6') AS color,
-                        COALESCE(hf.estado, 'programado') AS estado,
-                        hf.ficha_id,
-                        COALESCE(f.numero, f.id) AS ficha_numero,
-                        f.nombre AS ficha_nombre,
-                        MIN(pf.facilitador_id) AS profesor_id,
-                        COALESCE(GROUP_CONCAT(DISTINCT TRIM(CONCAT(u.nombres,' ',u.apellidos)) ORDER BY u.apellidos SEPARATOR ', '), '') AS profesor_nombre,
-                        c.id AS colegio_id,
-                        c.nombre AS colegio_nombre
-                    FROM horarios_fichas hf
-                    INNER JOIN fichas f ON f.id = hf.ficha_id
-                    LEFT JOIN facilitador_ficha pf ON pf.ficha_id = f.id
-                    LEFT JOIN facilitadores p ON p.id = pf.facilitador_id
-                    LEFT JOIN usuarios u ON u.id = p.usuario
-                    LEFT JOIN colegios c ON c.id = f.colegio_id
-                    WHERE 1=1
-                ";
-                if ($start && $end) {
-                    $ds = $this->toMysqlDateTime($start); $de = $this->toMysqlDateTime($end);
-                    if ($ds && $de) { $sql3 .= " AND hf.fecha_inicio < ? AND hf.fecha_fin > ?"; $params3[] = $de; $params3[] = $ds; }
-                }
-                if (!empty($ids)) {
-                    $in = implode(',', array_fill(0, count($ids), '?'));
-                    $sql3 .= " AND pf.facilitador_id IN ($in)"; $params3 = array_merge($params3, $ids);
-                }
-                if ($estado !== '') {
-                    $sqlEstadoBase = "LOWER(COALESCE(hf.estado, ''))";
-                    if ($estado === 'suspendido') { $sql3 .= " AND $sqlEstadoBase = 'suspendido'"; }
-                    elseif ($estado === 'en_curso') { $sql3 .= " AND $sqlEstadoBase <> 'suspendido' AND NOW() >= hf.fecha_inicio AND NOW() <= hf.fecha_fin"; }
-                    elseif ($estado === 'finalizado') { $sql3 .= " AND $sqlEstadoBase <> 'suspendido' AND NOW() > hf.fecha_fin"; }
-                    elseif ($estado === 'programado') { $sql3 .= " AND $sqlEstadoBase <> 'suspendido' AND NOW() < hf.fecha_inicio"; }
-                }
-                if ($fichaQ !== '') {
-                    $sql3 .= " AND (CAST(COALESCE(f.numero, f.id) AS CHAR) LIKE ? OR f.nombre LIKE ?)";
-                    $like = "%".$fichaQ."%"; $params3[] = $like; $params3[] = $like;
-                }
-                $sql3 .= " GROUP BY hf.id, hf.titulo, hf.fecha_inicio, hf.fecha_fin, hf.aula, hf.color, hf.estado, hf.ficha_id, f.numero, f.id, f.nombre, c.id, c.nombre ORDER BY hf.fecha_inicio";
-                list($sqlExec3, $paramsExec3) = $this->alignParams($sql3, $params3);
-                $stmt = $this->pdo->prepare($sqlExec3);
-                $stmt->execute($paramsExec3);
-                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            
+            if ($estado !== '') {
+                if ($estado === 'suspendido') { $sql .= " AND 1=0"; }
+                elseif ($estado === 'en_curso') { $sql .= " AND NOW() >= hf.fecha_inicio AND NOW() <= hf.fecha_fin"; }
+                elseif ($estado === 'finalizado') { $sql .= " AND NOW() > hf.fecha_fin"; }
+                elseif ($estado === 'programado') { $sql .= " AND NOW() < hf.fecha_inicio"; }
             }
+            
+            if ($fichaQ !== '') {
+                $sql .= " AND (CAST(COALESCE(f.numero, f.id) AS CHAR) LIKE ? OR f.nombre LIKE ?)";
+                $like = "%".$fichaQ."%"; 
+                $params[] = $like; 
+                $params[] = $like;
+            }
+            
+            $sql .= " ORDER BY hf.fecha_inicio";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
             $eventos = array_map(function($r){
                 $start = $this->toIso($r['fecha_inicio']);
                 $end   = $this->toIso($r['fecha_fin']);
                 return [
                     'id' => (int)$r['id'],
-                    'title' => ($r['titulo'] ?? '') . ' - ' . ($r['profesor_nombre'] ?? ''),
+                    'title' => ($r['titulo'] ?? '') . ' - ' . ($r['profesor_nombre'] ?? 'Sin instructor'),
                     'start' => $start,
                     'end' => $end,
                     'backgroundColor' => $r['color'],
@@ -1023,8 +849,6 @@ class CalendarioColaborativoController {
                         'profesor_id' => (int)$r['profesor_id'],
                         'profesor_nombre' => $r['profesor_nombre'] ?? '',
                         'colegio_nombre' => $r['colegio_nombre'] ?? '',
-                        'colegio_id_ficha' => isset($r['colegio_id']) ? (int)$r['colegio_id'] : null,
-                        'colegio_legacy' => $r['colegio'] ?? null,
                         'aula' => $r['aula'] ?? '',
                         'estado' => $r['estado'] ?? 'programado',
                         'tipo' => 'colaborativo'
@@ -1038,6 +862,84 @@ class CalendarioColaborativoController {
             http_response_code(500);
             if (function_exists('ob_get_length') && ob_get_length() !== false) { @ob_clean(); }
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    // Actualizar horario existente - Calendario Colaborativo
+    public function actualizarHorario() {
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $horario_id = $data['id'] ?? 0;
+            
+            if (!$horario_id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de horario requerido']);
+                return;
+            }
+            
+            // Verificar que el horario existe
+            $stmt = $this->pdo->prepare("SELECT id FROM horarios_fichas WHERE id = ?");
+            $stmt->execute([$horario_id]);
+            if (!$stmt->fetch()) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Horario no encontrado']);
+                return;
+            }
+            
+            // Convertir fechas ISO a MySQL
+            $fecha_inicio = null;
+            $fecha_fin = null;
+            
+            if (!empty($data['start'])) {
+                try {
+                    $dt = new DateTime($data['start']);
+                    $fecha_inicio = $dt->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Formato de fecha inicio inválido']);
+                    return;
+                }
+            }
+            
+            if (!empty($data['end'])) {
+                try {
+                    $dt = new DateTime($data['end']);
+                    $fecha_fin = $dt->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Formato de fecha fin inválido']);
+                    return;
+                }
+            }
+            
+            // Actualizar datos básicos
+            $sql = "
+                UPDATE horarios_fichas 
+                SET titulo = ?, fecha_inicio = ?, fecha_fin = ?, 
+                    aula = ?, color = ?
+                WHERE id = ?
+            ";
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([
+                $data['title'] ?? $data['titulo'] ?? 'Clase',
+                $fecha_inicio,
+                $fecha_fin,
+                $data['extendedProps']['aula'] ?? $data['aula'] ?? null,
+                $data['backgroundColor'] ?? $data['color'] ?? '#007bff',
+                $horario_id
+            ]);
+            
+            if ($result) {
+                echo json_encode(['ok' => true, 'success' => true]);
+            } else {
+                http_response_code(500);
+                echo json_encode(['error' => 'No se pudo actualizar el horario']);
+            }
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al actualizar horario: ' . $e->getMessage()]);
         }
     }
 

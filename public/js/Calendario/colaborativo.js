@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pollHandle: null,
     eventsRaw: [], // últimos eventos cargados del backend (rango visible)
     showNoRel: true,
+    _rendering: false, // Prevenir múltiples renderizados
+    _reloading: false, // Prevenir múltiples recargas
+    _datesSetJustFired: false, // Prevenir bucle infinito datesSet -> reloadEvents -> datesSet
   };
 
   // Debug helper (silenciado por defecto para no llenar la consola)
@@ -178,7 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ul.addEventListener('change', () => {
       const checked = Array.from(ul.querySelectorAll('.chk-inst:checked')).map(el => parseInt(el.dataset.id, 10));
       state.selected = new Set(checked);
-      reloadEvents();
+      // Recargar eventos del calendario (usando el nuevo sistema directo)
+      try {
+        if (calendar && typeof calendar.refetchEvents === 'function') {
+          calendar.refetchEvents();
+        }
+      } catch(_) {}
     });
   }
 
@@ -329,13 +337,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return { html: '<div class="cc-evrow"><span class="cc-ev-dot cc-dot-blue"></span><span class="cc-ev" style="background:#00304D"><span class="cc-ev-text">'+ escapeHtml(arg.event.title || '') +'</span></span></div>' };
       }
     },
-    events: [],
+    // events: [], // Eliminado para evitar duplicación - usaremos solo addEventSource
+    events: function(fetchInfo, successCallback, failureCallback) {
+      // Cargar eventos directamente como el calendario principal
+      try {
+        const url = new URL('/', window.location.origin);
+        url.searchParams.set('page', 'calcolab_eventos');
+        url.searchParams.set('start', fetchInfo.startStr);
+        url.searchParams.set('end', fetchInfo.endStr);
+        
+        // Agregar filtros de instructores si hay selección
+        if (state.selected && state.selected.size > 0) {
+          const ids = Array.from(state.selected).join(',');
+          url.searchParams.set('instructores', ids);
+        }
+        
+        // Agregar filtros adicionales
+        const est = norm($estado?.value);
+        if (est) url.searchParams.set('estado', est);
+        
+        const fq = String($ficha?.value || '').trim();
+        if (fq) url.searchParams.set('ficha', fq);
+        
+        fetch(url, { credentials: 'same-origin' })
+          .then(async r => {
+            if (!r.ok) throw new Error('HTTP '+r.status);
+            const evs = await r.json();
+            successCallback(Array.isArray(evs) ? evs : []);
+          })
+          .catch(err => {
+            console.error('Error cargando eventos:', err);
+            failureCallback(err);
+          });
+      } catch (e) {
+        console.error('Error en eventos function:', e);
+        failureCallback(e);
+      }
+    },
     datesSet: debounce(() => {
       try { calendar.setOption('hiddenDays', [0]); } catch(_) {}
-      reloadEvents();
       updateMonthNowBadge();
-    }, 50),
-    // Personalización del link "+N más"
+    }, 200), // Actualizar título y badges cuando cambian fechas
     moreLinkContent: function(args){
       try {
         const n = args && (args.num || args.shortText || args.text);
@@ -367,8 +409,8 @@ document.addEventListener('DOMContentLoaded', () => {
       $export.addEventListener('click', () => {
         try {
           const v = calendar.view;
-          const d1 = v?.activeStart || v?.currentStart || new Date();
-          const d2 = v?.activeEnd   || v?.currentEnd   || new Date();
+          const d1 = v?.currentStart || v?.activeStart || new Date();
+          const d2 = v?.currentEnd   || v?.activeEnd   || new Date();
           const url = new URL('/', window.location.origin);
           url.searchParams.set('page','calcolab_export');
           url.searchParams.set('start', toYMD(d1));
@@ -406,9 +448,10 @@ document.addEventListener('DOMContentLoaded', () => {
       todayFrame.appendChild(badge);
     } catch(_){}
   }
-  // actualizar cada minuto
+  // actualizar cada 5 minutos en lugar de cada minuto
   try { if (window.calcolabNowTimer) { clearInterval(window.calcolabNowTimer); } } catch(_){}
-  window.calcolabNowTimer = setInterval(() => { updateMonthNowBadge(); }, 60000);
+  // Desactivado - estaba causando animaciones constantes
+// window.calcolabNowTimer = setInterval(() => { updateMonthNowBadge(); }, 300000); // 5 minutos
   // primera pintura
   updateMonthNowBadge();
   function ensureDetailModal(){
@@ -531,9 +574,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(_){}
   });
 
-  calendar.on('eventMouseEnter', function(info){
+  // Mouse hover desactivado completamente - estaba causando bugs de animación
+/*
+calendar.on('eventMouseEnter', function(info){
     try{
       const el = info.el; if (!el) return;
+      
+      // Evitar bucle infinito - solo procesar si no está ya animado
+      if (el._isHovering) return;
+      el._isHovering = true;
+      
       el._prevTrf = el.style.transform || '';
       el._prevSh  = el.style.boxShadow || '';
       el.style.transition = 'transform .15s ease, box-shadow .15s ease';
@@ -541,13 +591,19 @@ document.addEventListener('DOMContentLoaded', () => {
       el.style.boxShadow = '0 8px 20px rgba(0,0,0,.18)';
     }catch(_){}
   });
+  
   calendar.on('eventMouseLeave', function(info){
     try{
       const el = info.el; if (!el) return;
+      
+      // Evitar bucle infinito - resetear flag
+      el._isHovering = false;
+      
       el.style.transform = el._prevTrf || '';
       el.style.boxShadow = el._prevSh || '';
     }catch(_){}
   });
+*/
 
   // ====== Edición: mover/redimensionar con reglas similares al base ======
   // Toast minimalista
@@ -567,24 +623,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const yy=d.getFullYear(), mm=pad(d.getMonth()+1), dd=pad(d.getDate());
     const hh=pad(d.getHours()), mi=pad(d.getMinutes()), ss=pad(d.getSeconds());
     return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
-  };
-  async function persistEventUpdate(ev){
-    try{
-      const url = new URL('/', window.location.origin); url.searchParams.set('page','calendario_actualizar');
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  }
+
+  // Función para persistir actualización de eventos - Calendario Colaborativo
+  const persistEventUpdate = async (ev) => {
+    try {
+      const url = new URL('/', window.location.origin);
+      url.searchParams.set('page','calcolab_actualizar');
+      
       const payload = {
         id: ev.id,
-        fecha_inicio: ev.start ? toMySQL(ev.start) : null,
-        fecha_fin: ev.end ? toMySQL(ev.end) : null,
-        titulo: ev.title || ev.extendedProps?.titulo || 'Clase',
-        aula: ev.extendedProps?.aula || null,
-        color: ev.backgroundColor || ev.extendedProps?.color || '#00304D'
+        title: ev.title || 'Clase',
+        start: ev.start ? ev.start.toISOString() : null,
+        end: ev.end ? ev.end.toISOString() : null,
+        backgroundColor: ev.backgroundColor || '#007bff',
+        extendedProps: ev.extendedProps || {}
       };
-      const res = await fetch(url.toString(), { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify(payload) });
-      let data=null; try{ data=await res.json(); }catch{}
-      return res.ok ? { ok:true } : { ok:false, error: (data && (data.error||data.message)) || 'Error' };
-    }catch{ return { ok:false, error:'Error de red' }; }
-  }
+      
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'same-origin'
+      });
+      
+      const j = await r.json().catch(()=>({}));
+      if (!r.ok) throw new Error(j && j.error ? j.error : ('HTTP '+r.status));
+      return j;
+    } catch (e) {
+      console.error('persistEventUpdate error:', e);
+      return { ok: false, error: e.message || 'Error desconocido' };
+    }
+  };
+
   const estadoOf = (ev)=> (ev.extendedProps?.estado || '').toString().toLowerCase();
   const isMovable = (ev)=>{ const st = estadoOf(ev); return st === 'programado' || st === 'suspendido'; };
   const startOfDay = (d)=> new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -615,37 +688,50 @@ document.addEventListener('DOMContentLoaded', () => {
     return inRange ? { ok:true } : { ok:false, reason:'Fuera de la jornada permitida para ese día' };
   }
   calendar.on('eventResize', async (info)=>{
+    console.log('eventResize disparado en colaborativo', info.event);
     const vt = calendar.view?.type || '';
     if (vt === 'dayGridMonth') { info.revert(); toast('En Mes no se puede cambiar la duración'); return; }
     if (!isMovable(info.event)) { info.revert(); toast('No se puede editar una clase en curso o finalizada'); return; }
     const s = info.event.start, e = info.event.end || info.event.start;
+    console.log('Fechas redimensionadas:', { start: s, end: e });
     if (isPastDay(s) || isPastDay(e)) { info.revert(); toast('No se puede ajustar a fechas pasadas'); return; }
     const fid = info.event.extendedProps?.ficha_id;
     if (fid) {
       const chek = await rangeAllowedForFicha(fid, s, e);
       if (!chek.ok) { info.revert(); toast(chek.reason || 'Horario no permitido'); return; }
     }
+    console.log('Enviando a persistEventUpdate...');
     const res = await persistEventUpdate(info.event);
-    if (res.ok) { toast('Duración actualizada'); try{ reloadEvents(); }catch(_){} }
+    console.log('Resultado de persistEventUpdate:', res);
+    if (res.ok) { 
+      toast('Duración actualizada'); 
+      // No recargar todo el calendario - el evento ya se actualizó localmente
+      // try{ reloadEvents(); }catch(_){} 
+    }
     else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
   });
   calendar.on('eventDrop', async (info)=>{
+    console.log('eventDrop disparado en colaborativo', info.event);
     const vt = calendar.view?.type || '';
     const st = estadoOf(info.event);
     if (st === 'en_curso' || st === 'finalizado') { info.revert(); toast('No se puede mover una clase en curso o finalizada'); return; }
     if (vt !== 'dayGridMonth' && !isMovable(info.event)) { info.revert(); toast('Solo Programadas o Suspendidas se pueden mover'); return; }
     const s2 = info.event.start; const e2 = info.event.end || info.event.start;
+    console.log('Fechas movidas:', { start: s2, end: e2 });
     if (isPastDay(s2) || isPastDay(e2)) { info.revert(); toast('No se puede mover a fechas pasadas'); return; }
     const fid = info.event.extendedProps?.ficha_id;
     if (fid) {
       const chek = await rangeAllowedForFicha(fid, s2, e2);
       if (!chek.ok) { info.revert(); toast(chek.reason || 'Día/hora no permitido'); return; }
     }
+    console.log('Enviando a persistEventUpdate desde eventDrop...');
     const res = await persistEventUpdate(info.event);
+    console.log('Resultado de persistEventUpdate en eventDrop:', res);
     if (res.ok) {
       const d = info.event.start; const pad=(n)=>String(n).padStart(2,'0');
       toast(`Clase movida a ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`);
-      try{ reloadEvents(); }catch(_){ }
+      // No recargar todo el calendario - el evento ya se actualizó localmente
+      // try{ reloadEvents(); }catch(_){ }
     } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
   });
 
@@ -657,7 +743,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           const el = document.querySelector('.fc-daygrid-day.fc-day-today, .fc-timegrid-col.fc-day-today, .fc-day-today');
           if (el) {
-            try { el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(_) {}
+            // ScrollIntoView desactivado - estaba causando bugs de animación
+            // try { el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(_) {}
+            // Animación desactivada - estaba causando bucles constantes
+            /*
             try {
               el.animate(
                 [
@@ -668,6 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { duration: 900, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
               );
             } catch(_) {}
+            */
           }
         }, 100);
       } catch (_) {}
@@ -788,24 +878,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // Selección inicial vacía: sin filtro => se muestran TODAS las clases
     state.selected = new Set();
     renderInstructors();
-    reloadEvents();
     setupPolling();
   }
 
   async function loadInstructors() {
     listEl.textContent = 'Cargando instructores...';
     try {
-      const r = await fetch('/?page=calcolab_instructores', { credentials: 'same-origin' });
+      console.log('Cargando instructores desde: /?page=calcolab_instructores');
+      const r = await fetch('/?page=calcolab_instructores', { 
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
       if (!r.ok) {
         const txt = await r.text();
+        console.error('Error HTTP:', r.status, txt);
         throw new Error('HTTP '+r.status+' '+txt);
       }
       const data = await r.json();
+      console.log('Datos recibidos:', data);
       state.instructors = Array.isArray(data)? data : [];
       dlog('[calcolab] instructores:', state.instructors.length);
     } catch (e) {
-      console.error('instructores', e);
-      listEl.innerHTML = '<div class="text-danger">Error al cargar instructores. '+(e?.message||'')+'</div>';
+      console.error('Error completo al cargar instructores:', e);
+      listEl.innerHTML = '<div class="text-danger">Error al cargar instructores. '+(e?.message||'Error desconocido')+'</div>';
     }
   }
 
@@ -820,46 +918,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return { start: fmt(v.currentStart), end: fmt(v.currentEnd) };
   }
 
-  async function reloadEvents() {
-    try {
-      const { start, end } = getVisibleRange();
-      const ids = Array.from(state.selected);
-      const qs = new URLSearchParams({ start, end });
-      if (ids.length) qs.set('instructores', ids.join(','));
-      const est = norm($estado?.value);
-      if (est) qs.set('estado', est);
-      const fq = String($ficha?.value || '').trim();
-      if (fq) qs.set('ficha', fq);
-      const r = await fetch('/?page=calcolab_eventos&'+qs.toString(), { credentials: 'same-origin' });
-      if (!r.ok) {
-        const txt = await r.text();
-        throw new Error('HTTP '+r.status+' '+txt);
-      }
-      const evs = await r.json();
-      state.eventsRaw = Array.isArray(evs) ? evs : [];
-      dlog('[calcolab] eventos(raw):', state.eventsRaw.length, {start, end, ids});
-      refreshFichaOptionsFromEvents();
-      applyAllFiltersAndRender();
-      if (!evs || evs.length === 0) {
-        // opcional: mostrar mensaje vacío superpuesto
-        // se deja en consola para no ensuciar UI
-      }
-    } catch (e) {
-      console.error('eventos', e);
-      // Mensaje visual simple arriba del calendario
-      const msgId = 'calcolab-msg';
-      let msg = document.getElementById(msgId);
-      if (!msg) { msg = document.createElement('div'); msg.id = msgId; calEl.parentElement.prepend(msg); }
-      msg.textContent = 'Error cargando eventos: ' + (e?.message||'');
-      msg.style.cssText = 'color:#dc2626;margin:4px 0;';
-    }
-  }
-
   function setupPolling() {
     if (state.pollHandle) clearInterval(state.pollHandle);
-    state.pollHandle = setInterval(reloadEvents, 60000); // 60s
+    // Desactivar polling automático para evitar recargas múltiples
+    // Solo hacer polling manual si el usuario lo solicita
+    /*
+    state.pollHandle = setInterval(() => {
+      if (!document.hidden) {
+        reloadEvents();
+      }
+    }, 300000); // 5 minutos en lugar de 60 segundos
+    */
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) reloadEvents();
+      // No recargar automáticamente al cambiar de pestaña
+      // if (!document.hidden) reloadEvents();
     });
   }
 
@@ -904,121 +976,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function applyAllFiltersAndRender(){
-    // 1) partir de eventos del backend para el rango visible
-    let data = state.eventsRaw.slice();
-    // 2) filtro por instructores (si hay selección)
-    if (state.selected && state.selected.size > 0){
-      data = data.filter(ev => state.selected.has(Number(ev?.extendedProps?.profesor_id)));
+  // Event listeners para filtros - recargan el calendario
+  $estado?.addEventListener('change', () => {
+    if (calendar && typeof calendar.refetchEvents === 'function') {
+      calendar.refetchEvents();
     }
-    // 3) filtro por estado
-    const est = norm($estado?.value);
-    if (est){
-      const now = new Date();
-      const visStateOf = (ev) => {
-        const raw = norm(ev?.extendedProps?.estado).replace(/\s+/g,'_');
-        const st = ev.start ? new Date(ev.start) : null;
-        const en = ev.end ? new Date(ev.end) : null;
-        if (raw === 'suspendido') return 'suspendido';
-        if (st && en && now >= st && now <= en) return 'en_curso';
-        if (en && now > en) return 'finalizado';
-        return 'programado';
-      };
-      data = data.filter(ev => visStateOf(ev) === est);
+  });
+  
+  $ficha?.addEventListener('change', () => {
+    if (calendar && typeof calendar.refetchEvents === 'function') {
+      calendar.refetchEvents();
     }
-    // 4) filtro por ficha (texto del input con sugerencias)
-    const fq = norm($ficha?.value);
-    if (fq){
-      data = data.filter(ev => {
-        const n = norm(ev?.extendedProps?.ficha_numero) || '';
-        const fn = norm(ev?.extendedProps?.ficha_nombre) || '';
-        return n.includes(fq) || fn.includes(fq);
-      });
-    }
-    // 5) Render al calendario
-    calendar.removeAllEvents();
-    calendar.addEventSource(data);
-    // 6) Contadores (derivar estados visuales coherentes con eventContent)
-    const now = new Date();
-    function visStateOf(ev){
-      const raw = norm(ev?.extendedProps?.estado).replace(/\s+/g,'_');
-      const st = parseDateSafe(ev.start);
-      const en = parseDateSafe(ev.end);
-      if (raw === 'suspendido' || raw === 'cancelado' || raw === 'cancelada') return 'suspendido';
-      if (st && en && now >= st && now <= en) return 'en_curso';
-      if (en && now > en) return 'finalizado';
-      if (raw === 'finalizado') return 'finalizado';
-      return 'programado';
-    }
-    const total = data.length;
-    const cCurso = data.filter(ev => visStateOf(ev) === 'en_curso').length;
-    const cSusp  = data.filter(ev => visStateOf(ev) === 'suspendido').length;
-    const cFin   = data.filter(ev => visStateOf(ev) === 'finalizado').length;
-    if ($ccTotal) $ccTotal.textContent = String(total);
-    if ($ccCurso) $ccCurso.textContent = String(cCurso);
-    if ($ccSusp)  $ccSusp.textContent  = String(cSusp);
-    if ($ccFin)   $ccFin.textContent   = String(cFin);
-  }
-
-  $estado?.addEventListener('change', applyAllFiltersAndRender);
-  $ficha?.addEventListener('change', applyAllFiltersAndRender);
-
-  // Exportar CSV simple con los eventos filtrados actualmente visibles
-  $export?.addEventListener('click', () => {
-    // reconstruir la lista filtrada con la misma función
-    // reutilizamos applyAllFiltersAndRender pero sin tocar el calendario
-    let data = state.eventsRaw.slice();
-    if (state.selected && state.selected.size > 0){ data = data.filter(ev => state.selected.has(Number(ev?.extendedProps?.profesor_id))); }
-    const est = norm($estado?.value);
-    if (est){
-      const nowF = new Date();
-      const visF = (ev) => {
-        const raw = norm(ev?.extendedProps?.estado).replace(/\s+/g,'_');
-        const st = ev.start ? new Date(ev.start) : null;
-        const en = ev.end ? new Date(ev.end) : null;
-        if (raw === 'suspendido') return 'suspendido';
-        if (st && en && nowF >= st && nowF <= en) return 'en_curso';
-        if (en && nowF > en) return 'finalizado';
-        return 'programado';
-      };
-      data = data.filter(ev => visF(ev) === est);
-    }
-    const fq = norm($ficha?.value);
-    if (fq){
-      data = data.filter(ev => {
-        const n = norm(ev?.extendedProps?.ficha_numero) || '';
-        const fn = norm(ev?.extendedProps?.ficha_nombre) || '';
-        return n.includes(fq) || fn.includes(fq);
-      });
-    }
-    const now = new Date();
-    const visStateOf = (ev) => {
-      const raw = norm(ev?.extendedProps?.estado).replace(/\s+/g,'_');
-      const st = ev.start ? new Date(ev.start) : null;
-      const en = ev.end ? new Date(ev.end) : null;
-      if (raw === 'suspendido') return 'suspendido';
-      if (st && en && now >= st && now <= en) return 'en_curso';
-      if (en && now > en) return 'finalizado';
-      return 'programado';
-    };
-    const rows = [
-      ['Titulo','Inicio','Fin','Instructor','Ficha','Colegio','Estado','Aula']
-    ].concat(data.map(ev => [
-      ev.title || '',
-      ev.start || '',
-      ev.end || '',
-      ev?.extendedProps?.profesor_nombre || '',
-      ev?.extendedProps?.ficha_numero || ev?.extendedProps?.ficha_nombre || '',
-      ev?.extendedProps?.colegio_nombre || '',
-      visStateOf(ev),
-      ev?.extendedProps?.aula || ''
-    ]));
-    const csv = rows.map(r => r.map(x => '"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
-    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'calendario_colaborativo.csv'; a.click();
-    URL.revokeObjectURL(url);
   });
 
   // Modal "Nueva Clase…" (solo Admin)
@@ -1092,8 +1060,6 @@ document.addEventListener('DOMContentLoaded', () => {
             el.dataset.fpBound = '1';
           };
           initTime($hi); initTime($hf);
-          initTime($hi);
-          initTime($hf);
           // Sincronizar fin con inicio: min = inicio y por defecto +60 min si quedara antes/igual
           try {
             const addMinutesStr = (t, mins) => {
@@ -1531,10 +1497,12 @@ document.addEventListener('DOMContentLoaded', () => {
           // Cerrar modal y refrescar eventos del calendario
           const mEl = document.getElementById('modalNewClass');
           if (window.bootstrap && mEl) { try { bootstrap.Modal.getInstance(mEl)?.hide(); } catch(_){} }
-          // refrescar eventos con pipeline propio
-          try { if (typeof reloadEvents === 'function') reloadEvents(); } catch(_) {}
-          // fallback a refetchEvents si existiera una fuente remota declarada
-          try { if (window.calcolab && window.calcolab.calendar && typeof window.calcolab.calendar.refetchEvents === 'function') window.calcolab.calendar.refetchEvents(); } catch(_) {}
+          // Refrescar eventos usando el nuevo sistema directo (como el calendario principal)
+          try { 
+            if (calendar && typeof calendar.refetchEvents === 'function') {
+              calendar.refetchEvents();
+            }
+          } catch(_) {}
           // último recurso: recargar página
           setTimeout(() => { try { if (!window.calcolab || !window.calcolab.calendar) window.location.reload(); } catch(_) {} }, 150);
         })
@@ -1543,4 +1511,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
   }
-});
+}
+); // Cierra el DOMContentLoaded

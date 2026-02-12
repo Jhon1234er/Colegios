@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Información Médica</title>
+    <style>
+        .data-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+        }
+        .data-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .data-value {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug - Información Médica</h1>
+    
+    <div class="data-container medical-container">
+        <div class="section-title">Información Médica</div>
+        <div class="data-grid" id="medical-data-grid">
+            <div class="data-item">
+                <div class="data-label">Cargando...</div>
+                <div class="data-value">Información médica</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simular datos que debería venir del PHP
+        const studentMock = {
+            padece_enfermedad: 1,
+            enfermedad_detalle: 'Asma leve controlado',
+            alergias: 1,
+            alergias_detalle: 'Polen y ácaros',
+            medicamentos_permanentes: 0,
+            medicamentos_detalle: '',
+            discapacidad: 0,
+            discapacidad_detalle: ''
+        };
+
+        // Función para actualizar información médica (copiada del encabezado.js)
+        function updateMedicalInfo(student) {
+            console.log('Datos médicos del student:', student);
+            
+            const medicalDataGrid = document.querySelector('#medical-data-grid');
+            console.log('Buscando medical-data-grid:', medicalDataGrid);
+            
+            if (medicalDataGrid) {
+                let medicalItems = '';
+                
+                // Forzar mostrar siempre para depuración
+                medicalItems += `
+                    <div class="data-item">
+                        <div class="data-label">DEBUG</div>
+                        <div class="data-value">Datos médicos cargados</div>
+                    </div>`;
+                
+                if (student.padece_enfermedad == 1) {
+                    medicalItems += `
+                        <div class="data-item">
+                            <div class="data-label">Enfermedad</div>
+                            <div class="data-value">${student.enfermedad_detalle || 'Sí'}</div>
+                        </div>`;
+                }
+                
+                if (student.alergias == 1) {
+                    medicalItems += `
+                        <div class="data-item">
+                            <div class="data-label">Alergias</div>
+                            <div class="data-value">${student.alergias_detalle || student.alergias || 'No'}</div>
+                        </div>`;
+                }
+                
+                if (student.medicamentos_permanentes == 1) {
+                    medicalItems += `
+                        <div class="data-item">
+                            <div class="data-label">Medicamentos</div>
+                            <div class="data-value">${student.medicamentos_detalle || 'Sí'}</div>
+                        </div>`;
+                }
+                
+                if (student.discapacidad == 1) {
+                    medicalItems += `
+                        <div class="data-item">
+                            <div class="data-label">Discapacidad</div>
+                            <div class="data-value">${student.discapacidad_detalle || 'Sí'}</div>
+                        </div>`;
+                }
+                
+                console.log('Medical items generados:', medicalItems);
+                medicalDataGrid.innerHTML = medicalItems || `
+                    <div class="data-item">
+                        <div class="data-label">Sin información</div>
+                        <div class="data-value">No hay información médica registrada</div>
+                    </div>`;
+            } else {
+                console.error('No se encontró el contenedor #medical-data-grid');
+            }
+        }
+
+        // Ejecutar la función con datos de prueba
+        updateMedicalInfo(studentMock);
+    </script>
+</body>
+</html>

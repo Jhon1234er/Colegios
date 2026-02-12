@@ -51,22 +51,32 @@ class NotificacionController {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['notificacion_id'])) {
                 $id = intval($_POST['notificacion_id']);
 
-                // Preferir esquema con columna leido (0/1)
+                // Preferir esquema actual con estado_id (1=no leída, 2=leída)
                 try {
-                    $stmt = $pdo->prepare("UPDATE notificaciones SET leido = 1 WHERE id = ? AND usuario_id = ?");
+                    $stmt = $pdo->prepare("UPDATE notificaciones SET estado_id = 2 WHERE id = ? AND usuario_id = ?");
                     $stmt->execute([$id, $usuario_id]);
 
-                    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (leido = 0 OR leido IS NULL)");
+                    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND estado_id = 1");
                     $stmtCount->execute([$usuario_id]);
                     $restantes = (int) $stmtCount->fetchColumn();
-                } catch (PDOException $e) {
-                    // Fallback a esquema legacy con columnas estado/rol_id
-                    if ($e->getCode() !== '42S22') { throw $e; }
-                    $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE id = ? AND usuario_id = ? AND rol_id = ?");
-                    $stmt->execute([$id, $usuario_id, $rol_id]);
-                    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND rol_id = ? AND (estado = 'no_leida' OR estado IS NULL)");
-                    $stmtCount->execute([$usuario_id, $rol_id]);
-                    $restantes = (int) $stmtCount->fetchColumn();
+                } catch (PDOException $eEstadoId) {
+                    // Fallback a columnas legacy
+                    if ($eEstadoId->getCode() !== '42S22') { throw $eEstadoId; }
+                    try {
+                        $stmt = $pdo->prepare("UPDATE notificaciones SET leido = 1 WHERE id = ? AND usuario_id = ?");
+                        $stmt->execute([$id, $usuario_id]);
+
+                        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (leido = 0 OR leido IS NULL)");
+                        $stmtCount->execute([$usuario_id]);
+                        $restantes = (int) $stmtCount->fetchColumn();
+                    } catch (PDOException $eLeido) {
+                        if ($eLeido->getCode() !== '42S22') { throw $eLeido; }
+                        $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE id = ? AND usuario_id = ?");
+                        $stmt->execute([$id, $usuario_id]);
+                        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (estado = 'no_leida' OR estado IS NULL)");
+                        $stmtCount->execute([$usuario_id]);
+                        $restantes = (int) $stmtCount->fetchColumn();
+                    }
                 }
 
                 echo json_encode([
@@ -78,12 +88,18 @@ class NotificacionController {
             } else {
                 // No se envió ID: marcar todas como leídas (opcional)
                 try {
-                    $stmt = $pdo->prepare("UPDATE notificaciones SET leido = 1 WHERE usuario_id = ?");
+                    $stmt = $pdo->prepare("UPDATE notificaciones SET estado_id = 2 WHERE usuario_id = ? AND estado_id = 1");
                     $stmt->execute([$usuario_id]);
-                } catch (PDOException $e) {
-                    if ($e->getCode() !== '42S22') { throw $e; }
-                    $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE usuario_id = ? AND rol_id = ?");
-                    $stmt->execute([$usuario_id, $rol_id]);
+                } catch (PDOException $eEstadoId) {
+                    if ($eEstadoId->getCode() !== '42S22') { throw $eEstadoId; }
+                    try {
+                        $stmt = $pdo->prepare("UPDATE notificaciones SET leido = 1 WHERE usuario_id = ?");
+                        $stmt->execute([$usuario_id]);
+                    } catch (PDOException $eLeido) {
+                        if ($eLeido->getCode() !== '42S22') { throw $eLeido; }
+                        $stmt = $pdo->prepare("UPDATE notificaciones SET estado = 'leida' WHERE usuario_id = ?");
+                        $stmt->execute([$usuario_id]);
+                    }
                 }
 
                 echo json_encode([

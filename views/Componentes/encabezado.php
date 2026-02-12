@@ -80,10 +80,19 @@ if ($usuario_id) {
 
         // Contar no leídas soportando leido/estado y usuario_id/usuario
         try {
+            $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND estado_id = 1");
+            $stmtTotal->execute([$usuario_id]);
+        } catch (PDOException $eEstadoId) {
+            if ($eEstadoId->getCode() !== '42S22') { throw $eEstadoId; }
             $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (leido = 0 OR leido IS NULL)");
             $stmtTotal->execute([$usuario_id]);
-        } catch (PDOException $eCount) {
-            if ($eCount->getCode() !== '42S22') { throw $eCount; }
+        }
+
+        if (!isset($stmtTotal)) {
+            $stmtTotal = null;
+        }
+
+        if (!$stmtTotal) {
             try {
                 $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (estado = 'no_leida' OR estado IS NULL)");
                 $stmtTotal->execute([$usuario_id]);
@@ -99,7 +108,8 @@ if ($usuario_id) {
                 }
             }
         }
-        $totalNoLeidas = (int)$stmtTotal->fetchColumn();
+
+        $totalNoLeidas = $stmtTotal ? (int)$stmtTotal->fetchColumn() : 0;
     } catch (PDOException $e) {
         error_log("Error al obtener notificaciones: " . $e->getMessage());
     }
@@ -260,7 +270,9 @@ if ($usuario_id) {
         <!-- Notificaciones -->
         <button type="button" class="notifications-btn" id="btn-notificaciones" aria-expanded="false" aria-controls="notifications-panel" title="Notificaciones">
           <i class="fa-regular fa-bell" style="font-size:18px;"></i>
-          <span class="notifications-badge" aria-label="No leídas"><?= (int)$totalNoLeidas ?></span>
+          <?php if ((int)$totalNoLeidas > 0): ?>
+            <span class="notifications-badge" aria-label="No leídas"><?= (int)$totalNoLeidas ?></span>
+          <?php endif; ?>
         </button>
 
         <div id="notifications-panel" class="notifications-panel" role="region" aria-label="Notificaciones">
@@ -273,7 +285,9 @@ if ($usuario_id) {
                 <?php 
                   // Determinar si está no leída: preferir columna leido (0/1)
                   $isUnread = true;
-                  if (array_key_exists('leido', $n)) {
+                  if (array_key_exists('estado_id', $n)) {
+                    $isUnread = (int)$n['estado_id'] === 1;
+                  } elseif (array_key_exists('leido', $n)) {
                     $isUnread = (string)$n['leido'] === '0' || is_null($n['leido']);
                   } elseif (array_key_exists('estado', $n)) {
                     $isUnread = !isset($n['estado']) || $n['estado'] === 'no_leida';
@@ -819,3 +833,7 @@ function showGlobalNotice(title, text){
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') e.preventDefault(); }, true);
   })();
 </script>
+
+<!-- Fix para scroll eliminado - estaba causando bucles infinitos -->
+<!-- <link rel="stylesheet" href="/css/scroll_fix.css">
+<script src="/js/scroll_fix.js"></script> -->

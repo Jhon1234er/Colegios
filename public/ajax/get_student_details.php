@@ -124,11 +124,20 @@ try {
             a.numero_documento_acudiente,
             a.telefono_acudiente,
             a.parentesco,
-            a.ocupacion
+            a.ocupacion,
+            im.padece_enfermedad,
+            im.enfermedad_detalle,
+            im.alergias,
+            im.alergias_detalle,
+            im.medicamentos_permanentes,
+            im.medicamentos_detalle,
+            im.discapacidad,
+            im.discapacidad_detalle
         FROM aprendices a
         INNER JOIN usuarios u ON a.usuario_id = u.id
         LEFT JOIN colegios c ON a.colegio_id = c.id
         LEFT JOIN fichas f ON a.ficha_id = f.id
+        LEFT JOIN informacion_medica im ON u.id = im.usuario_id
         WHERE a.__WHERE__ = ?
     ";
     // Nuevo esquema (sin jornada)
@@ -156,11 +165,20 @@ try {
             a.numero_documento_acudiente,
             a.telefono_acudiente,
             a.parentesco,
-            a.ocupacion
+            a.ocupacion,
+            im.padece_enfermedad,
+            im.enfermedad_detalle,
+            im.alergias,
+            im.alergias_detalle,
+            im.medicamentos_permanentes,
+            im.medicamentos_detalle,
+            im.discapacidad,
+            im.discapacidad_detalle
         FROM aprendices a
         INNER JOIN usuarios u ON a.usuario_id = u.id
         LEFT JOIN colegios c ON a.colegio_id = c.id
         LEFT JOIN fichas f ON a.ficha_id = f.id
+        LEFT JOIN informacion_medica im ON u.id = im.usuario_id
         WHERE a.__WHERE__ = ?
     ";
 
@@ -190,11 +208,20 @@ try {
             a.numero_documento_acudiente,
             a.telefono_acudiente,
             a.parentesco,
-            a.ocupacion
+            a.ocupacion,
+            im.padece_enfermedad,
+            im.enfermedad_detalle,
+            im.alergias,
+            im.alergias_detalle,
+            im.medicamentos_permanentes,
+            im.medicamentos_detalle,
+            im.discapacidad,
+            im.discapacidad_detalle
         FROM aprendices a
         INNER JOIN usuarios u ON a.usuario_id = u.id
         LEFT JOIN colegios c ON a.colegio_id = c.id
         LEFT JOIN fichas f ON f.id = a.ficha
+        LEFT JOIN informacion_medica im ON u.id = im.usuario_id
         WHERE a.__WHERE__ = ?
     ";
     // Legacy (sin jornada)
@@ -222,11 +249,20 @@ try {
             a.numero_documento_acudiente,
             a.telefono_acudiente,
             a.parentesco,
-            a.ocupacion
+            a.ocupacion,
+            im.padece_enfermedad,
+            im.enfermedad_detalle,
+            im.alergias,
+            im.alergias_detalle,
+            im.medicamentos_permanentes,
+            im.medicamentos_detalle,
+            im.discapacidad,
+            im.discapacidad_detalle
         FROM aprendices a
         INNER JOIN usuarios u ON a.usuario_id = u.id
         LEFT JOIN colegios c ON a.colegio_id = c.id
         LEFT JOIN fichas f ON f.id = a.ficha
+        LEFT JOIN informacion_medica im ON u.id = im.usuario_id
         WHERE a.__WHERE__ = ?
     ";
 
@@ -350,7 +386,7 @@ try {
     }
 
     // Completar datos del acudiente usando tabla familiares (es_acudiente = 1)
-    if ($usuarioId !== null) {
+    if ($aprendizId !== null) {
         try {
             $sqlFam = "SELECT nombre_completo, tipo_documento, numero_documento, telefono,
                               COALESCE(parentesco, parentesco_otro) AS parentesco,
@@ -360,7 +396,7 @@ try {
                        ORDER BY id DESC
                        LIMIT 1";
             $stFam = $pdo->prepare($sqlFam);
-            $stFam->execute([$usuarioId]);
+            $stFam->execute([$aprendizId]); // CORREGIDO: usar aprendizId en lugar de usuarioId
             if ($fam = $stFam->fetch(PDO::FETCH_ASSOC)) {
                 $student['nombre_completo_acudiente']    = $fam['nombre_completo'] ?? null;
                 $student['tipo_documento_acudiente']     = $fam['tipo_documento'] ?? null;
@@ -370,6 +406,62 @@ try {
                 $student['ocupacion']                    = $fam['ocupacion'] ?? null;
             }
         } catch (\Throwable $eFam) { /* noop */ }
+    }
+
+    // Contar total de clases (asistencias) del estudiante
+    if ($usuarioId !== null) {
+        try {
+            $sqlClases = "SELECT COUNT(*) as total_clases 
+                         FROM asistencias 
+                         WHERE usuario_id = ?";
+            $stClases = $pdo->prepare($sqlClases);
+            $stClases->execute([$usuarioId]);
+            $resultClases = $stClases->fetch(PDO::FETCH_ASSOC);
+            $student['total_clases'] = $resultClases['total_clases'] ?? 0;
+        } catch (\Throwable $eClases) { 
+            $student['total_clases'] = 0; 
+        }
+    }
+
+    // Obtener historial de fichas del estudiante
+    if ($aprendizId !== null) {
+        try {
+            $sqlFichas = "SELECT f.id, f.nombre, f.numero, fc.fecha_asignacion, fc.fecha_retiro
+                         FROM ficha_colegio fc
+                         INNER JOIN fichas f ON fc.ficha_id = f.id
+                         WHERE fc.aprendiz_id = ?
+                         ORDER BY fc.fecha_asignacion DESC";
+            $stFichas = $pdo->prepare($sqlFichas);
+            $stFichas->execute([$aprendizId]);
+            $student['historial_fichas'] = $stFichas->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\Throwable $eFichas) { 
+            $student['historial_fichas'] = []; 
+        }
+    }
+
+    // Obtener datos médicos del estudiante
+    if ($usuarioId !== null) {
+        try {
+            $sqlMedical = "SELECT padece_enfermedad, enfermedad_detalle, alergias, alergias_detalle,
+                                   medicamentos_permanentes, medicamentos_detalle, discapacidad, discapacidad_detalle
+                            FROM informacion_medica WHERE usuario_id = ?";
+            $stMedical = $pdo->prepare($sqlMedical);
+            $stMedical->execute([$usuarioId]);
+            $medicalData = $stMedical->fetch(PDO::FETCH_ASSOC);
+            
+            if ($medicalData) {
+                $student['padece_enfermedad'] = $medicalData['padece_enfermedad'];
+                $student['enfermedad_detalle'] = $medicalData['enfermedad_detalle'];
+                $student['alergias'] = $medicalData['alergias'];
+                $student['alergias_detalle'] = $medicalData['alergias_detalle'];
+                $student['medicamentos_permanentes'] = $medicalData['medicamentos_permanentes'];
+                $student['medicamentos_detalle'] = $medicalData['medicamentos_detalle'];
+                $student['discapacidad'] = $medicalData['discapacidad'];
+                $student['discapacidad_detalle'] = $medicalData['discapacidad_detalle'];
+            }
+        } catch (\Throwable $eMedical) { 
+            // Silencioso - si hay error, los datos médicos quedan como null
+        }
     }
 
     echo json_encode(['success' => (bool)$student, 'student' => $student, 'message' => $student ? null : 'No se encontró el estudiante']);

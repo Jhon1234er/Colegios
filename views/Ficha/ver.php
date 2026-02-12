@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../Componentes/encabezado.php';
+require_once __DIR__ . '/../../helpers/estado_ficha_helper.php';
 ?>
 <link rel="stylesheet" href="/css/Ficha/ver.css">
 
-<div class="container">
+<div class="container ficha-ver-container">
     <div class="titulo-ficha-wrap">
         <h2>Ficha: <?= htmlspecialchars($ficha['nombre']) ?></h2>
         <div class="linea-verde"></div>
@@ -21,12 +22,16 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
             <div class="ficha-card-content">
                 <strong>Estado:</strong>
                 <span class="ficha-card-value">
-                    <?php $estado = strtolower($ficha['estado'] ?? 'pendiente'); ?>
-                    <?php if ($estado === 'activa' || $estado === 'activo'): ?>
-                        <span class="estado-badge"><span class="dot"></span>ACTIVA</span>
-                    <?php else: ?>
-                        <span class="estado-badge" style="background:#fbeee0;color:#a67c00;"><span class="dot" style="background:#e1b000;"></span><?= strtoupper(htmlspecialchars($ficha['estado'] ?? 'PENDIENTE')) ?></span>
-                    <?php endif; ?>
+                    <?php 
+                    $estado_id = (int)($ficha['estado_id'] ?? 1);
+                    $estado_descripcion = getEstadoFichaDescripcion($estado_id);
+                    $color = getEstadoFichaColor($estado_id);
+                    $dot_color = getEstadoFichaDotColor($estado_id);
+                    ?>
+                    <span class="estado-badge" style="<?= $color ?>">
+                        <span class="dot" style="<?= $dot_color ?>"></span>
+                        <?= htmlspecialchars($estado_descripcion) ?>
+                    </span>
                 </span>
             </div>
         </div>
@@ -58,6 +63,32 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
     <?php if (session_status() === PHP_SESSION_NONE) { session_start(); } ?>
     <?php $rol_actual = (int)($_SESSION['usuario']['rol_id'] ?? 0); ?>
     <?php $cupo_total = (int)($ficha['cupo_total'] ?? 0); $cupo_usado = (int)($ficha['cupo_usado'] ?? 0); $ficha_llena = ($cupo_total > 0 && $cupo_usado >= $cupo_total); ?>
+    
+    <?php 
+    // Mostrar advertencias según el estado de la ficha
+    $estado_id = (int)($ficha['estado_id'] ?? 1);
+    if ($estado_id !== 1): 
+        $estado_descripcion = getEstadoFichaDescripcion($estado_id);
+        $color_alerta = getEstadoFichaColor($estado_id);
+    ?>
+        <div class="alert" style="margin:12px 0; <?= str_replace('background:', 'background:', $color_alerta) ?> padding:12px; border-radius:8px;">
+            <strong style="display:block; margin-bottom:4px;">⚠️ Ficha <?= htmlspecialchars($estado_descripcion) ?></strong>
+            <?php if ($estado_id === 2): ?>
+                <span>La ficha está suspendida. No se permiten registrar nuevos aprendices ni realizar modificaciones.</span>
+            <?php elseif ($estado_id === 3): ?>
+                <span>La ficha está finalizada. No se permiten registrar nuevos aprendices ni realizar modificaciones.</span>
+            <?php elseif ($estado_id === 4): ?>
+                <span>La ficha está archivada. No se permiten registrar nuevos aprendices ni realizar modificaciones.</span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+    
+    <?php if ($estado_id === 1 && $ficha_llena): ?>
+        <div class="alert alert-warning" style="margin:12px 0;">
+            <strong>⚠️ Ficha completa</strong><br>
+            La ficha ha alcanzado su cupo máximo (<?= $cupo_usado ?>/<?= $cupo_total ?>). No se pueden registrar más aprendices.
+        </div>
+    <?php endif; ?>
 
     <?php if (isset($_GET['import_ok'])): ?>
         <?php 
@@ -94,10 +125,48 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
 
     <!-- ➕ Botón agregar estudiante -->
     <div class="acciones">
-        <?php if ($ficha_llena && $rol_actual !== 1): ?>
-            <a href="#" class="btn btn-primary" style="opacity:.6; pointer-events:none;" aria-disabled="true" title="Cupo alcanzado">+ Agregar Estudiante</a>
-            <a href="#" class="btn btn-light" style="margin-left:8px; opacity:.6; pointer-events:none;" aria-disabled="true" title="Cupo alcanzado">Importar desde Excel</a>
-            <div style="margin-top:8px; color:#a67c00;">⚠️ El cupo de esta ficha está completo. Solo un administrador puede registrar más estudiantes.</div>
+        <?php 
+        $estado_id = (int)($ficha['estado_id'] ?? 1);
+        $acciones_permitidas = ($estado_id === 1 && !$ficha_llena);
+        ?>
+        
+        <?php if (!$acciones_permitidas): ?>
+            <a href="#" class="btn btn-primary" style="opacity:.6; pointer-events:none;" aria-disabled="true" title="No disponible">
+                <?php 
+                if ($estado_id !== 1) {
+                    echo '+ Agregar Estudiante';
+                } else {
+                    echo '+ Agregar Estudiante';
+                }
+                ?>
+            </a>
+            <a href="#" class="btn btn-light" style="margin-left:8px; opacity:.6; pointer-events:none;" aria-disabled="true" title="No disponible">
+                <?php 
+                if ($estado_id !== 1) {
+                    echo 'Importar desde Excel';
+                } else {
+                    echo 'Importar desde Excel';
+                }
+                ?>
+            </a>
+            <a href="#" class="btn btn-light" style="margin-left:8px; opacity:.6; pointer-events:none;" aria-disabled="true" title="No disponible">
+                <?php 
+                if ($estado_id !== 1) {
+                    echo 'Agregar desde pendientes';
+                } else {
+                    echo 'Agregar desde pendientes';
+                }
+                ?>
+            </a>
+            <div style="margin-top:8px; color:#a67c00;">
+                <?php 
+                if ($estado_id !== 1) {
+                    echo '⚠️ La ficha está ' . getEstadoFichaDescripcion($estado_id) . '. No se permiten acciones.';
+                } else {
+                    echo '⚠️ El cupo de esta ficha está completo. Solo un administrador puede registrar más estudiantes.';
+                }
+                ?>
+            </div>
         <?php else: ?>
             <a href="/?page=aprendices&action=crear&ficha_id=<?= urlencode($ficha['id']) ?>"
                class="btn btn-primary">+ Agregar Estudiante</a>
@@ -116,7 +185,7 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
     <?php if (empty($estudiantes)): ?>
         <p>No hay estudiantes registrados aún.</p>
     <?php else: ?>
-        <div class="table-responsive">
+        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
             <table class="tabla-lista">
                 <thead>
                     <tr>
@@ -147,18 +216,61 @@ require_once __DIR__ . '/../Componentes/encabezado.php';
                             </span>
                         </td>
                         <td>
-                            <a href="/?page=aprendices&action=editar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
-                               class="btn-accion btn-warning">Editar</a>
-                            <?php if ($esSuspendido): ?>
-                                <a href="/?page=aprendices&action=activar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
-                                   class="btn-accion btn-warning btn-estado-aprendiz"
-                                   data-action="activar"
-                                   data-nombre="<?= htmlspecialchars($e['nombres'] . " " . $e['apellidos']) ?>">Activar</a>
+                            <?php
+                              // Validar si se permiten acciones según el estado de la ficha
+                              $acciones_aprendiz_permitidas = ($estado_id === 1);
+                              $esSuspendido = strtolower((string)($e['estado'] ?? 'Activo')) === 'suspendido';
+                              $rolActual = (int)($_SESSION['usuario']['rol_id'] ?? 0);
+                            ?>
+                            <?php if ($acciones_aprendiz_permitidas): ?>
+                                <a href="/?page=aprendices&action=editar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
+                                   class="btn-accion btn-warning">Editar</a>
+                                <?php if ($esSuspendido): ?>
+                                    <a href="/?page=aprendices&action=activar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
+                                       class="btn-accion btn-warning btn-estado-aprendiz"
+                                       data-action="activar"
+                                       data-nombre="<?= htmlspecialchars($e['nombres'] . " " . $e['apellidos']) ?>">Activar</a>
+                                <?php else: ?>
+                                    <a href="/?page=aprendices&action=eliminar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
+                                       class="btn-accion btn-danger btn-suspender-aprendiz btn-estado-aprendiz"
+                                       data-action="suspender"
+                                       data-nombre="<?= htmlspecialchars($e['nombres'] . " " . $e['apellidos']) ?>">Suspender</a>
+                                <?php endif; ?>
+                                <?php if ($rolActual === 1 && !empty($todasFichas)): ?>
+                                    <form method="post" action="/?page=aprendices&action=mover_ficha" style="display:inline-block; margin-left:6px;">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="usuario_id" value="<?= htmlspecialchars((string)$e['id']) ?>">
+                                        <input type="hidden" name="from_ficha_id" value="<?= htmlspecialchars((string)$ficha['id']) ?>">
+                                        <select name="to_ficha_id" class="btn-accion" style="padding:6px 10px; border-radius:20px; border:1px solid #cbd5e1;">
+                                            <?php foreach ($todasFichas as $fx): ?>
+                                                <?php if ((int)($fx['id'] ?? 0) === (int)$ficha['id']) continue; ?>
+                                                <option value="<?= htmlspecialchars((string)($fx['id'] ?? '')) ?>">
+                                                    <?= htmlspecialchars((string)($fx['numero'] ?? $fx['id'] ?? '')) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="submit" class="btn-accion btn-light" style="padding:6px 12px;">Mover</button>
+                                    </form>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <a href="/?page=aprendices&action=eliminar&id=<?= urlencode($e['id']) ?>&ficha_id=<?= urlencode($ficha['id']) ?>"
-                                   class="btn-accion btn-danger btn-suspender-aprendiz btn-estado-aprendiz"
-                                   data-action="suspender"
-                                   data-nombre="<?= htmlspecialchars($e['nombres'] . " " . $e['apellidos']) ?>">Suspender</a>
+                                <button class="btn-accion btn-secondary" disabled title="No disponible: Ficha <?= getEstadoFichaDescripcion($estado_id) ?>">
+                                    <?php 
+                                    if ($esSuspendido) {
+                                        echo 'Activar';
+                                    } else {
+                                        echo 'Editar';
+                                    }
+                                    ?>
+                                </button>
+                                <button class="btn-accion btn-secondary" disabled title="No disponible: Ficha <?= getEstadoFichaDescripcion($estado_id) ?>">
+                                    <?php 
+                                    if ($esSuspendido) {
+                                        echo 'Suspender';
+                                    } else {
+                                        echo 'Eliminar';
+                                    }
+                                    ?>
+                                </button>
                             <?php endif; ?>
                         </td>
                     </tr>

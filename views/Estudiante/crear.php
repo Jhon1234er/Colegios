@@ -31,9 +31,10 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
     <form id="formEstudiante" action="/?page=estudiantes&action=guardar" method="POST">
       <?= csrf_input(); ?>
 
-      <!-- 📌 Campo oculto con el ID de la ficha -->
+      <!-- 📌 Campo oculto con el ID de la ficha (solo si no se marca "sin ficha") -->
       <?php if ($ficha_id): ?>
-        <input type="hidden" name="ficha_id" value="<?= htmlspecialchars($ficha_id) ?>">
+        <input type="hidden" name="ficha_id_original" value="<?= htmlspecialchars($ficha_id) ?>">
+        <input type="hidden" name="ficha_id" id="ficha_id_hidden" value="<?= htmlspecialchars($ficha_id) ?>">
       <?php endif; ?>
 
       <!-- Paso 1: Estudiante -->
@@ -147,34 +148,33 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
       <!-- Paso 2: Familiares (acudientes múltiples) -->
       <div class="form-step">
         <h5>Familiares / Acudientes</h5>
-        <p>Este acudiente será contactado en caso de emergencia. Puedes añadir más.</p>
         <div id="acudientes-container">
           <div class="acudiente-item" data-index="0">
             <div class="row">
-              <div class="col-md-6"><label>Nombres</label><input type="text" name="acudientes[0][nombres]" required></div>
-              <div class="col-md-6"><label>Apellidos</label><input type="text" name="acudientes[0][apellidos]" required></div>
-              <div class="col-md-6"><label>Tipo de Documento</label>
+              <div class="col-md-6"><label>Nombres *</label><input type="text" name="acudientes[0][nombres]" required></div>
+              <div class="col-md-6"><label>Apellidos *</label><input type="text" name="acudientes[0][apellidos]" required></div>
+              <div class="col-md-6"><label>Tipo de Documento *</label>
                 <select name="acudientes[0][tipo_documento]" class="js-choice" required>
                   <option value="">Seleccione</option>
                   <option value="CC">C.C</option><option value="CE">C.E</option><option value="PP">P.P</option><option value="PPT">PPT</option>
                 </select>
               </div>
-              <div class="col-md-6"><label>Número de Documento</label><input type="text" name="acudientes[0][numero_documento]" required></div>
+              <div class="col-md-6"><label>Número de Documento *</label><input type="text" name="acudientes[0][numero_documento]" required></div>
               <div class="col-md-6"><label>Género</label>
-                <select name="acudientes[0][genero]" class="gen-acu js-choice" required>
+                <select name="acudientes[0][genero]" class="gen-acu js-choice">
                   <option value="">Seleccione</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="Otro">Otro</option>
                 </select>
                 <input type="text" name="acudientes[0][genero_otro]" class="gen-acu-otro" placeholder="Especifique" style="display:none;">
               </div>
-              <div class="col-md-6"><label>Celular</label><input type="text" name="acudientes[0][celular]" maxlength="10" pattern="\\d{10}" placeholder="10 dígitos" required></div>
+              <div class="col-md-6"><label>Celular</label><input type="text" name="acudientes[0][celular]" maxlength="10" pattern="\\d{10}" placeholder="10 dígitos"></div>
               <div class="col-md-6"><label>Correo</label><input type="email" name="acudientes[0][correo]"></div>
-              <div class="col-md-6"><label>Parentesco</label>
+              <div class="col-md-6"><label>Parentesco *</label>
                 <select name="acudientes[0][parentesco]" class="js-choice" required>
                   <option value="">Seleccione</option><option>Padre</option><option>Madre</option><option>Hermano/a</option><option>Abuelo/a</option><option>Tío/a</option><option>Primo/a</option><option>Otro</option>
                 </select>
               </div>
               <div class="col-md-6"><label>Ocupación</label>
-                <select name="acudientes[0][ocupacion]" class="js-choice" required>
+                <select name="acudientes[0][ocupacion]" class="js-choice">
                   <option value="">Seleccione</option>
                   <option>Empleado</option><option>Independiente</option><option>Comerciante</option><option>Ama de casa</option><option>Estudiante</option><option>Docente</option><option>Profesional</option><option>Obrero</option><option>Conductor</option><option>Agricultor</option><option>Pensionado</option><option>Desempleado</option><option>Otro</option>
                 </select>
@@ -258,6 +258,30 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
             </select>
           </div>
         </div>
+        
+        <!-- Opción de ficha -->
+        <div class="row" style="margin-top: 15px;">
+          <div class="col-md-12">
+            <div class="form-check">
+              <input type="checkbox" name="sin_ficha" id="sin_ficha" class="form-check-input">
+              <label for="sin_ficha" class="form-check-label">
+                Registrar sin ficha (aprendiz quedará como pendiente)
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row" id="ficha_select_row" style="margin-top: 10px;">
+          <div class="col-md-6">
+            <label>Ficha</label>
+            <select name="ficha_id" id="ficha_id" class="js-choice">
+              <option value="">Seleccione una ficha (opcional)</option>
+              <?php foreach ($fichas ?? [] as $ficha): ?>
+                <option value="<?= $ficha['id'] ?>"><?= htmlspecialchars($ficha['nombre']) ?> (<?= htmlspecialchars($ficha['numero'] ?? '') ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
         <div class="form-navigation">
           <button type="button" class="prev-btn">Anterior</button>
           <button type="submit" class="submit-btn">Registrar Estudiante</button>
@@ -279,6 +303,47 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
       const steps = Array.from(document.querySelectorAll('.form-step'));
       steps.forEach((s,i)=>{ s.classList.toggle('active', i===0); });
     })();
+    
+    // Manejo del checkbox "Registrar sin ficha"
+    document.addEventListener('DOMContentLoaded', function() {
+      const sinFichaCheckbox = document.getElementById('sin_ficha');
+      const fichaSelect = document.getElementById('ficha_id');
+      const fichaHidden = document.getElementById('ficha_id_hidden');
+      const fichaSelectRow = document.getElementById('ficha_select_row');
+      
+      if (sinFichaCheckbox && fichaSelect && fichaSelectRow) {
+        function toggleFichaSelect() {
+          if (sinFichaCheckbox.checked) {
+            // Si está marcado "Registrar sin ficha", bloquear el select y limpiar valores
+            fichaSelect.disabled = true;
+            fichaSelect.value = '';
+            if (fichaHidden) {
+              fichaHidden.value = '';
+              fichaHidden.name = 'ficha_id_disabled'; // Cambiar nombre para no enviarlo
+            }
+            fichaSelectRow.style.opacity = '0.5';
+          } else {
+            // Si no está marcado, desbloquear el select y restaurar valor original
+            fichaSelect.disabled = false;
+            fichaSelectRow.style.opacity = '1';
+            if (fichaHidden) {
+              const fichaOriginal = document.querySelector('input[name="ficha_id_original"]');
+              if (fichaOriginal) {
+                fichaHidden.value = fichaOriginal.value;
+              }
+              fichaHidden.name = 'ficha_id'; // Restaurar nombre
+            }
+          }
+        }
+        
+        // Event listener para el checkbox
+        sinFichaCheckbox.addEventListener('change', toggleFichaSelect);
+        
+        // Estado inicial
+        toggleFichaSelect();
+      }
+    });
+    
     // Inicializar Choices.js en TODOS los selects (estilo unificado)
     (function(){
       if (typeof Choices === 'undefined') return;
@@ -341,10 +406,17 @@ $ficha_id = $ficha_id ?? ($_GET['ficha_id'] ?? null);
     bindToggle('fm_med','fm_med_det');
     bindToggle('fm_disc','fm_disc_det');
 
-    // Añadir otro acudiente
+    // Añadir otro acudiente (límite máximo 2)
     document.getElementById('btnAddAcudiente')?.addEventListener('click', function(){
       const cont = document.getElementById('acudientes-container');
       const items = cont.querySelectorAll('.acudiente-item');
+      
+      // Verificar límite de 2 acudientes
+      if (items.length >= 2) {
+        alert('Solo se permite registrar máximo 2 acudientes.');
+        return;
+      }
+      
       const idx = items.length;
       const tpl = items[0].cloneNode(true);
       tpl.setAttribute('data-index', idx);

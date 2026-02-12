@@ -250,6 +250,33 @@ document.addEventListener("DOMContentLoaded", function () {
   function validateCurrentStep() {
     const active = steps[currentStep];
     if (!active) return true;
+    
+    // Si el checkbox "sin_ficha" está marcado, permitir continuar sin validar ficha
+    const sinFichaCheckbox = document.getElementById('sin_ficha');
+    const isSinFicha = sinFichaCheckbox && sinFichaCheckbox.checked;
+    
+    if (isSinFicha) {
+      // Si está marcado "sin_ficha", solo validar que no haya campos required vacíos excepto ficha
+      const required = Array.from(active.querySelectorAll("[required]"));
+      for (const el of required) {
+        // Ignorar completamente cualquier campo relacionado con ficha
+        if (el.name === 'ficha_id' || el.id === 'ficha_id' || el.id === 'ficha_id_hidden') {
+          el.removeAttribute('required'); // Eliminar required temporalmente
+          continue;
+        }
+        
+        if (!el.value || el.value.trim() === "") {
+          el.classList.add("is-invalid");
+          el.focus();
+          return false;
+        } else {
+          el.classList.remove("is-invalid");
+        }
+      }
+      return true;
+    }
+    
+    // Validación normal si no está marcado "sin_ficha"
     const required = Array.from(active.querySelectorAll("[required]"));
     for (const el of required) {
       if (!el.value || el.value.trim() === "") {

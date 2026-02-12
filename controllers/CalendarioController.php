@@ -335,7 +335,7 @@ class CalendarioController {
     // ==== Helpers de obtención por rol ====
     private function obtenerHorariosAdmin(?string $start, ?string $end, $profesorFiltro = null, $estadoFiltro = null, $fichaFiltro = null): array {
         $sql = "
-            SELECT 
+            SELECT DISTINCT
                 hf.*,
                 COALESCE(f.numero, f.id) as ficha_codigo,
                 f.nombre as ficha_nombre,
@@ -1025,7 +1025,7 @@ class CalendarioController {
                     $newEnd->format('Y-m-d H:i:s'),
                     $ev['aula'] ?? null,
                     $ev['color'] ?? '#3b82f6',
-                    $ev['creado_por'] ?? ($usuario['id'] ?? null),
+                    $ev['creado_por'] ?? ($usuario['id'] ?? null)
                 ]);
                 if ($ok) {
                     $insertados++;
@@ -1307,11 +1307,11 @@ class CalendarioController {
                             } catch (\PDOException $eN2) {
                                 if ($eN2->getCode() !== '42S22') { throw $eN2; }
                                 try {
-                                    $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                    $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                     $stN->execute([$usuarioDestinoId, $tituloNoti, $msg]);
                                 } catch (\PDOException $eN3) {
                                     if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                                    $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                    $stN = $this->pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                     $stN->execute([$usuarioDestinoId, $tituloNoti, $msg]);
                                 }
                             }
@@ -1336,16 +1336,57 @@ class CalendarioController {
         
         // Permitir actualización sin autenticación estricta
         $facilitador_id = $_SESSION['usuario']['facilitador_id'] ?? null;
+        $rol_id = (int)($_SESSION['usuario']['rol_id'] ?? 0);
+        $usuario_id = $_SESSION['usuario']['id'] ?? null;
+        
+        // DEBUG: Log para identificar el problema
+        error_log("DEBUG ACTUALIZAR HORARIO - Rol: $rol_id, Usuario: $usuario_id, Facilitador: $facilitador_id");
         
         try {
             $data = json_decode(file_get_contents('php://input'), true);
-            $horario_id = $data['id'];
+            $horario_id = $data['id'] ?? 0;
+            
+            error_log("DEBUG ACTUALIZAR HORARIO - Horario ID: $horario_id");
+            
+            if (!$horario_id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de horario requerido']);
+                return;
+            }
+            
+            // Obtener información del horario para debug
+            $stmt_debug = $this->pdo->prepare("SELECT id, facilitador_id, creado_por, titulo FROM horarios_fichas WHERE id = ?");
+            $stmt_debug->execute([$horario_id]);
+            $horario_info = $stmt_debug->fetch(PDO::FETCH_ASSOC);
+            error_log("DEBUG ACTUALIZAR HORARIO - Horario info: " . json_encode($horario_info));
             
             // Verificar permisos solo si hay facilitador_id
             if ($facilitador_id && !$this->tienePermisosHorario($horario_id, $facilitador_id)) {
+                error_log("DEBUG ACTUALIZAR HORARIO - Sin permisos para facilitador_id: $facilitador_id");
                 http_response_code(403);
                 echo json_encode(['error' => 'Sin permisos para modificar este horario']);
                 return;
+            }
+            
+            // Si no hay facilitador_id pero es rol 2, intentar obtenerlo automáticamente
+            if (!$facilitador_id && $rol_id === 2) {
+                error_log("DEBUG ACTUALIZAR HORARIO - Intentando obtener facilitador_id para rol 2");
+                try {
+                    $stmt = $this->pdo->prepare("SELECT id FROM facilitadores WHERE usuario = ?");
+                    $stmt->execute([$usuario_id]);
+                    $facilitador = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $facilitador_id = $facilitador['id'] ?? null;
+                    error_log("DEBUG ACTUALIZAR HORARIO - Facilitador_id encontrado: $facilitador_id");
+                    
+                    if ($facilitador_id && !$this->tienePermisosHorario($horario_id, $facilitador_id)) {
+                        error_log("DEBUG ACTUALIZAR HORARIO - Aún sin permisos con facilitador_id: $facilitador_id");
+                        http_response_code(403);
+                        echo json_encode(['error' => 'Sin permisos para modificar este horario']);
+                        return;
+                    }
+                } catch (Exception $e) {
+                    error_log("DEBUG ACTUALIZAR HORARIO - Error obteniendo facilitador_id: " . $e->getMessage());
+                }
             }
             
             // Obtener datos anteriores
@@ -1353,10 +1394,49 @@ class CalendarioController {
             $stmt->execute([$horario_id]);
             $datos_anteriores = $stmt->fetch(PDO::FETCH_ASSOC);
             
+            if (!$datos_anteriores) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Horario no encontrado']);
+                return;
+            }
+            
+            // Convertir fechas ISO a formato MySQL (compatibilidad con FullCalendar)
+            $fecha_inicio = null;
+            $fecha_fin = null;
+            
+            if (!empty($data['start'])) {
+                try {
+                    $dt = new DateTime($data['start']);
+                    $fecha_inicio = $dt->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Formato de fecha inicio inválido']);
+                    return;
+                }
+            } elseif (!empty($data['fecha_inicio'])) {
+                $fecha_inicio = $data['fecha_inicio'];
+            }
+            
+            if (!empty($data['end'])) {
+                try {
+                    $dt = new DateTime($data['end']);
+                    $fecha_fin = $dt->format('Y-m-d H:i:s');
+                } catch (Exception $e) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Formato de fecha fin inválido']);
+                    return;
+                }
+            } elseif (!empty($data['fecha_fin'])) {
+                $fecha_fin = $data['fecha_fin'];
+            }
+            
             // Verificar conflictos si cambió fecha/hora y tenemos facilitador_id para contrastar
-            if (($data['fecha_inicio'] !== $datos_anteriores['fecha_inicio'] || 
-                 $data['fecha_fin'] !== $datos_anteriores['fecha_fin']) && $facilitador_id) {
-                $conflictos = $this->verificarConflictos($data, $facilitador_id, $horario_id);
+            if (($fecha_inicio !== $datos_anteriores['fecha_inicio'] || 
+                 $fecha_fin !== $datos_anteriores['fecha_fin']) && $facilitador_id) {
+                $conflictos = $this->verificarConflictos([
+                    'fecha_inicio' => $fecha_inicio,
+                    'fecha_fin' => $fecha_fin
+                ], $facilitador_id, $horario_id);
                 if (!empty($conflictos)) {
                     http_response_code(409);
                     echo json_encode(['error' => 'Conflicto de horarios detectado', 'conflictos' => $conflictos]);
@@ -1372,21 +1452,28 @@ class CalendarioController {
             ";
             
             $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                $data['titulo'],
-                $data['fecha_inicio'],
-                $data['fecha_fin'],
-                $data['aula'] ?? null,
-                $data['color'] ?? '#007bff',
+            $result = $stmt->execute([
+                $data['title'] ?? $data['titulo'] ?? 'Clase',
+                $fecha_inicio,
+                $fecha_fin,
+                $data['extendedProps']['aula'] ?? $data['aula'] ?? null,
+                $data['backgroundColor'] ?? $data['color'] ?? '#007bff',
                 $horario_id
             ]);
             
-            // Registrar en historial
-            $this->registrarHistorial($horario_id, $facilitador_id, 'modificar', $datos_anteriores, $data);
-            
-            echo json_encode(['success' => true]);
+            if ($result) {
+                error_log("DEBUG ACTUALIZAR HORARIO - Actualización exitosa");
+                // Registrar en historial
+                $this->registrarHistorial($horario_id, $facilitador_id, 'modificar', $datos_anteriores, $data);
+                echo json_encode(['success' => true, 'ok' => true]);
+            } else {
+                error_log("DEBUG ACTUALIZAR HORARIO - Error en actualización");
+                http_response_code(500);
+                echo json_encode(['error' => 'No se pudo actualizar el horario']);
+            }
             
         } catch (Exception $e) {
+            error_log("DEBUG ACTUALIZAR HORARIO - Exception: " . $e->getMessage());
             http_response_code(400);
             echo json_encode(['error' => 'No se pudo actualizar el horario', 'detalle' => $e->getMessage()]);
         }
@@ -1504,6 +1591,72 @@ class CalendarioController {
     
     // Verificar permisos sobre un horario
     private function tienePermisosHorario($horario_id, $facilitador_id) {
+        // Si es admin, siempre tiene permisos
+        $rol_id = (int)($_SESSION['usuario']['rol_id'] ?? 0);
+        if ($rol_id === 1) {
+            return true;
+        }
+        
+        // Si no hay facilitador_id en sesión, intentar obtenerlo desde el usuario
+        if (!$facilitador_id) {
+            $facilitador_id = $_SESSION['usuario']['facilitador_id'] ?? null;
+        }
+        
+        // Si todavía no hay facilitador_id, intentar obtenerlo desde usuarios
+        if (!$facilitador_id) {
+            try {
+                $usuario_id = $_SESSION['usuario']['id'] ?? null;
+                if ($usuario_id) {
+                    $stmt = $this->pdo->prepare("SELECT id FROM facilitadores WHERE usuario = ?");
+                    $stmt->execute([$usuario_id]);
+                    $facilitador = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $facilitador_id = $facilitador['id'] ?? null;
+                }
+            } catch (Exception $e) {
+                // Si falla, continuar sin permisos
+            }
+        }
+        
+        // Si no hay facilitador_id, no tiene permisos
+        if (!$facilitador_id) {
+            return false;
+        }
+        
+        // Verificación 1: El instructor es el facilitador_id de la clase
+        $sql_directo = "
+            SELECT COUNT(*) as tiene_permisos
+            FROM horarios_fichas hf
+            WHERE hf.id = ? AND hf.facilitador_id = ?
+        ";
+        try {
+            $stmt = $this->pdo->prepare($sql_directo);
+            $stmt->execute([$horario_id, $facilitador_id]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
+            if ((int)$resultado['tiene_permisos'] > 0) {
+                return true;
+            }
+        } catch (\PDOException $e) {
+            // Si falla la columna facilitador_id, continuar con otros métodos
+        }
+        
+        // Verificación 2: El instructor creó la clase
+        $sql_creado = "
+            SELECT COUNT(*) as tiene_permisos
+            FROM horarios_fichas hf
+            WHERE hf.id = ? AND hf.creado_por = ?
+        ";
+        try {
+            $stmt = $this->pdo->prepare($sql_creado);
+            $stmt->execute([$horario_id, $facilitador_id]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
+            if ((int)$resultado['tiene_permisos'] > 0) {
+                return true;
+            }
+        } catch (\PDOException $e) {
+            // Si falla, continuar
+        }
+        
+        // Verificación 3: Fichas compartidas (método original)
         // Intento 1: esquema nuevo (ficha_id + estado_id)
         $sql1 = "
             SELECT COUNT(*) as tiene_permisos
@@ -1522,7 +1675,9 @@ class CalendarioController {
             $stmt = $this->pdo->prepare($sql1);
             $stmt->execute([$horario_id, $facilitador_id, $facilitador_id]);
             $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
-            return ((int)$resultado['tiene_permisos']) > 0;
+            if ((int)$resultado['tiene_permisos'] > 0) {
+                return true;
+            }
         } catch (\PDOException $e1) {
             if ($e1->getCode() !== '42S22') { throw $e1; }
         }
@@ -1545,7 +1700,9 @@ class CalendarioController {
             $stmt = $this->pdo->prepare($sql2);
             $stmt->execute([$horario_id, $facilitador_id, $facilitador_id]);
             $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
-            return ((int)$resultado['tiene_permisos']) > 0;
+            if ((int)$resultado['tiene_permisos'] > 0) {
+                return true;
+            }
         } catch (\PDOException $e2) {
             if ($e2->getCode() !== '42S22') { throw $e2; }
         }
@@ -1564,10 +1721,14 @@ class CalendarioController {
                 )
             )
         ";
-        $stmt = $this->pdo->prepare($sql3);
-        $stmt->execute([$horario_id, $facilitador_id, $facilitador_id]);
-        $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
-        return ((int)$resultado['tiene_permisos']) > 0;
+        try {
+            $stmt = $this->pdo->prepare($sql3);
+            $stmt->execute([$horario_id, $facilitador_id, $facilitador_id]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['tiene_permisos' => 0];
+            return ((int)$resultado['tiene_permisos']) > 0;
+        } catch (\PDOException $e3) {
+            return false;
+        }
     }
     
     public function exportarReporteCSV() {
@@ -1820,26 +1981,126 @@ class CalendarioController {
                 echo 'PhpSpreadsheet no está instalado. Instala con: composer require phpoffice/phpspreadsheet';
                 return;
             }
+
             $ss = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $ss->getDefaultStyle()->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFFFFFFF');
             $sheet = $ss->getActiveSheet();
             $sheet->setTitle('Clases');
-            $headers = ['A1' => 'Colegio', 'B1' => 'Titulo', 'C1' => 'Instructor', 'D1' => 'Ficha', 'E1' => 'Aula', 'F1' => 'Horario', 'G1' => 'Estado'];
-            foreach ($headers as $cell => $text) { $sheet->setCellValue($cell, $text); }
-            $sheet->getStyle('A1:G1')->getFont()->setBold(true);
-            $r = 2; foreach ($rows as $row) {
+
+            $startColIndex = 4;
+            $startCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startColIndex);
+            $heroRightIndex = 14;
+            $heroEndCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($heroRightIndex);
+
+            $sheet->mergeCells($startCol.'5:'.$heroEndCol.'5');
+            $sheet->mergeCells($startCol.'6:'.$heroEndCol.'6');
+            $sheet->mergeCells($startCol.'7:'.$heroEndCol.'7');
+            $sheet->setCellValue($startCol.'5', 'SENA');
+            $sheet->setCellValue($startCol.'6', 'SERVICIO NACIONAL DE APRENDIZAJE - SENA');
+            $sheet->setCellValue($startCol.'7', 'CONTROL DE ASISTENCIA - SISTEM SCHOLL');
+            $sheet->getRowDimension(5)->setRowHeight(40);
+            $sheet->getRowDimension(6)->setRowHeight(30);
+            $sheet->getRowDimension(7)->setRowHeight(30);
+            $sheet->getStyle($startCol.'5:'.$heroEndCol.'7')->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $sheet->getStyle($startCol.'5:'.$heroEndCol.'7')->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+                ->setWrapText(true);
+            $sheet->getStyle($startCol.'5')->getFont()->setBold(true)->setName('Calibri')->setSize(36);
+            $sheet->getStyle($startCol.'6')->getFont()->setName('Calibri')->setSize(12);
+            $sheet->getStyle($startCol.'7')->getFont()->setName('Calibri')->setSize(12);
+
+            $labelLeftCol = 'I';
+            $labelRightCol = 'J';
+            $dateLeftCol = 'K';
+            $dateRightCol = 'M';
+            $sheet->mergeCells($labelLeftCol.'9:'.$labelRightCol.'9');
+            $sheet->mergeCells($dateLeftCol.'9:'.$dateRightCol.'9');
+            $sheet->setCellValue($labelLeftCol.'9', 'FECHA DE REPORTE:');
+            $fmtIni = '';
+            $fmtFin = '';
+            try { $fmtIni = (new DateTime((string)$fechaInicio))->format('d/m/Y'); } catch (Throwable $e) { $fmtIni = (string)$fechaInicio; }
+            try { $fmtFin = (new DateTime((string)$fechaFin))->format('d/m/Y'); } catch (Throwable $e) { $fmtFin = (string)$fechaFin; }
+            $sheet->setCellValue($dateLeftCol.'9', $fmtIni . ' al ' . $fmtFin);
+            $sheet->getStyle($labelLeftCol.'9:'.$labelRightCol.'9')->getFont()->setBold(true);
+            $sheet->getStyle($labelLeftCol.'9:'.$dateRightCol.'9')->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+            $sheet->getStyle($labelLeftCol.'9:'.$dateRightCol.'9')->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+                ->setWrapText(true);
+            $sheet->getStyle($labelLeftCol.'9:'.$dateRightCol.'9')->getFont()->setName('Calibri')->setSize(12);
+
+            $endColIndex = $startColIndex + 8 - 1;
+            $endCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($endColIndex);
+            $tableHeaderRow = 11;
+            $headers = ['N°','COLEGIO','TITULO','INSTRUCTOR','FICHA','AULA','HORARIO','ESTADO'];
+            foreach ($headers as $i => $h) {
+                $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($startColIndex + $i);
+                $sheet->setCellValue($col.$tableHeaderRow, mb_strtoupper($h));
+            }
+            $headerRange = $startCol.$tableHeaderRow.':'.$endCol.$tableHeaderRow;
+            $sheet->getStyle($headerRange)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FF0B3A53');
+            $sheet->getStyle($headerRange)->getFont()->setBold(true)->setName('Calibri')->setSize(12);
+            $sheet->getStyle($headerRange)->getFont()->getColor()->setARGB('FFFFFFFF');
+            $sheet->getStyle($headerRange)->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+            $r = $tableHeaderRow + 1;
+            $n = 1;
+            foreach ($rows as $row) {
                 $inicio = (new DateTime($row['fecha_inicio']))->format('Y-m-d H:i');
                 $fin    = (new DateTime($row['fecha_fin']))->format('Y-m-d H:i');
                 $hor    = $inicio.' - '.$fin;
-                $sheet->setCellValue('A'.$r, (string)($row['colegio_nombre'] ?? ''));
-                $sheet->setCellValue('B'.$r, 'Clase');
-                $sheet->setCellValue('C'.$r, (string)($row['profesor_nombre'] ?? ''));
-                $sheet->setCellValue('D'.$r, (string)($row['ficha_numero'] ?? ''));
-                $sheet->setCellValue('E'.$r, (string)($row['aula'] ?? ''));
-                $sheet->setCellValue('F'.$r, $hor);
-                $sheet->setCellValue('G'.$r, (string)($row['estado'] ?? 'programado'));
+
+                $sheet->setCellValue('D'.$r, $n);
+                $sheet->setCellValue('E'.$r, (string)($row['colegio_nombre'] ?? ''));
+                $sheet->setCellValue('F'.$r, (string)($row['titulo'] ?? 'Clase'));
+                $sheet->setCellValue('G'.$r, (string)($row['profesor_nombre'] ?? ''));
+                $sheet->setCellValue('H'.$r, (string)($row['ficha_numero'] ?? ''));
+                $sheet->setCellValue('I'.$r, (string)($row['aula'] ?? ''));
+                $sheet->setCellValue('J'.$r, $hor);
+                $sheet->setCellValue('K'.$r, (string)($row['estado'] ?? 'programado'));
+
+                $sheet->getStyle('D'.$r.':K'.$r)->getAlignment()
+                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                $sheet->getStyle('D'.$r.':K'.$r)->getFont()->setName('Calibri')->setSize(12)->getColor()->setARGB('FF000000');
+                $sheet->getStyle('D'.$r.':K'.$r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFFFF');
+
+                $est = strtolower((string)($row['estado'] ?? 'programado'));
+                $stColor = 'FF0B3A53';
+                if ($est === 'en_curso') { $stColor = 'FF22C55E'; }
+                elseif ($est === 'suspendido' || $est === 'cancelado' || $est === 'cancelada') { $stColor = 'FFEF4444'; }
+                elseif ($est === 'finalizado') { $stColor = 'FF111827'; }
+                elseif ($est === 'programado') { $stColor = 'FF3B82F6'; }
+
+                $sheet->getStyle('K'.$r)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB($stColor);
+                $sheet->getStyle('K'.$r)->getFont()->getColor()->setARGB('FFFFFFFF');
+
                 $r++;
+                $n++;
             }
-            foreach (range('A','G') as $col) { $sheet->getColumnDimension($col)->setAutoSize(true); }
+
+            for ($ci = $startColIndex; $ci <= $endColIndex; $ci++) {
+                $sheet->getColumnDimension(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($ci))->setAutoSize(true);
+            }
+            $sheet->getStyle($startCol.$tableHeaderRow.':'.$endCol.($r-1))->getAlignment()
+                ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $sheet->getStyle($startCol.$tableHeaderRow.':'.$endCol.($r-1))->getFont()->setName('Calibri')->setSize(12);
+            $tableRange = $startCol.$tableHeaderRow.':'.$endCol.($r-1);
+            $sheet->getStyle($tableRange)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)
+                ->getColor()->setARGB('FF000000');
+            $sheet->freezePane($startCol.($tableHeaderRow + 1));
+
+            while (ob_get_level() > 0) {
+                @ob_end_clean();
+            }
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment; filename="reporte_clases.xlsx"');
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss);

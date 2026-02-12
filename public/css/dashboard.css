@@ -30,12 +30,15 @@
 
 /* ---- Reset / base ---- */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
+html{height:100%}
 body{
   font-family:'Inter', -apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Arial, sans-serif;
   background: var(--white);     /* sin degradados */
   color: var(--black);
   line-height:1.45;
+  height: auto; /* Permitir scroll */
+  min-height: 100vh;
+  overflow: auto; /* Permitir scroll */
 }
 
 /* ===== LAYOUT GENERAL ===== */
@@ -135,10 +138,41 @@ body{
 /* .div2 (Aprendices): un poco más alta que Facilitadores, sin estirar la columna completa */
 .indicaciones-column .div2{
   height: 400px; /* un poco más alta para ocupar el espacio que quedaba y dar aire a las tarjetas */
+  max-height: 400px; /* Altura máxima para evitar desbordamiento */
+  overflow: hidden; /* El scroll lo maneja .cards-scroll */
+}
+
+/* Ajustes para pantallas pequeñas (laptops con 8GB RAM) */
+@media (max-width: 1366px) {
+  .indicaciones-column .div1 {
+    height: 280px;
+    max-height: 280px;
+  }
+  
+  .indicaciones-column .div2 {
+    height: 320px;
+    max-height: 320px;
+  }
+  
+  .cards-scroll {
+    max-height: 240px !important; /* Ajustado para .div1 */
+  }
+  
+  .indicaciones-column .div2 .cards-scroll {
+    max-height: 260px !important; /* Ajustado para .div2 */
+  }
 }
 
 @media (max-width: 920px){
-  .div1, .div2{ max-width: 100%; }
+  .div1, .div2{ 
+    max-width: 100%; 
+    height: 300px !important;
+    max-height: 300px !important;
+  }
+  
+  .cards-scroll {
+    max-height: 220px !important;
+  }
 }
 
 /* Título centrado y fuerte (Facilitadores/Aprendices) */
@@ -719,7 +753,37 @@ body{
 }
 
 /* ===== TARJETAS BÁSICAS (para estudiantes y facilitadores) ===== */
-.cards-scroll{ flex:1; overflow:auto; padding-right:6px; display:flex; flex-direction:column; gap:12px }
+.cards-scroll{ 
+  flex:1; 
+  overflow-y: auto !important; 
+  overflow-x: hidden !important; 
+  padding-right:6px; 
+  display:flex; 
+  flex-direction:column; 
+  gap:12px;
+  max-height: 340px !important; /* Altura máxima para .div2 (400px - padding - filters) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--green) var(--line);
+}
+
+/* Scroll personalizado para webkit */
+.cards-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cards-scroll::-webkit-scrollbar-track {
+  background: var(--line);
+  border-radius: 4px;
+}
+
+.cards-scroll::-webkit-scrollbar-thumb {
+  background: var(--green);
+  border-radius: 4px;
+}
+
+.cards-scroll::-webkit-scrollbar-thumb:hover {
+  background: #2d8013;
+}
 /* Los contenedores principales tienen borde delgado y
    cada tarjeta también conserva su borde verde con parte superior más ancha */
 .tarjeta{
@@ -730,25 +794,59 @@ body{
   padding: 12px;                    /* espacio interior del contenedor */
   box-shadow: none;                 /* sin sombra para evitar doble caja */
 }
-.tarjeta.tarjeta--mini{ max-height:none }
-/* El contenido NO lleva borde ni sombra ni color distinto para que no se note separación */
+.tarjeta.tarjeta--mini{ 
+  max-height: none;
+  margin-bottom: 12px;
+}
+
+/* Mejoras para las tarjetas de facilitadores */
 .mockup{
   background: transparent;
   border: none;
   border-radius: 0;
-  padding: 0;
+  padding: 8px 12px;  /* Reducir padding lateral */
   box-shadow: none;
 }
-/* Encabezado: solo una línea negra muy fina como separador */
+
+/* Encabezado más compacto */
 .mockup__header{
   border: none;
   border-bottom: 1px solid var(--black);
   border-radius: 0;
-  padding: 6px 0 8px;
-  font-weight: 800;
+  padding: 4px 0 6px;
+  font-weight: 700;
+  font-size: 1rem;
   color: var(--black);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   background: transparent;
+}
+
+/* Contenido más espaciado y legible */
+.mockup .item{
+  line-height: 1.4;
+  font-size: 0.8rem;
+}
+
+.mockup .item div{
+  margin-bottom: 3px;
+  padding: 2px 0;
+}
+
+/* Mejorar visualización de etiquetas */
+.mockup .item span[style*="font-weight:600"]{
+  color: var(--gray-dark);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  min-width: 70px;
+}
+
+.mockup .item div{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: flex-start;
 }
 
 /* ===== TÍTULOS DE SECCIÓN (fuera del contenedor) ===== */
@@ -788,8 +886,9 @@ body{
 
 /* Input buscar con fondo verde claro y lupa interna */
 .input-buscar{
-  flex:1 1 auto;
-  min-width:0;                        /* clave para que no empuje a los selects */
+  flex: 0 1 200px;  /* Reducir ancho máximo */
+  min-width: 120px;     /* Ancho mínimo más pequeño */
+  max-width: 200px;     /* Limitar ancho máximo */
   background: var(--green-12);
   border: 2px solid var(--green);
   border-radius: 10px;

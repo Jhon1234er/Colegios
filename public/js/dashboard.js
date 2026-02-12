@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function handleVerColegio(colegioId) {
     try {
+      console.log('🔍 handleVerColegio iniciado para colegio:', colegioId);
+      
       // Loading state
       setInnerHTMLSafe('.div1', '<p>Cargando facilitadores...</p>');
       setInnerHTMLSafe('.div2', '<p>Cargando aprendices...</p>');
@@ -24,23 +26,32 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get college name from the table
       const colegioRow = document.querySelector(`[data-id="${colegioId}"]`)?.closest('tr');
       const nombreColegio = colegioRow?.cells[1]?.textContent?.trim() || 'Colegio';
+      console.log('📍 Nombre del colegio:', nombreColegio);
 
       // Fetch profesores
+      console.log('👨‍🏫 Cargando profesores...');
       const profs = await fetchJson(`/index.php?page=profesores_por_colegio&colegio_id=${encodeURIComponent(colegioId)}`);
+      console.log('✅ Profesores recibidos:', profs);
+      console.log('📊 Cantidad de profesores:', profs ? profs.length : 0);
+      
       renderProfesores(profs || [], colegioId);
 
       // Fetch estudiantes
+      console.log('👨‍🎓 Cargando estudiantes...');
       const studs = await fetchJson(`/index.php?page=estudiantes_por_colegio&colegio_id=${encodeURIComponent(colegioId)}`);
+      console.log('✅ Estudiantes recibidos:', studs);
+      console.log('📊 Cantidad de estudiantes:', studs ? studs.length : 0);
+      
       renderEstudiantes(studs || [], colegioId);
 
       // Fetch asistencias/estadísticas
       const stats = await fetchJson(`/ajax/asistencias_por_colegio.php?colegio_id=${encodeURIComponent(colegioId)}`);
       renderAsistencias(stats?.fichas || [], stats?.alertas || [], nombreColegio);
 
-
+      console.log('🎉 handleVerColegio completado');
 
     } catch (err) {
-      console.error('Error en dashboard:', err);
+      console.error('❌ Error en dashboard:', err);
       // Mensajes de error visibles
       setInnerHTMLSafe('.div1', '<p style="color:#c00">No se pudo cargar facilitadores.</p>');
       setInnerHTMLSafe('.div2', '<p style="color:#c00">No se pudo cargar aprendices.</p>');
@@ -67,20 +78,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Renderizadores
   async function renderProfesores(data, colegioId) {
+    console.log('🎨 renderProfesores iniciado con data:', data, 'colegioId:', colegioId);
+    
     const root = document.querySelector('.div1');
-    if (!root) return;
+    if (!root) {
+      console.error('❌ No se encontró el contenedor .div1');
+      return;
+    }
+    
     const list = Array.isArray(data) ? data.slice() : [];
+    console.log('📋 Lista de profesores procesada:', list);
+    
     // Fichas para el select (mismo endpoint del modal)
     let fichas = [];
     try{
       if (colegioId){
+        console.log('🔄 Obteniendo fichas para colegio:', colegioId);
         const resp = await fetch(`/ajax/get_fichas_por_colegio.php?colegio_id=${encodeURIComponent(colegioId)}`);
-        const arr = await resp.json();
-        fichas = Array.isArray(arr) ? arr.map(f=>String(f.numero ?? f.nombre ?? f.id)).filter(Boolean) : [];
+        if (resp.ok) {
+          const arr = await resp.json();
+          fichas = Array.isArray(arr) ? arr.map(f=>String(f.numero ?? f.nombre ?? f.id)).filter(Boolean) : [];
+          console.log('✅ Fichas obtenidas:', fichas);
+        } else {
+          console.warn('⚠️ Error al obtener fichas:', resp.status);
+        }
       }
-    }catch(e){ /* noop */ }
+    }catch(e){ 
+      console.warn('⚠️ Error al obtener fichas:', e);
+    }
+    
     // Título fuera del contenedor (siempre visible)
     setSectionTitle(root, 'title-profes', 'Facilitadores/Instructores');
+    
     // Filtros y tarjetas dentro del contenedor
     root.innerHTML = `
       <div class="tarjeta__filters" id="prof-filter">
@@ -104,12 +133,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const $list = root.querySelector('#prof-list');
 
     function render(items){
+      console.log('🎨 Renderizando profesores con items:', items);
       if (!items || !items.length){
+        console.log('📭 No hay profesores para mostrar');
         $list.innerHTML = '<div class="text-muted">Sin resultados</div>';
         return;
       }
-      $list.innerHTML = items.map(p=>{
+      
+      const html = items.map(p=>{
         const nombre = (p.nombre ?? ((p.nombres||'') + ' ' + (p.apellidos||''))).trim();
+        console.log('👤 Procesando profesor:', p, 'nombre calculado:', nombre);
         return `
           <section class="tarjeta tarjeta--mini">
             <div class="mockup">
@@ -123,6 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </section>`;
       }).join('');
+      
+      console.log('📝 HTML generado para profesores:', html);
+      $list.innerHTML = html;
     }
     function norm(s){ return String(s||'').trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
     function apply(){

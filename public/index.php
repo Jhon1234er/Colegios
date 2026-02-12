@@ -1,25 +1,11 @@
 <?php
 // Mostrar todos los errores en pantalla (solo para desarrollo)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 require_once '../helpers/auth.php';
 require_once '../controllers/AuthController.php';
-if (function_exists('date_default_timezone_set')) {
-    date_default_timezone_set('America/Bogota');
-}
-$page = $_GET['page'] ?? null;
 
-// Crear nuevo bloque (Calendario Colaborativo)
-if ($page === 'calcolab_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    start_secure_session();
-    require_login();
-    require_role([1, 4]); // Admin y Asistente
-    require_once '../controllers/CalendarioColaborativoController.php';
-    $controller = new CalendarioColaborativoController();
-    $controller->crear();
-    exit;
-}
 // Autoload de Composer (PhpSpreadsheet, Dompdf, etc.)
 // Cargar autoload solo si existe, para evitar error fatal cuando no está instalado
 $__autoload = __DIR__ . '/../vendor/autoload.php';
@@ -41,13 +27,13 @@ $menuItems = [
         'title' => 'Inicio',
         'icon' => 'fa-home',
         'url' => '?page=dashboard',
-        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+        'roles' => [1, 2, 3] // Admin, facilitador, aprendiz 
     ],
     [
         'title' => 'Reportes',
         'icon' => 'fa-chart-bar',
         'url' => '?page=reportes',
-        'roles' => [1, 2, 3] // Admin, Profesor, Coordinador
+        'roles' => [1, 2, 3] // Admin, facilitador, aprendiz
     ],
     [
         'title' => 'Asistente',
@@ -96,11 +82,49 @@ if ($page === 'registro_aprendiz_pendiente') {
 
 // ====== Endpoints de asistencias para el tablero del facilitador ======
 if ($page === 'obtener_asistencias') {
-    require_login(); require_role(2);
-    require_once '../controllers/AsistenciaController.php';
-    // Mapear directamente al método por rango (usa GET: ficha_id, fecha_inicio, fecha_fin)
-    (new AsistenciaController())->obtenerPorRango();
-    exit;
+    if (!ob_get_level()) { ob_start(); }
+    ini_set('display_errors', '0');
+    try {
+        require_login(); 
+        require_role(2);
+        require_once '../controllers/AsistenciaController.php';
+        require_once '../models/Asistencia.php';
+        
+        // Llamar directamente al método sin pasar por el constructor
+        $asistenciaModel = new Asistencia();
+        
+        // Validar parámetros
+        if (!isset($_GET['ficha_id']) || !is_numeric($_GET['ficha_id'])) {
+            throw new Exception('ID de ficha no válido');
+        }
+        $ficha_id = (int)$_GET['ficha_id'];
+        $fecha_inicio = $_GET['fecha_inicio'] ?? null;
+        $fecha_fin = $_GET['fecha_fin'] ?? null;
+        if (!$fecha_inicio || !$fecha_fin || !strtotime($fecha_inicio) || !strtotime($fecha_fin)) {
+            throw new Exception('Rango de fechas no válido');
+        }
+        
+        // Obtener asistencias
+        $asistencias = $asistenciaModel->obtenerAsistenciasPorFichaRango($ficha_id, $fecha_inicio, $fecha_fin);
+        
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => true, 'data' => $asistencias]);
+        exit;
+        
+    } catch (Throwable $e) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(200);
+        echo json_encode([
+            'success' => false, 
+            'data' => [],
+            'message' => $e->getMessage(),
+            'debug' => [
+                'GET' => $_GET,
+                'SESSION' => isset($_SESSION['usuario']) ? 'logged_in' : 'not_logged'
+            ]
+        ]);
+        exit;
+    }
 }
 if ($page === 'clase_en_curso') {
     require_login(); require_role(2);
@@ -258,16 +282,6 @@ if ($page === 'api') {
 }
 
 // ====== ENDPOINTS DE ASISTENCIAS (para tablero profesor) ======
-// Obtener asistencias por rango para una ficha
-if ($page === 'obtener_asistencias') {
-    require_login();
-    require_role([1, 2]);
-    require_once '../controllers/AsistenciaController.php';
-    $_GET['action'] = 'obtener_por_rango';
-    new AsistenciaController();
-    exit;
-}
-
 // Obtener estudiantes para asistencia (usado por calendario_nuevo.js)
 if ($page === 'asistencia_obtener_estudiantes') {
     require_login();
@@ -482,34 +496,129 @@ if ($page === 'estudiantesporficha') {
 
 // Obtener todos los profesores (para compartir fichas)
 if ($page === 'obtener_profesores') {
-    require_login();
-    require_role(2);
-    require_once '../models/Facilitador.php';
-    $profesorModel = new Facilitador();
-    $profesorActual = $_SESSION['usuario']['id'];
-    header('Content-Type: application/json');
-    echo json_encode($profesorModel->obtenerTodosExcepto($profesorActual));
-    exit;
+    if (!ob_get_level()) { ob_start(); }
+    ini_set('display_errors', '0');
+    try {
+        require_login();
+        require_role(2);
+
+        require_once '../config/db.php';
+        $pdo = Database::conectar();
+
+        $profesorActual = $_SESSION['usuario']['id'];
+        $stmt = $pdo->prepare("SELECT f.id, u.nombres, u.apellidos, f.tipo_contrato
+                               FROM facilitadores f
+                               INNER JOIN usuarios u ON f.usuario_id = u.id
+                               WHERE u.id != ?");
+        $stmt->execute([$profesorActual]);
+        $profesores = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($profesores ?: []);
+        exit;
+    } catch (Throwable $e) {
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
 }
 
 // Compartir ficha con otros profesores
 if ($page === 'compartir_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!ob_get_level()) { ob_start(); }
+    ini_set('display_errors', '0');
     require_login();
     require_role(2);
-    require_once '../controllers/FichaController.php';
-    $controller = new FichaController();
-    $controller->compartirFicha();
-    exit;
+
+    // Llamar directamente al método sin instanciar el controlador
+    $input = json_decode(file_get_contents('php://input'), true);
+    $fichaId = $input['ficha_id'] ?? null;
+    $profesores = $input['profesores'] ?? [];
+
+    if (!$fichaId || empty($profesores)) {
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+        exit;
+    }
+
+    $usuarioActual = $_SESSION['usuario']['id'] ?? null;
+    if (!$usuarioActual) {
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
+        exit;
+    }
+
+    try {
+        require_once '../config/db.php';
+        $pdo = Database::conectar();
+        $pdo->beginTransaction();
+
+        // Obtener profesor_id del usuario actual
+        $stmt = $pdo->prepare("SELECT id FROM facilitadores WHERE usuario_id = ? LIMIT 1");
+        $stmt->execute([$usuarioActual]);
+        $profesorLider = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$profesorLider) {
+            throw new Exception('Profesor líder no encontrado');
+        }
+
+        $profesorLiderId = $profesorLider['id'];
+
+        // Insertar solicitudes
+        foreach ($profesores as $profesorId) {
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM fichas_compartidas 
+                                  WHERE ficha_id = ? AND profesor_lider_id = ? AND profesor_compartido_id = ? AND estado_id IN (1,2)");
+            $stmt->execute([$fichaId, $profesorLiderId, $profesorId]);
+
+            if ($stmt->fetchColumn() == 0) {
+                $stmt = $pdo->prepare("INSERT INTO fichas_compartidas 
+                                      (ficha_id, profesor_lider_id, profesor_compartido_id, estado_id) 
+                                      VALUES (?, ?, ?, 1)");
+                $stmt->execute([$fichaId, $profesorLiderId, $profesorId]);
+            }
+        }
+
+        $pdo->commit();
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => true, 'message' => 'Ficha compartida exitosamente']);
+        exit;
+
+    } catch (Throwable $e) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
 }
 
 // Verificar estado de compartir ficha
 if ($page === 'verificar_estado_compartir' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_login();
-    require_role(2);
-    require_once '../controllers/FichaController.php';
-    $controller = new FichaController();
-    $controller->verificarEstadoCompartir();
-    exit;
+    if (!ob_get_level()) { ob_start(); }
+    ini_set('display_errors', '0');
+    try {
+        require_login();
+        require_role(2);
+        require_once '../controllers/FichaController.php';
+        $controller = new FichaController();
+        $controller->verificarEstadoCompartir();
+        exit;
+    } catch (Throwable $e) {
+        if (ob_get_length()) { ob_clean(); }
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
 }
 
 // Responder a solicitud de compartir ficha
@@ -567,13 +676,24 @@ if ($page === 'calendario_crear') {
     exit;
 }
 
-// Actualizar horario existente
+// Actualizar horario existente - Calendario Principal
 if ($page === 'calendario_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     start_secure_session();
     require_login();
     require_role([1, 2]); // Permite administradores (1) y profesores (2)
     require_once '../controllers/CalendarioController.php';
     $controller = new CalendarioController();
+    $controller->actualizarHorario();
+    exit;
+}
+
+// Actualizar horario existente - Calendario Colaborativo
+if ($page === 'calcolab_actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    start_secure_session();
+    require_login();
+    require_role([1, 2, 4]); // Permite administradores (1), profesores (2) y asistentes (4)
+    require_once '../controllers/CalendarioColaborativoController.php';
+    $controller = new CalendarioColaborativoController();
     $controller->actualizarHorario();
     exit;
 }
@@ -692,7 +812,58 @@ if ($page === 'marcar_notificacion' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-
+// Obtener contador de notificaciones no leídas (AJAX)
+if ($page === 'notificaciones_contador') {
+    require_login();
+    header('Content-Type: application/json');
+    
+    try {
+        require_once '../config/db.php';
+        $pdo = Database::conectar();
+        
+        $usuario_id = $_SESSION['usuario']['id'] ?? null;
+        if (!$usuario_id) {
+            echo json_encode(['count' => 0]);
+            exit;
+        }
+        
+        // Contar no leídas soportando estado_id (1=no leída) y legacy
+        try {
+            $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND estado_id = 1");
+            $stmtTotal->execute([$usuario_id]);
+        } catch (PDOException $eEstadoId) {
+            if ($eEstadoId->getCode() !== '42S22') { throw $eEstadoId; }
+            try {
+                $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (leido = 0 OR leido IS NULL)");
+                $stmtTotal->execute([$usuario_id]);
+            } catch (PDOException $eCount) {
+                if ($eCount->getCode() !== '42S22') { throw $eCount; }
+                try {
+                    $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario_id = ? AND (estado = 'no_leida' OR estado IS NULL)");
+                    $stmtTotal->execute([$usuario_id]);
+                } catch (PDOException $eCount2) {
+                    if ($eCount2->getCode() !== '42S22') { throw $eCount2; }
+                    try {
+                        $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario = ? AND (leido = 0 OR leido IS NULL)");
+                        $stmtTotal->execute([$usuario_id]);
+                    } catch (PDOException $eCount3) {
+                        if ($eCount3->getCode() !== '42S22') { throw $eCount3; }
+                        $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM notificaciones WHERE usuario = ? AND (estado = 'no_leida' OR estado IS NULL)");
+                        $stmtTotal->execute([$usuario_id]);
+                    }
+                }
+            }
+        }
+        $totalNoLeidas = (int)$stmtTotal->fetchColumn();
+        
+        echo json_encode(['count' => $totalNoLeidas]);
+        
+    } catch (Exception $e) {
+        error_log("Error al obtener contador de notificaciones: " . $e->getMessage());
+        echo json_encode(['count' => 0]);
+    }
+    exit;
+}
 
 // Vista previa de estudiantes por colegio/ficha
 if ($page === 'preview' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -904,6 +1075,9 @@ if ($page === 'aprendices') {
     } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_validate();
         $c->guardar();
+    } elseif ($action === 'mover_ficha' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_validate();
+        $c->moverFicha();
     } elseif ($action === 'editar' && isset($_GET['id'])) {
         $c->editar();
     } elseif ($action === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -919,6 +1093,8 @@ if ($page === 'aprendices') {
         $c->importarPendientes();
     } elseif ($action === 'pendientes_ficha') {
         $c->pendientesFicha();
+    } elseif ($action === 'pendientes_generales') {
+        $c->pendientesGenerales();
     } elseif ($action === 'asignar_pendiente') {
         $c->asignarPendiente();
     } elseif ($action === 'importar_excel' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -950,12 +1126,29 @@ if ($page === 'fichas') {
     } elseif ($action === 'guardar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_validate();
         $c->guardar();
+        // Redirigir a Mis Fichas (dashboard_profesor) para profesores, o al listado para admins
+        $rol_id = $_SESSION['usuario']['rol_id'] ?? 1;
+        if ($rol_id === 2) {
+            header("Location: /?page=dashboard_profesor");
+        } else {
+            header("Location: /?page=fichas&action=index");
+        }
+        exit;
+    } elseif ($action === 'editar' && isset($_GET['id'])) {
+        $c->editar();
     } elseif ($action === 'ver' && isset($_GET['id'])) {
         $c->ver();
     } elseif ($action === 'eliminar' && isset($_GET['id'])) {
         $c->eliminar();
     } else {
-        $c->index();
+        // Redirigir según el rol: profesores a Mis Fichas, admins al dashboard
+        $rol_id = $_SESSION['usuario']['rol_id'] ?? 1;
+        if ($rol_id === 2) {
+            header("Location: /?page=dashboard_profesor");
+        } else {
+            header("Location: /?page=dashboard");
+        }
+        exit;
     }
     exit;
 }
@@ -1035,10 +1228,10 @@ if ($page === 'calendario') {
     exit;
 }
 
-// ====== CALENDARIO COLABORATIVO (Asistente + Admin) ======
+// ====== CALENDARIO COLABORATIVO (Asistente + Admin + Profesores) ======
 if ($page === 'calendario_colaborativo') {
     require_login();
-    require_role([1, 4]); // Admin y Asistente
+    require_role([1, 2, 4]); // Admin, Profesores y Asistente
     include '../views/Calendario/colaborativo.php';
     exit;
 }
@@ -1046,7 +1239,7 @@ if ($page === 'calendario_colaborativo') {
 // Endpoints JSON del Calendario Colaborativo
 if ($page === 'calcolab_instructores') {
     require_login();
-    require_role([1, 4]);
+    require_role([1, 2, 4]);
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->instructores();
     exit;
@@ -1055,7 +1248,7 @@ if ($page === 'calcolab_instructores') {
 // Calcolab: crear clase (POST)
 if ($page === 'calcolab_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_login();
-    require_role([1, 4]);
+    require_role([1, 2, 4]); // Admin, Profesores y Asistente
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->crear();
     exit;
@@ -1063,7 +1256,7 @@ if ($page === 'calcolab_crear' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if ($page === 'calcolab_eventos') {
     require_login();
-    require_role([1, 4]);
+    require_role([1, 2, 4]); // Admin, Profesores y Asistente
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->eventos();
     exit;
@@ -1072,7 +1265,7 @@ if ($page === 'calcolab_eventos') {
 // Calcolab: exportar a Excel (XLSX)
 if ($page === 'calcolab_export') {
     require_login();
-    require_role([1, 4]);
+    require_role([1, 2, 4]); // Admin, Profesores y Asistente
     require_once '../controllers/CalendarioColaborativoController.php';
     (new CalendarioColaborativoController())->exportarExcel();
     exit;

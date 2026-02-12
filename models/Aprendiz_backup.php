@@ -9,6 +9,38 @@ class Aprendiz {
     }
 
     // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
+    }
+
+    // -------------------------
     // GUARDAR ESTUDIANTE (uso interno - profesores/admins)
     // -------------------------
     public function guardar($datos) {
@@ -200,12 +232,54 @@ class Aprendiz {
                 }
             }
 
+            // 🔹 Actualizar el cupo usado de la ficha
+            if (!empty($datos['ficha_id'])) {
+                $stmtCupo = $this->pdo->prepare("
+                    UPDATE fichas
+                    SET cupo_usado = cupo_usado + 1
+                    WHERE id = ?
+                ");
+                $stmtCupo->execute([$datos['ficha_id']]);
+            }
+
             $this->pdo->commit();
             return true;
 
         } catch (Exception $e) {
             $this->pdo->rollBack();
             die("❌ Error al guardar estudiante: " . $e->getMessage());
+        }
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
         }
     }
 
@@ -226,7 +300,8 @@ class Aprendiz {
                     a.grupo,
                     COALESCE(a.jornada, '') AS jornada,
                     COALESCE(a.estado, 'Pendiente') AS estado,
-                    a.fecha_ingreso AS fecha_registro
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
                 FROM aprendices a
                 LEFT JOIN usuarios u ON a.usuario_id = u.id
                 LEFT JOIN colegios c ON a.colegio_id = c.id
@@ -254,12 +329,44 @@ class Aprendiz {
                 FROM aprendices a
                 INNER JOIN usuarios u ON a.usuario_id = u.id
                 WHERE (a.ficha_id IS NULL OR a.ficha_id = 0)
-                  AND (a.estado IS NULL OR a.estado = 'Pendiente' OR a.estado = '')
+                  AND (a.estado IS NULL OR a.estado = 'Pendiente')
                 ORDER BY u.apellidos, u.nombres
             SQL;
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        }
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
         }
     }
 
@@ -318,7 +425,7 @@ class Aprendiz {
     }
 
     // -------------------------
-    // MÉTODO DE DEPURACIÓN - VER TODOS LOS APRENDICES
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
     // -------------------------
     public function depurarTodosLosAprendices() {
         try {
@@ -359,6 +466,38 @@ class Aprendiz {
             WHERE usuario_id = ? AND (estado IS NULL OR estado = 'Pendiente')
         ");
         return $stmt->execute([$ficha_id, $usuario_id]);
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
     }
 
     // -------------------------
@@ -432,7 +571,7 @@ class Aprendiz {
             }
 
             // Insertar en aprendices (público, nuevo esquema)
-            $stmtEstudiante = $this->pdo->prepare("\n                INSERT INTO aprendices (\n                    usuario_id, colegio_id, ficha_id, grado, grupo, jornada, fecha_ingreso,\n                    estado, creado_por, creado_en, actualizado_en\n                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())\n            ");
+            $stmtEstudiante = $this->pdo->prepare("\n                INSERT INTO aprendices (\n                    usuario_id, colegio_id, ficha_id, grado, grupo, jornada, fecha_ingreso,\n                    estado_id, creado_por, creado_en, actualizado_en\n                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())\n            ");
             $stmtEstudiante->execute([
                 $usuario_id,
                 $colegio_id,
@@ -527,6 +666,16 @@ class Aprendiz {
                 }
             }
 
+            // 🔹 Actualizar el cupo usado de la ficha
+            if (!empty($datos['ficha_id'])) {
+                $stmtCupo = $this->pdo->prepare("
+                    UPDATE fichas
+                    SET cupo_usado = cupo_usado + 1
+                    WHERE id = ?
+                ");
+                $stmtCupo->execute([$datos['ficha_id']]);
+            }
+
             $this->pdo->commit();
             return true;
         } catch (Exception $e) {
@@ -564,6 +713,38 @@ class Aprendiz {
             if ($e->getCode() !== '42S02') {
                 throw $e;
             }
+        }
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
         }
     }
 
@@ -800,6 +981,38 @@ class Aprendiz {
     }
 
     // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
+    }
+
+    // -------------------------
     // BUSCAR POR NOMBRE
     // -------------------------
     public function buscarPorNombre($q) {
@@ -840,11 +1053,75 @@ class Aprendiz {
     }
 
     // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
+    }
+
+    // -------------------------
     // CONTAR APRENDICES (total)
     // -------------------------
     public function contarAprendices() {
         $stmt = $this->pdo->query("SELECT COUNT(*) FROM aprendices");
         return (int)$stmt->fetchColumn();
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
     }
 
     // -------------------------
@@ -862,6 +1139,38 @@ class Aprendiz {
             $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM aprendices WHERE ficha = ?");
             $stmt->execute([$ficha_id]);
             return (int)$stmt->fetchColumn();
+        }
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
         }
     }
 
@@ -884,13 +1193,45 @@ class Aprendiz {
     }
 
     // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
+    }
+
+    // -------------------------
     // OBTENER POR COLEGIO (para endpoints públicos/dashboard)
     // Versión protegida: aprendices + usuarios + acudiente (familiares) + info médica.
     // Nunca deja salir una PDOException; en error devuelve [].
     // -------------------------
     public function obtenerPorColegio($colegio_id) {
         try {
-            // Consulta principal (basada en la que probaste en phpMyAdmin)
+            // Consulta principal (probada y funcional)
             $sql = <<<SQL
                 SELECT
                     -- IDs
@@ -953,7 +1294,7 @@ class Aprendiz {
                     WHERE es_acudiente = 1
                     GROUP BY aprendiz_id
                 ) fam
-                    ON fam.aprendiz_id = a.usuario_id
+                    ON fam.aprendiz_id = a.id
 
                 -- Información médica
                 LEFT JOIN informacion_medica im
@@ -1014,6 +1355,38 @@ class Aprendiz {
             }
 
             error_log('Aprendiz::obtenerPorColegio ERROR: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
             return [];
         }
     }
@@ -1098,6 +1471,38 @@ class Aprendiz {
     }
 
     // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
+    }
+
+    // -------------------------
     // SUSPENDER APRENDIZ POR USUARIO
     // -------------------------
     public function suspenderPorUsuarioId($usuario_id) {
@@ -1107,6 +1512,38 @@ class Aprendiz {
             WHERE usuario_id = ?
         ");
         return $stmt->execute([$usuario_id]);
+    }
+
+    // -------------------------
+    // MÉTODO DE DEPURACIÓN - MOSTRAR TODOS LOS APRENDICES
+    // -------------------------
+    public function depurarTodosLosAprendices() {
+        try {
+            $sql = <<<SQL
+                SELECT
+                    u.id AS id,
+                    u.nombres,
+                    u.apellidos,
+                    u.tipo_documento,
+                    u.numero_documento,
+                    COALESCE(c.nombre, '') AS colegio,
+                    a.grado,
+                    a.grupo,
+                    COALESCE(a.jornada, '') AS jornada,
+                    a.estado,
+                    a.fecha_ingreso AS fecha_registro,
+                    a.ficha_id
+                FROM aprendices a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                LEFT JOIN colegios c ON a.colegio_id = c.id
+                ORDER BY u.apellidos, u.nombres
+            SQL;
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
     }
 
     // -------------------------

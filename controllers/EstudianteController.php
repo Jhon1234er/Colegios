@@ -47,8 +47,13 @@ class EstudianteController {
         $estudianteModel = new Estudiante();
 
         if ($estudianteModel->guardar($datos)) {
-            $fichaId = $datos['ficha_id'];
-            header("Location: /?page=fichas&action=ver&id=" . urlencode($fichaId) . "&success=1");
+            // Redirigir según si hay ficha o no
+            if (!empty($datos['ficha_id'])) {
+                $fichaId = $datos['ficha_id'];
+                header("Location: /?page=fichas&action=ver&id=" . urlencode($fichaId) . "&success=1");
+            } else {
+                header("Location: /?page=estudiantes&success=1");
+            }
             exit;
         }
         echo "❌ Error al registrar estudiante.";

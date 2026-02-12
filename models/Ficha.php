@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
 require_once __DIR__ . '/../config/db.php';
 
 class Ficha {
@@ -206,16 +207,80 @@ class Ficha {
 
     // Cambiar estado de ficha
     public function actualizarEstado($id, $estado) {
-        // acepta id numérico o mapea texto simple
+        // Mapeo correcto de estados según la base de datos:
+        // 1.Activa 2.Suspendida 3.Finalizada 4.Archivada
         try {
-            $estado_id = is_numeric($estado) ? (int)$estado : (strtolower($estado) === 'cerrada' ? 2 : 1);
+            if (is_numeric($estado)) {
+                $estado_id = (int)$estado;
+            } else {
+                $estado_id = getEstadoFichaId($estado);
+            }
+            
             $stmt = $this->pdo->prepare("UPDATE fichas SET estado_id = ? WHERE id = ?");
             return $stmt->execute([$estado_id, $id]);
         } catch (\PDOException $e) {
             if ($e->getCode() !== '42S22') { throw $e; }
-            $estado_txt = is_numeric($estado) ? ((int)$estado === 1 ? 'Activo' : 'Cerrada') : (string)$estado;
+            // Fallback: actualizar campo textual también
+            $estado_txt = getEstadoFichaDescripcion($estado_id);
             $stmt = $this->pdo->prepare("UPDATE fichas SET estado = ? WHERE id = ?");
             return $stmt->execute([$estado_txt, $id]);
+        }
+    }
+
+    // Actualizar datos de una ficha
+    public function actualizar($id, $data) {
+        try {
+            $this->pdo->beginTransaction();
+            
+            // Campos básicos
+            $sql = "UPDATE fichas SET 
+                    nombre = ?, 
+                    numero = ?, 
+                    cupo_total = ?, 
+                    jornada = ?, 
+                    fecha_inicio = ?, 
+                    fecha_fin = ?";
+            
+            $params = [
+                $data['nombre'] ?? '',
+                $data['numero'] ?? '',
+                $data['cupo_total'] ?? 0,
+                $data['jornada'] ?? null,
+                $data['fecha_inicio'] ?? null,
+                $data['fecha_fin'] ?? null
+            ];
+            
+            // Agregar curso_id si existe
+            if (isset($data['curso_id'])) {
+                $sql .= ", curso_id = ?";
+                $params[] = $data['curso_id'];
+            }
+            
+            // Agregar estado si existe
+            if (isset($data['estado'])) {
+                if (is_numeric($data['estado'])) {
+                    $sql .= ", estado_id = ?";
+                    $params[] = (int)$data['estado'];
+                } else {
+                    $sql .= ", estado = ?";
+                    $params[] = $data['estado'];
+                }
+            }
+            
+            $sql .= " WHERE id = ?";
+            $params[] = $id;
+            
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute($params);
+            
+            $this->pdo->commit();
+            return $result;
+            
+        } catch (\PDOException $e) {
+            if (isset($this->pdo) && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
         }
     }
 

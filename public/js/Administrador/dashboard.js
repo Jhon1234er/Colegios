@@ -140,8 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Renderizadores
   async function renderProfesores(data, colegioId) {
     const root = document.querySelector('.div1');
-    if (!root) return;
+    if (!root) {
+      return;
+    }
+    
     const list = Array.isArray(data) ? data.slice() : [];
+    
     // Fichas para el select (mismo endpoint del modal)
     let fichas = [];
     try{
@@ -150,7 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const arr = await resp.json();
         fichas = Array.isArray(arr) ? arr.map(f=>String(f.numero ?? f.nombre ?? f.id)).filter(Boolean) : [];
       }
-    }catch(e){ /* noop */ }
+    }catch(e){ 
+    }
     // Título integrado dentro del contenedor (opción 2)
     root.innerHTML = `
       <h3 class="block-title">Facilitadores/Instructores</h3>
@@ -179,7 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
         $list.innerHTML = '<div class="text-muted">Sin resultados</div>';
         return;
       }
-      $list.innerHTML = items.map(p=>{
+      
+      const html = items.map(p=>{
         const nombre = (p.nombre ?? ((p.nombres||'') + ' ' + (p.apellidos||''))).trim();
         const contratoRaw = p.tip_contrato ?? p.tipo_contrato ?? '';
         const tel = p.telefono ?? '';
@@ -191,6 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
           rolVisible = 'Instructor';
         } else if (contratoNorm.includes('contratista') || contratoNorm.includes('facilitador')) {
           rolVisible = 'Facilitador';
+        } else if (contratoNorm === '') {
+          rolVisible = 'Facilitador'; // Por defecto para contratos vacíos
         }
         return `
           <section class="tarjeta tarjeta--mini">
@@ -206,25 +214,31 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </section>`;
       }).join('');
+      
+      $list.innerHTML = html;
     }
     function norm(s){ return String(s||'').trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
     function apply(){
       const tipoSel = norm($tipo?.value);
       const q = norm($q?.value);
+      
       const filtered = list.filter(p=>{
         const contrato = norm(p.tip_contrato ?? p.tipo_contrato ?? '');
         const nombre = norm(p.nombre ?? ((p.nombres||'') + ' ' + (p.apellidos||'')));
         // Determinar si es un contrato docente válido
         const isInstructor = contrato.includes('planta') || contrato.includes('instructor');
         const isFacilitador = contrato.includes('contratista') || contrato.includes('facilitador');
-        const isDocente = isInstructor || isFacilitador;
-        if (!isDocente) return false; // descartar usuarios que no son facilitador/instructor
-        // Mapear a rol visible: planta/instructor => instructor; contratista/facilitador => facilitador
+        const isDocente = isInstructor || isFacilitador || contrato === ''; // Aceptar también contratos vacíos
+        if (!isDocente) {
+          return false; // descartar usuarios que No son facilitador/instructor
+        }
+        // Mapear a rol visible: planta/instructor => instructor; contratista/facilitador => facilitador; vacío => facilitador por defecto
         const role = isInstructor ? 'instructor' : 'facilitador';
         const byTipo = !tipoSel || role === tipoSel;
         const byQ = !q || nombre.includes(q);
         return byTipo && byQ;
       });
+      
       render(filtered);
     }
     $tipo?.addEventListener('change', apply);

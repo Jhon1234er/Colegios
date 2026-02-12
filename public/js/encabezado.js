@@ -130,18 +130,47 @@ document.addEventListener('DOMContentLoaded', function () {
   // MANEJO DE NOTIFICACIONES
   // ============================================
   
-  const badge = document.querySelector('.notificaciones-badge');
+  const badge = document.querySelector('.notifications-badge');
   const lista = document.getElementById('lista-notificaciones');
   const mensajeVacio = document.getElementById('sin-notificaciones');
   
+  // Función para actualizar el contador de notificaciones
+  async function actualizarContadorNotificaciones() {
+    try {
+      const response = await fetch('/?page=notificaciones_contador');
+      const data = await response.json();
+      
+      if (badge && data.count !== undefined) {
+        const count = parseInt(data.count);
+        if (count > 0) {
+          badge.textContent = count;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    } catch (error) {
+      console.error('Error al actualizar contador de notificaciones:', error);
+    }
+  }
+  
+  // Actualizar contador cada 30 segundos
+  setInterval(actualizarContadorNotificaciones, 30000);
+  
+  // Actualizar contador al cargar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    // Pequeña demora para asegurar que todo esté cargado
+    setTimeout(actualizarContadorNotificaciones, 1000);
+  });
+  
   // Configurar botones de marcar como leída
-  document.querySelectorAll('.marcar-leida-btn').forEach(btn => {
+  document.querySelectorAll('.mark-read-btn').forEach(btn => {
     btn.addEventListener('click', async function(e) {
       e.preventDefault();
       e.stopPropagation();
       
       const id = btn.dataset.id;
-      const item = btn.closest('li');
+      const item = btn.closest('.notification-item');
       
       // Mostrar indicador de carga en el botón
       const originalText = btn.innerHTML;
@@ -190,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
               count--;
               if (count <= 0) {
                 badge.style.animation = 'pulse 0.3s ease';
-                setTimeout(() => badge.remove(), 300);
+                setTimeout(() => badge.style.display = 'none', 300);
               } else {
                 badge.textContent = count;
                 badge.style.animation = 'pulse 0.3s ease';
@@ -198,8 +227,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           }
           
+          // También llamar a la función de actualización para sincronizar con el servidor
+          await actualizarContadorNotificaciones();
+          
           // Mostrar mensaje vacío si no hay más notificaciones no leídas
-          if (lista && lista.querySelectorAll('li:not(.opacity-60)').length === 0) {
+          if (lista && lista.querySelectorAll('.notification-item:not(.opacity-60)').length === 0) {
             setTimeout(() => {
               if (mensajeVacio) {
                 mensajeVacio.classList.remove('hidden');

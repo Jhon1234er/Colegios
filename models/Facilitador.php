@@ -18,7 +18,7 @@ class Facilitador {
             $this->pdo->beginTransaction();
 
             // 1. Insertar usuario (orden/columnas según solicitud)
-            $stmtUsuario = $this->pdo->prepare("\n  INSERT INTO usuarios\n    (rol_id, nombres, apellidos, tipo_documento, numero_documento,\n     genero, genero_otro, fecha_nacimiento, rh,\n     correo_electronico, correo_institucional, telefono, municipio, direccion, barrio,\n     eps, eps_otro, estrato,\n     password_hash, estado, creado_en, actualizado_en)\n  VALUES\n    (?, ?, ?, ?, ?,\n     ?, ?, ?, ?,\n     ?, ?, ?, ?, ?, ?,\n     ?, ?, ?,\n     ?, ?, NOW(), NOW())\n");
+            $stmtUsuario = $this->pdo->prepare("\n  INSERT INTO usuarios\n    (rol_id, nombres, apellidos, tipo_documento, numero_documento,\n     genero, genero_otro, fecha_nacimiento, rh,\n     correo_electronico, correo_institucional, telefono, municipio, direccion, barrio,\n     eps, eps_otro, estrato,\n     password_hash, estado_id, creado_en, actualizado_en)\n  VALUES\n    (?, ?, ?, ?, ?,\n     ?, ?, ?, ?,\n     ?, ?, ?, ?, ?, ?,\n     ?, ?, ?,\n     ?, ?, NOW(), NOW())\n");
             $passwordHash = password_hash($datos['password'], PASSWORD_DEFAULT);
             $rh = isset($datos['rh']) ? strtoupper(trim((string)$datos['rh'])) : null;
             $validRH = ['O+','O-','A+','A-','B+','B-','AB+','AB-'];
@@ -53,10 +53,11 @@ class Facilitador {
 
             $usuario_id = $this->pdo->lastInsertId();
 
-            // 2. Insertar facilitador (sin columna 'colegio')
-            $stmtFac = $this->pdo->prepare("\n  INSERT INTO facilitadores\n    (usuario, titulo_academico, especialidad, fecha_ingreso, tipo_contrato, creado_en, actualizado_en)\n  VALUES\n    (?, ?, ?, ?, ?, NOW(), NOW())\n");
+            // 2. Insertar facilitador (llenando ambas columnas: usuario y usuario_id)
+            $stmtFac = $this->pdo->prepare("\n  INSERT INTO facilitadores\n    (usuario, usuario_id, titulo_academico, especialidad, fecha_ingreso, tipo_contrato, creado_en, actualizado_en)\n  VALUES\n    (?, ?, ?, ?, ?, ?, NOW(), NOW())\n");
 
             $stmtFac->execute([
+              $usuario_id,
               $usuario_id,
               trim((string)($datos['titulo_academico'] ?? '')),
               trim((string)($datos['especialidad']    ?? '')),

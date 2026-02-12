@@ -125,12 +125,77 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderEstudiantes(data, colegioId) {
     const root = document.querySelector('#aprendices-container');
     if (!root) return;
+
+    // Estilos para tarjetas flippables de estudiantes (solo se inyectan una vez)
+    if (!document.getElementById('est-card-style')) {
+      const style = document.createElement('style');
+      style.id = 'est-card-style';
+      style.textContent = `
+        .est-card-wrap { perspective: 1200px; }
+        .est-card { position: relative; overflow: visible; }
+        .est-card-inner {
+          position: relative;
+          transform-style: preserve-3d;
+          transition: transform 0.6s ease;
+        }
+        .est-card-face {
+          position: relative;
+          backface-visibility: hidden;
+        }
+        .est-card-face--back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          transform: rotateY(180deg);
+        }
+        .est-card.est-card--flipped .est-card-inner {
+          transform: rotateY(180deg);
+        }
+        .est-card-health-strip {
+          position: absolute;
+          top: 34px;
+          right: 18px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          border: none;
+          cursor: pointer;
+          font-size: 0.7rem;
+          font-weight: 600;
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
+          letter-spacing: 0.06em;
+          height: 24px;
+          overflow: visible;
+          background-clip: padding-box;
+          transform: translateY(-100%) scale(0.9);
+          transform-origin: center;
+          transition: box-shadow 0.2s ease, transform 0.2s ease;
+          z-index: 10;
+          pointer-events: auto;
+        }
+        .est-card-health-strip-label { display: inline-block; }
+        .est-card-health-strip:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+          transform: translateY(-100%) scale(1.08);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     const list = Array.isArray(data) ? data.slice() : [];
     const norm = v => String(v ?? '').trim();
     const stripQuotes = (val) => String(val ?? '').trim().replace(/^['"\u201C\u201D]+|['"\u201C\u201D]+$/g, '');
     const getFichaCode = (e) => {
       const raw = norm(e.numero_ficha || e.ficha || e.ficha_nombre || e.ficha_id || e.codigo_ficha || e.codigo);
       return stripQuotes(raw);
+    };
+    const getCode = (v)=>{
+      if (v == null) return '';
+      const s = String(v).trim();
+      const m = s.match(/\d{3,}/g);
+      if (m && m.length) return m.sort((a,b)=>b.length-a.length)[0].replace(/^['"\u201C\u201D]+|['"\u201C\u201D]+$/g, '');
+      return s.replace(/^["'\u201C\u201D]+|["'\u201C\u201D]+$/g, '');
     };
     let fichasOpts = [];
 
@@ -168,34 +233,114 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         $list.innerHTML = items.map(e => {
           const nombre = (e.nombre_completo || ((e.nombres||'') + ' ' + (e.apellidos||''))).trim();
-          const grado = norm(e.grado);
-          const jornada = norm(e.jornada);
-          const acudienteNombre = norm(e.nombre_completo_acudiente);
-          const acudienteCel = norm(e.telefono_acudiente);
-          const parentesco = norm(e.parentesco);
-          const fichaCode = getFichaCode(e);
+          const fichaCode = getCode(e.numero_ficha || e.ficha || e.ficha_nombre || e.ficha_id || e.codigo_ficha || e.codigo);
+          const grado = stripQuotes(e.grado ?? '');
+          const jornada = stripQuotes(e.jornada ?? '');
+          const grupo = stripQuotes(e.grupo ?? '');
+          const acudienteNombre = norm(e.nombre_completo_acudiente || e.acudiente || e.acudiente_nombre);
+          const acudienteCel = norm(e.telefono_acudiente || e.celular_acudiente);
+          const parentesco = norm(e.parentesco || e.parentesco_acudiente);
+          const emailEst = norm(e.email || e.correo_electronico);
+          const telEst = norm(e.telefono);
+
+          const telEstLabel = telEst || 'Sin registrar';
+          const emailEstLabel = emailEst || 'Sin registrar';
+          const acudienteNombreLabel = acudienteNombre || 'Sin registrar';
+          const acudienteCelLabel = acudienteCel || 'Sin registrar';
+          const parentescoLabel = parentesco || 'Sin registrar';
+
+          const alergias = stripQuotes(e.alergias_detalle ?? e.alergias ?? '');
+          const enfermedad = stripQuotes(e.enfermedad_detalle ?? '');
+          const discapacitado = stripQuotes(e.discapacidad_detalle ?? '');
+          const meds = stripQuotes(e.medicamentos_detalle ?? '');
+          let saludLabel = 'Sin observaciones médicas registradas';
+          let saludTipo = 'ok';
+          if (alergias) { saludLabel = 'Alergias registradas'; saludTipo = 'warn'; }
+          else if (enfermedad) { saludLabel = 'Enfermedad registrada'; saludTipo = 'warn'; }
+          else if (discapacitado) { saludLabel = 'Discapacidad registrada'; saludTipo = 'warn'; }
+          else if (meds) { saludLabel = 'Medicamentos permanentes'; saludTipo = 'warn'; }
+
+          const saludBg = saludTipo === 'ok'
+            ? 'rgba(46, 204, 113, 0.08)'
+            : 'rgba(57, 169, 0, 0.16)';
+          const saludColor = saludTipo === 'ok' ? '#1e8449' : '#39A900';
+
+          const chips = [];
+          if (fichaCode) chips.push(`<span style="padding:2px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(46,204,113,.04);font-size:.72rem;">${escapeHtml(String(fichaCode))}</span>`);
+          if (grado) chips.push(`<span style="padding:2px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(46,204,113,.04);font-size:.72rem;">${escapeHtml('Grado ' + grado)}</span>`);
+          if (grupo) chips.push(`<span style="padding:2px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(46,204,113,.04);font-size:.72rem;">${escapeHtml('Grupo ' + grupo)}</span>`);
+          if (jornada) chips.push(`<span style="padding:2px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(46,204,113,.04);font-size:.72rem;">${escapeHtml(jornada)}</span>`);
+
+          const hasMedData = Boolean(
+            alergias || enfermedad || discapacitado || meds ||
+            e.padece_enfermedad || e.medicamentos_permanentes || e.discapacidad
+          );
+          const backContent = hasMedData
+            ? `
+                <div class="item" style="display:flex;flex-direction:column;gap:4px;font-size:.82rem;padding-right:10px;word-break:break-word;overflow-wrap:anywhere;">
+                  <div><span style="font-weight:600;">Resumen:</span> ${escapeHtml(saludLabel)}</div>
+                  <div><span style="font-weight:600;">Enfermedad:</span> ${escapeHtml(enfermedad || (e.padece_enfermedad ? 'Sí' : 'No'))}</div>
+                  <div><span style="font-weight:600;">Alergias:</span> ${escapeHtml(alergias || 'No registradas')}</div>
+                  <div><span style="font-weight:600;">Medicamentos permanentes:</span> ${escapeHtml(meds || (e.medicamentos_permanentes ? 'Sí' : 'No'))}</div>
+                  <div><span style="font-weight:600;">Discapacidad:</span> ${escapeHtml(discapacitado || (e.discapacidad ? 'Sí' : 'No'))}</div>
+                </div>
+              `
+            : `
+                <div class="item" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:.85rem;padding:10px;word-break:break-word;overflow-wrap:anywhere;">
+                  <span style="font-weight:600;">No tiene información médica suministrada</span>
+                </div>
+              `;
           return `
-            <section class="tarjeta tarjeta--mini">
-              <div class="mockup">
-                <div class="mockup__header">${escapeHtml(nombre)}</div>
-                <div class="item" style="font-size:.85rem;padding-right:10px;word-break:break-word;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:4px;">
-                  <div>
-                    <span style="font-weight:600;">Grado:</span> ${escapeHtml(grado)}
-                    &nbsp;&nbsp;•&nbsp;&nbsp;
-                    <span style="font-weight:600;">Jornada:</span> ${escapeHtml(jornada)}
-                    &nbsp;&nbsp;•&nbsp;&nbsp;
-                    <span style="font-weight:600;">Ficha:</span> ${escapeHtml(fichaCode)}
+            <section class="tarjeta tarjeta--mini est-card-wrap">
+              <div class="mockup est-card">
+                <button type="button" class="est-card-health-strip" title="Ver información médica" style="background:${saludBg};color:${saludColor};">
+                  <span class="est-card-health-strip-label">Información médica</span>
+                </button>
+                <div class="est-card-inner">
+                  <div class="est-card-face est-card-face--front">
+                    <div class="mockup__header">${escapeHtml(nombre)}</div>
+                    <div class="item" style="display:flex;flex-direction:column;gap:8px;font-size:.85rem;padding-right:10px;word-break:break-word;overflow-wrap:anywhere;">
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px;">${chips.join(' ')}</div>
+                      <div style="border-top:1px solid rgba(0,0,0,.06);padding-top:4px;display:flex;flex-direction:column;gap:2px;">
+                        <div style="font-weight:600;margin-bottom:2px;">Contacto aprendiz</div>
+                        <div><span style="font-weight:600;">Teléfono:</span> ${escapeHtml(telEstLabel)}</div>
+                        <div><span style="font-weight:600;">Correo:</span> ${escapeHtml(emailEstLabel)}</div>
+                      </div>
+                      <div style="border-top:1px solid rgba(0,0,0,.06);padding-top:4px;display:flex;flex-direction:column;gap:2px;">
+                        <div style="font-weight:600;margin-bottom:2px;">Acudiente</div>
+                        <div>${escapeHtml(acudienteNombreLabel)}</div>
+                        <div><span style="font-weight:600;">Celular:</span> ${escapeHtml(acudienteCelLabel)}</div>
+                        <div><span style="font-weight:600;">Parentesco:</span> ${escapeHtml(parentescoLabel)}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div><span style="font-weight:600;">Acudiente:</span> ${escapeHtml(acudienteNombre)}</div>
-                  <div>
-                    <span style="font-weight:600;">Celular:</span> ${escapeHtml(acudienteCel)}
-                    &nbsp;&nbsp;•&nbsp;&nbsp;
-                    <span style="font-weight:600;">Parentesco:</span> ${escapeHtml(parentesco)}
+                  <div class="est-card-face est-card-face--back">
+                    <div class="mockup__header">${escapeHtml(nombre)}</div>
+                    ${backContent}
                   </div>
                 </div>
               </div>
             </section>`;
         }).join('');
+
+        // Activar giro de tarjetas al pulsar la tira de salud
+        $list.querySelectorAll('.est-card-health-strip').forEach(btn => {
+          const card = btn.closest('.est-card');
+          if (!card) return;
+          const label = btn.querySelector('.est-card-health-strip-label');
+          btn.addEventListener('click', ()=>{
+            const flipped = card.classList.toggle('est-card--flipped');
+            if (label) {
+              if (flipped) {
+                label.textContent = 'Datos de contacto';
+                btn.title = 'Ver datos de contacto';
+              } else {
+                label.textContent = 'Información médica';
+                btn.title = 'Ver información médica';
+              }
+            }
+          });
+        });
       }
 
       function apply() {

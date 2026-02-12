@@ -17,26 +17,27 @@ class Usuario {
     public function registrar($data, $pdo) {
         $stmt = $pdo->prepare("
             INSERT INTO usuarios (
-                nombres, apellidos, tipo_documento, numero_documento,
+                rol_id, nombres, apellidos, tipo_documento, numero_documento,
                 correo_electronico, correo_institucional, telefono, 
                 municipio, direccion, barrio, eps, eps_otro, estrato, rh,
-                fecha_nacimiento, genero, genero_otro, password_hash, rol_id, estado
+                fecha_nacimiento, genero, genero_otro, password_hash, estado_id
             ) VALUES (
-                :nombres, :apellidos, :tipo_documento, :numero_documento,
+                :rol_id, :nombres, :apellidos, :tipo_documento, :numero_documento,
                 :correo_electronico, :correo_institucional, :telefono,
                 :municipio, :direccion, :barrio, :eps, :eps_otro, :estrato, :rh,
-                :fecha_nacimiento, :genero, :genero_otro, :password_hash, :rol_id, :estado
+                :fecha_nacimiento, :genero, :genero_otro, :password_hash, :estado_id
             )
         ");
 
         $stmt->execute([
+            ':rol_id'               => $data['rol_id'],
             ':nombres'              => $data['nombres'],
             ':apellidos'            => $data['apellidos'],
             ':tipo_documento'       => $data['tipo_documento'],
             ':numero_documento'     => $data['numero_documento'],
             ':correo_electronico'   => $data['correo_electronico'] ?? null,
             ':correo_institucional' => $data['correo_institucional'] ?? null,
-            ':telefono'             => $data['telefono'] ?? null,
+            ':telefono'             => $data['telefono'] ?? $data['celular'] ?? null,
             ':municipio'            => $data['municipio'] ?? null,
             ':direccion'            => $data['direccion'] ?? null,
             ':barrio'               => $data['barrio'] ?? null,
@@ -48,8 +49,7 @@ class Usuario {
             ':genero'               => $data['genero'] ?? null,
             ':genero_otro'          => $data['genero_otro'] ?? null,
             ':password_hash'        => $data['password_hash'],
-            ':rol_id'               => $data['rol_id'],
-            ':estado'               => $data['estado'] ?? 1
+            ':estado_id'            => $data['estado'] ?? 1
         ]);
 
         return $pdo->lastInsertId();

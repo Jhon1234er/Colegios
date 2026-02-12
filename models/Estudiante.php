@@ -37,28 +37,21 @@ class Estudiante {
 
             $usuario_id = $this->pdo->lastInsertId();
 
-            // Insertar en estudiantes
+            // Insertar en aprendices (ficha_id opcional)
             $stmtEstudiante = $this->pdo->prepare("
-                INSERT INTO estudiantes (
+                INSERT INTO aprendices (
                     usuario_id, colegio_id, ficha_id, grado, grupo, jornada, fecha_ingreso,
-                    nombre_completo_acudiente, tipo_documento_acudiente, numero_documento_acudiente,
-                    telefono_acudiente, parentesco, ocupacion, estado
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    estado
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmtEstudiante->execute([
                 $usuario_id,
                 $datos['colegio_id'],
-                $datos['ficha_id'],
+                $datos['ficha_id'] ?? null, // ✅ ficha_id opcional
                 $datos['grado'],
                 $datos['grupo'],
                 $datos['jornada'],
                 $datos['fecha_ingreso'],
-                $datos['nombre_completo_acudiente'],
-                $datos['tipo_documento_acudiente'],
-                $datos['numero_documento_acudiente'],
-                $datos['telefono_acudiente'],
-                $datos['parentesco'],
-                $datos['ocupacion'],
                 $datos['estado'] ?? 'Activo'
             ]);
 
@@ -87,7 +80,10 @@ class Estudiante {
             if (!empty($datos['acudientes']) && is_array($datos['acudientes'])) {
                 foreach ($datos['acudientes'] as $idx => $acu) {
                     if (empty($acu['nombres']) && empty($acu['apellidos'])) continue;
-                    $stmtAcu = $this->pdo->prepare("\n                        INSERT INTO acudientes (nombres, apellidos, tipo_documento, numero_documento, genero, genero_otro, celular, correo, ocupacion)\n                        VALUES (?,?,?,?,?,?,?,?,?)\n                        ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), genero=VALUES(genero), genero_otro=VALUES(genero_otro), celular=VALUES(celular), correo=VALUES(correo), ocupacion=VALUES(ocupacion)
+                    $stmtAcu = $this->pdo->prepare("
+                        INSERT INTO acudientes (nombres, apellidos, tipo_documento, numero_documento, genero, genero_otro, celular, correo, ocupacion)
+                        VALUES (?,?,?,?,?,?,?,?,?)
+                        ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), apellidos=VALUES(apellidos), genero=VALUES(genero), genero_otro=VALUES(genero_otro), celular=VALUES(celular), correo=VALUES(correo), ocupacion=VALUES(ocupacion)
                     ");
                     $stmtAcu->execute([
                         $acu['nombres'] ?? '',
@@ -107,7 +103,10 @@ class Estudiante {
                         $acudiente_id = $stmtFind->fetchColumn();
                     }
                     if ($acudiente_id) {
-                        $stmtLink = $this->pdo->prepare("\n                            INSERT IGNORE INTO estudiante_acudiente (estudiante_id, acudiente_id, parentesco, es_contacto_emergencia, prioridad_llamada)\n                            VALUES (?,?,?,?,?)\n                        ");
+                        $stmtLink = $this->pdo->prepare("
+                            INSERT IGNORE INTO estudiante_acudiente (estudiante_id, acudiente_id, parentesco, es_contacto_emergencia, prioridad_llamada)
+                            VALUES (?,?,?,?,?)
+                        ");
                         $stmtLink->execute([
                             $estudiante_id,
                             $acudiente_id,
@@ -118,14 +117,6 @@ class Estudiante {
                     }
                 }
             }
-
-            // 🔹 Actualizar el cupo usado de la ficha
-            $stmtCupo = $this->pdo->prepare("
-                UPDATE fichas
-                SET cupo_usado = cupo_usado + 1
-                WHERE id = ?
-            ");
-            $stmtCupo->execute([$datos['ficha_id']]);
 
             $this->pdo->commit();
             return true;
@@ -207,6 +198,54 @@ class Estudiante {
 
             $estudiante_id = $this->pdo->lastInsertId();
 
+            // ✅ Solo guardar acudiente si se proporcionaron datos completos
+            if (!empty($datos['nombre_completo_acudiente']) && 
+                !empty($datos['numero_documento_acudiente'])) {
+                
+                // Insertar en tabla acudientes
+                $stmtAcu = $this->pdo->prepare("
+                    INSERT INTO acudientes (nombres, tipo_documento, numero_documento, telefono, ocupacion)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE nombres=VALUES(nombres), telefono=VALUES(telefono), ocupacion=VALUES(ocupacion)
+                ");
+                
+                // Separar nombres completos en nombre y apellido (tomar primera palabra como nombre, resto como apellido)
+                $nombreCompleto = trim($datos['nombre_completo_acudiente']);
+                $partes = explode(' ', $nombreCompleto, 2);
+                $nombreAcu = $partes[0] ?? '';
+                $apellidoAcu = $partes[1] ?? '';
+                
+                $stmtAcu->execute([
+                    $nombreAcu,
+                    $datos['tipo_documento_acudiente'],
+                    $datos['numero_documento_acudiente'],
+                    $datos['telefono_acudiente'],
+                    $datos['ocupacion']
+                ]);
+                
+                $acudiente_id = $this->pdo->lastInsertId();
+                if (!$acudiente_id) {
+                    $stmtFind = $this->pdo->prepare("SELECT id FROM acudientes WHERE tipo_documento=? AND numero_documento=? LIMIT 1");
+                    $stmtFind->execute([$datos['tipo_documento_acudiente'], $datos['numero_documento_acudiente']]);
+                    $acudiente_id = $stmtFind->fetchColumn();
+                }
+                
+                if ($acudiente_id) {
+                    // Relacionar estudiante con acudiente
+                    $stmtLink = $this->pdo->prepare("
+                        INSERT IGNORE INTO estudiante_acudiente (estudiante_id, acudiente_id, parentesco, es_contacto_emergencia, prioridad_llamada)
+                        VALUES (?,?,?,?,?)
+                    ");
+                    $stmtLink->execute([
+                        $estudiante_id,
+                        $acudiente_id,
+                        $datos['parentesco'] ?? 'Acudiente',
+                        1, // contacto de emergencia por defecto
+                        1  // prioridad 1 por defecto
+                    ]);
+                }
+            }
+
             // Ficha médica (opcional)
             if (!empty($datos['ficha_medica']) && is_array($datos['ficha_medica'])) {
                 $fm = $datos['ficha_medica'];
@@ -262,14 +301,6 @@ class Estudiante {
                 }
             }
 
-            // 🔹 Actualizar el cupo usado de la ficha
-            $stmtCupo = $this->pdo->prepare("
-                UPDATE fichas
-                SET cupo_usado = cupo_usado + 1
-                WHERE id = ?
-            ");
-            $stmtCupo->execute([$datos['ficha_id']]);
-
             $this->pdo->commit();
             return true;
 
@@ -301,14 +332,8 @@ class Estudiante {
                     e.estado,
                     c.nombre AS colegio,
                     f.nombre AS ficha,
-                    e.nombre_completo_acudiente,
-                    e.tipo_documento_acudiente,
-                    e.numero_documento_acudiente,
-                    e.telefono_acudiente,
-                    e.parentesco,
-                    e.ocupacion,
                     e.ficha_id
-                FROM estudiantes e
+                FROM aprendices e
                 INNER JOIN usuarios u ON e.usuario_id = u.id
                 INNER JOIN colegios c ON e.colegio_id = c.id
                 INNER JOIN fichas f ON f.id = e.ficha_id
@@ -333,14 +358,8 @@ class Estudiante {
                     e.estado,
                     c.nombre AS colegio,
                     f.nombre AS ficha,
-                    e.nombre_completo_acudiente,
-                    e.tipo_documento_acudiente,
-                    e.numero_documento_acudiente,
-                    e.telefono_acudiente,
-                    e.parentesco,
-                    e.ocupacion,
                     e.ficha_id
-                FROM estudiantes e
+                FROM aprendices e
                 INNER JOIN usuarios u ON e.usuario_id = u.id
                 INNER JOIN colegios c ON e.colegio_id = c.id
                 INNER JOIN fichas f ON f.id = e.ficha_id
@@ -356,7 +375,7 @@ class Estudiante {
     // CONTAR ESTUDIANTES
     // -------------------------
     public function contarEstudiantes() {
-        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM estudiantes");
+        $stmt = $this->pdo->query("SELECT COUNT(*) AS total FROM aprendices");
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
 
@@ -382,11 +401,8 @@ class Estudiante {
                 e.grado,
                 e.jornada,
                 e.estado,
-                f.numero AS ficha,
-                e.nombre_completo_acudiente,
-                e.telefono_acudiente,
-                e.parentesco
-            FROM estudiantes e
+                f.numero AS ficha
+            FROM aprendices e
             INNER JOIN usuarios u ON e.usuario_id = u.id
             INNER JOIN fichas f ON f.id = e.ficha_id
             WHERE e.colegio_id = ?
@@ -417,14 +433,8 @@ class Estudiante {
                 e.estado,
                 c.nombre AS colegio_nombre,
                 f.nombre AS ficha_nombre,
-                e.nombre_completo_acudiente,
-                e.tipo_documento_acudiente,
-                e.numero_documento_acudiente,
-                e.telefono_acudiente,
-                e.parentesco,
-                e.ocupacion,
                 e.ficha_id
-            FROM estudiantes e
+            FROM aprendices e
             INNER JOIN usuarios u ON e.usuario_id = u.id
             INNER JOIN colegios c ON e.colegio_id = c.id
             INNER JOIN fichas f ON f.id = e.ficha_id

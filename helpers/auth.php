@@ -23,8 +23,50 @@ function start_secure_session(): void {
     }
 }
 
+function request_expects_json(): bool {
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    if (stripos($accept, 'application/json') !== false) return true;
+
+    $xrw = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+    if (strcasecmp($xrw, 'XMLHttpRequest') === 0) return true;
+
+    $page = $_GET['page'] ?? null;
+    if (is_string($page) && $page !== '') {
+        $ajaxPages = [
+            'obtener_profesores',
+            'compartir_ficha',
+            'verificar_estado_compartir',
+            'obtener_asistencias',
+            'estudiantesporficha',
+            'facilitadorficha',
+            'profesores_por_colegio',
+            'estudiantes_por_colegio',
+            'fichas_por_colegio',
+            'materias_por_colegio',
+            'info_colegio',
+            'calendario_obtener',
+            'calendario_obtener_fichas',
+        ];
+        if (in_array($page, $ajaxPages, true)) return true;
+    }
+
+    return false;
+}
+
+function json_error_exit(int $statusCode, string $message): void {
+    if (!headers_sent()) {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    echo json_encode(['success' => false, 'message' => $message]);
+    exit;
+}
+
 function require_login(): void {
     if (empty($_SESSION['usuario'])) {
+        if (request_expects_json()) {
+            json_error_exit(401, 'No autorizado. Por favor inicie sesión.');
+        }
         header('Location: ?page=login');
         exit;
     }
@@ -36,6 +78,9 @@ function require_login(): void {
  */
 function require_role(int|array $roles): void {
     if (empty($_SESSION['usuario'])) {
+        if (request_expects_json()) {
+            json_error_exit(401, 'No autorizado. Por favor inicie sesión.');
+        }
         header('Location: ?page=login');
         exit;
     }
@@ -46,6 +91,9 @@ function require_role(int|array $roles): void {
     $roles = is_array($roles) ? $roles : [$roles];
 
     if (!in_array($userRole, $roles, true)) {
+        if (request_expects_json()) {
+            json_error_exit(403, 'Acceso denegado.');
+        }
         http_response_code(403);
         echo "Acceso denegado.";
         exit;

@@ -13,6 +13,9 @@ $modo_pendiente = isset($modo_pendiente)
     ? (bool)$modo_pendiente
     : (isset($_GET['pendiente']) && (string)$_GET['pendiente'] === '1');
 
+// Siempre permitir modo pendiente para administradores
+$modo_pendiente = true;
+
 $form_action = $form_action ?? '/?page=aprendices&action=guardar';
 ?>
 
@@ -314,9 +317,9 @@ $form_action = $form_action ?? '/?page=aprendices&action=guardar';
         <div class="row row2">
           <?php if (empty($ficha_id) && !$modo_pendiente): ?>
           <div class="col-md-6">
-            <label>Ficha *</label>
-            <select name="ficha_id" class="js-choice" required>
-              <option value="">Seleccione una ficha</option>
+            <label>Ficha</label>
+            <select name="ficha_id" id="ficha_id" class="js-choice">
+              <option value="">Seleccione una ficha (opcional)</option>
               <?php if (!empty($fichas)): foreach ($fichas as $f): ?>
                 <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars(($f['numero'] ?? '') . ' - ' . ($f['nombre'] ?? '')) ?></option>
               <?php endforeach; endif; ?>

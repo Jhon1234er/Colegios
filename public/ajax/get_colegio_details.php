@@ -3,6 +3,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../models/Colegio.php';
 require_once __DIR__ . '/../../models/Ficha.php';
+require_once __DIR__ . '/../../models/Materia.php';
 
 try {
     $id = isset($_GET['id']) ? trim($_GET['id']) : '';
@@ -19,13 +20,37 @@ try {
         exit;
     }
 
-    // Adjuntar fichas asociadas al colegio (si la estructura de BD lo permite)
+    // Adjuntar fichas asociadas al colegio usando ficha_colegio
     $fichaModel = new Ficha();
     try {
-        $colegio['fichas'] = $fichaModel->obtenerPorColegio($id);
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("
+            SELECT f.id, f.numero, f.nombre 
+            FROM fichas f
+            INNER JOIN ficha_colegio fc ON f.id = fc.ficha_id
+            WHERE fc.colegio_id = ?
+            ORDER BY f.numero
+        ");
+        $stmt->execute([$id]);
+        $colegio['fichas'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $e) {
-        // Si por algún motivo falla (por esquema antiguo, etc.), devolvemos lista vacía
         $colegio['fichas'] = [];
+    }
+
+    // Adjuntar cursos asociados al colegio usando colegio_curso
+    try {
+        $pdo = Database::conectar();
+        $stmt = $pdo->prepare("
+            SELECT c.id, c.codigo, c.nombre 
+            FROM cursos c
+            INNER JOIN colegio_curso cc ON c.id = cc.curso_id
+            WHERE cc.colegio_id = ?
+            ORDER BY c.nombre
+        ");
+        $stmt->execute([$id]);
+        $colegio['cursos'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        $colegio['cursos'] = [];
     }
 
     echo json_encode([

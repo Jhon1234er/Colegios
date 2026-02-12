@@ -8,6 +8,14 @@
     box-shadow: 0 2px 8px rgba(92,168,43,0.08);
     position: center;
 }
+
+/* Scroll para la vista Ver Ficha (evita bloqueos por overflow en layout global) */
+.ficha-ver-container{
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    padding-bottom: 90px;
+}
+
 /* === FICHA INFO CARDS === */
 .ficha-info {
     display: flex;
@@ -123,6 +131,14 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.40);
     margin-top: 32px; /* Espacio entre el header y el contenedor */
     align-items: center;
+    overflow: visible; /* Asegurar que el scroll funcione */
+}
+
+/* Scroll para la vista Ver Ficha (override sobre overflow de .container) */
+.container.ficha-ver-container{
+    max-height: calc(100vh - 90px) !important;
+    overflow: auto !important;
+    padding-bottom: 90px;
 }
 
 /* Título principal */
@@ -236,7 +252,9 @@ hr {
 .table-responsive {
     background: white;
     border-radius: 30px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     margin-top: 20px;
 }
@@ -321,14 +339,6 @@ hr {
     color: white;
 }
 
-
-.btn-danger {
-    background:#aa2010;
-    color: white;
-}
-
-
-
 /* === RESPONSIVE DESIGN === */
 
 /* Tablets */
@@ -342,7 +352,9 @@ hr {
     }
     
     .table-responsive {
-        overflow-x: auto;;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 500px;
     }
     
     .tabla-lista {

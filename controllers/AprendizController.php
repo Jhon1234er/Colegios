@@ -18,9 +18,129 @@ class AprendizController {
         $esPendienteInterno = isset($_GET['pendiente']) && (string)$_GET['pendiente'] === '1';
 
         if ($esPendienteInterno) {
+            // Establecer variables para la vista de pendientes
+            $modo_pendiente = true;
+            $ficha_id = null;
+            $form_action = '/?page=aprendices&action=guardar&pendiente=1';
             require __DIR__ . '/../views/Aprendiz/crear_pendientes.php';
         } else {
             require __DIR__ . '/../views/Aprendiz/crear.php';
+        }
+
+    }
+
+    /* 🔁 Mover aprendiz entre fichas (solo admin) */
+    public function moverFicha() {
+        start_secure_session();
+        require_login();
+        require_role([1]);
+
+        $usuarioId = isset($_POST['usuario_id']) ? (int)$_POST['usuario_id'] : 0;
+        $fromFichaId = isset($_POST['from_ficha_id']) ? (int)$_POST['from_ficha_id'] : 0;
+        $toFichaId = isset($_POST['to_ficha_id']) ? (int)$_POST['to_ficha_id'] : 0;
+
+        if ($usuarioId <= 0 || $fromFichaId <= 0 || $toFichaId <= 0) {
+            die('Parámetros inválidos para mover aprendiz.');
+        }
+        if ($fromFichaId === $toFichaId) {
+            header('Location: /?page=fichas&action=ver&id=' . urlencode((string)$fromFichaId));
+            exit;
+        }
+
+        $pdo = Database::conectar();
+        $aprendizModel = new Aprendiz();
+        $fichaModel = new Ficha();
+
+        $fichaFrom = $fichaModel->obtenerPorId($fromFichaId);
+        $fichaTo   = $fichaModel->obtenerPorId($toFichaId);
+        if (!$fichaFrom || !$fichaTo) {
+            die('Ficha origen/destino no encontrada.');
+        }
+
+        require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
+        $validTo = validarAccionesFicha($fichaTo, 'asignar_pendiente');
+        if (!$validTo['permitido']) {
+            die('⚠️ ' . $validTo['mensaje']);
+        }
+
+        try {
+            $pdo->beginTransaction();
+
+            $stmtChk = $pdo->prepare('SELECT ficha_id FROM aprendices WHERE usuario_id = ? FOR UPDATE');
+            $stmtChk->execute([$usuarioId]);
+            $currentFicha = (int)($stmtChk->fetchColumn() ?: 0);
+
+            if ($currentFicha !== $fromFichaId) {
+                $pdo->rollBack();
+                die('El aprendiz ya no pertenece a la ficha origen. Refresca la página e intenta de nuevo.');
+            }
+
+            $stmt = $pdo->prepare('UPDATE aprendices SET ficha_id = ?, estado = \'Activo\' WHERE usuario_id = ?');
+            $stmt->execute([$toFichaId, $usuarioId]);
+
+            // Obtener nombre del aprendiz para el mensaje
+            $stU = $pdo->prepare('SELECT nombres, apellidos FROM usuarios WHERE id = ? LIMIT 1');
+            $stU->execute([$usuarioId]);
+            $uRow = $stU->fetch(PDO::FETCH_ASSOC) ?: [];
+            $aprendizNombre = trim((string)($uRow['nombres'] ?? '') . ' ' . (string)($uRow['apellidos'] ?? ''));
+            if ($aprendizNombre === '') { $aprendizNombre = 'Aprendiz'; }
+
+            $fromLabel = trim((string)($fichaFrom['numero'] ?? $fichaFrom['id'] ?? ''));
+            $toLabel   = trim((string)($fichaTo['numero'] ?? $fichaTo['id'] ?? ''));
+            $fromNombre = trim((string)($fichaFrom['nombre'] ?? ''));
+            $toNombre   = trim((string)($fichaTo['nombre'] ?? ''));
+
+            $titulo = 'Cambio de ficha';
+            $mensaje = $aprendizNombre . ' fue movido de la ficha ' . $fromLabel . ($fromNombre !== '' ? ' - ' . $fromNombre : '')
+                . ' a la ficha ' . $toLabel . ($toNombre !== '' ? ' - ' . $toNombre : '') . '.';
+
+            $resolverUsuarioFacilitador = function(array $ficha) use ($pdo): int {
+                $fid = (int)($ficha['facilitador_id'] ?? 0);
+                if ($fid <= 0) { return 0; }
+                try {
+                    $st = $pdo->prepare('SELECT usuario_id FROM facilitadores WHERE id = ?');
+                    $st->execute([$fid]);
+                    return (int)($st->fetchColumn() ?: 0);
+                } catch (PDOException $e) {
+                    if ($e->getCode() !== '42S22') { throw $e; }
+                    $st = $pdo->prepare('SELECT usuario FROM facilitadores WHERE id = ?');
+                    $st->execute([$fid]);
+                    return (int)($st->fetchColumn() ?: 0);
+                }
+            };
+
+            $uidFromFac = $resolverUsuarioFacilitador($fichaFrom);
+            $uidToFac   = $resolverUsuarioFacilitador($fichaTo);
+
+            $insertNoti = function(int $destUid) use ($pdo, $titulo, $mensaje): void {
+                if ($destUid <= 0) { return; }
+                try {
+                    $stN = $pdo->prepare('INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())');
+                    $stN->execute([$destUid, $titulo, $mensaje]);
+                } catch (PDOException $e1) {
+                    if ($e1->getCode() !== '42S22') { throw $e1; }
+                    try {
+                        $stN = $pdo->prepare('INSERT INTO notificaciones (usuario_id, titulo, mensaje, leido, creado_en) VALUES (?, ?, ?, 0, NOW())');
+                        $stN->execute([$destUid, $titulo, $mensaje]);
+                    } catch (PDOException $e2) {
+                        if ($e2->getCode() !== '42S22') { throw $e2; }
+                        $stN = $pdo->prepare('INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())');
+                        $stN->execute([$destUid, $titulo, $mensaje]);
+                    }
+                }
+            };
+
+            // Notificar a facilitadores (si aplica)
+            if ($uidFromFac > 0) { $insertNoti($uidFromFac); }
+            if ($uidToFac > 0 && $uidToFac !== $uidFromFac) { $insertNoti($uidToFac); }
+
+            $pdo->commit();
+
+            header('Location: /?page=fichas&action=ver&id=' . urlencode((string)$fromFichaId) . '&moved=1');
+            exit;
+        } catch (Throwable $e) {
+            try { if ($pdo->inTransaction()) { $pdo->rollBack(); } } catch (Throwable $_) {}
+            die('Error al mover aprendiz: ' . $e->getMessage());
         }
     }
 
@@ -188,6 +308,12 @@ class AprendizController {
         }
 
         $sinFicha = isset($_POST['sin_ficha']) && (string)$_POST['sin_ficha'] === '1';
+        
+        // Si viene de URL con pendiente=1, forzar modo sin ficha
+        $esPendienteURL = isset($_GET['pendiente']) && (string)$_GET['pendiente'] === '1';
+        if ($esPendienteURL) {
+            $sinFicha = true;
+        }
 
         // Normalizar género: permitir texto libre cuando seleccionan "Otro"
         $generoSel  = trim($_POST['genero'] ?? '');
@@ -305,6 +431,13 @@ class AprendizController {
             if ($f && isset($f['cupo_total'], $f['cupo_usado']) && (int)$f['cupo_total'] > 0 && (int)$f['cupo_usado'] >= (int)$f['cupo_total']) {
                 die('⚠️ Cupo de la ficha alcanzado. Contacte al administrador.');
             }
+            
+            // Validar estado de la ficha
+            require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
+            $validacion = validarAccionesFicha($f, 'registrar_aprendiz');
+            if (!$validacion['permitido']) {
+                die('⚠️ ' . $validacion['mensaje']);
+            }
         }
 
         $aprendizModel = new Aprendiz();
@@ -335,9 +468,26 @@ class AprendizController {
         if ($aprendizModel->guardar($datos)) {
             if (!empty($datos['ficha_id'])) {
                 $fichaId = $datos['ficha_id'];
+                
+                // Actualizar estado de la ficha a "Activa" si estaba en "Pendiente"
+                try {
+                    $pdo = Database::conectar();
+                    // Intentar actualizar estado textual primero
+                    $stmt = $pdo->prepare("UPDATE fichas SET estado = 'Activa' WHERE id = ? AND estado = 'Pendiente'");
+                    $stmt->execute([$fichaId]);
+                    
+                    // También intentar actualizar estado_id si existe
+                    $stmt2 = $pdo->prepare("UPDATE fichas SET estado_id = 1 WHERE id = ? AND estado_id = 0");
+                    $stmt2->execute([$fichaId]);
+                } catch (Exception $e) {
+                    // Si falla, continuar sin error (no es crítico)
+                    error_log("Error actualizando estado de ficha: " . $e->getMessage());
+                }
+                
                 header("Location: /?page=fichas&action=ver&id=" . urlencode($fichaId) . "&success=1");
             } else {
-                header("Location: /?page=aprendices&success=1");
+                // Redirigir a lista de pendientes cuando no hay ficha
+                header("Location: /?page=aprendices&action=pendientes_generales&success=1");
             }
             exit;
         }
@@ -367,6 +517,13 @@ class AprendizController {
 
         if (!$ficha) {
             die("⚠️ Token inválido o vencido.");
+        }
+
+        // Validar estado de la ficha para registro público
+        require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
+        $validacion = validarAccionesFicha($ficha, 'registrar_aprendiz');
+        if (!$validacion['permitido']) {
+            die("⚠️ " . $validacion['mensaje']);
         }
 
         // Bloqueo por cupo en formulario público (sin bypass de admin aquí)
@@ -458,6 +615,21 @@ class AprendizController {
         $aprendizModel = new Aprendiz();
 
         if ($aprendizModel->guardarPublico($datos)) {
+            // Actualizar estado de la ficha a "Activa" si estaba en "Pendiente"
+            try {
+                $pdo = Database::conectar();
+                // Intentar actualizar estado textual primero
+                $stmt = $pdo->prepare("UPDATE fichas SET estado = 'Activa' WHERE id = ? AND estado = 'Pendiente'");
+                $stmt->execute([$ficha['id']]);
+                
+                // También intentar actualizar estado_id si existe
+                $stmt2 = $pdo->prepare("UPDATE fichas SET estado_id = 1 WHERE id = ? AND estado_id = 0");
+                $stmt2->execute([$ficha['id']]);
+            } catch (Exception $e) {
+                // Si falla, continuar sin error (no es crítico)
+                error_log("Error actualizando estado de ficha: " . $e->getMessage());
+            }
+            
             // Redirigir de vuelta al formulario con mensaje de éxito
             header("Location: /?page=registro_estudiante&token=" . urlencode($token) . "&success=1");
             exit;
@@ -556,18 +728,20 @@ class AprendizController {
         }
 
         $aprendizModel = new Aprendiz();
-        $pendientes = $aprendizModel->obtenerPendientes();
-
-        // Paginación simple en memoria (15 por página)
-        $perPage = 15;
-        $page    = isset($_GET['p']) ? max(1, (int)$_GET['p']) : 1;
-        $total   = is_array($pendientes) ? count($pendientes) : 0;
-        $totalPages = max(1, (int)ceil($total / $perPage));
-        if ($page > $totalPages) { $page = $totalPages; }
-        $offset = ($page - 1) * $perPage;
-        $pendientesPagina = array_slice($pendientes, $offset, $perPage);
+        $pendientes = $aprendizModel->obtenerPendientesPorFicha($ficha_id);
 
         require __DIR__ . '/../views/Aprendiz/pendientes_ficha.php';
+    }
+
+    /* 📋 Listar todos los aprendices pendientes (sin ficha asignada) */
+    public function pendientesGenerales() {
+        require_login();
+        require_role([1,2]);
+
+        $aprendizModel = new Aprendiz();
+        $pendientes = $aprendizModel->obtenerPendientes();
+
+        require __DIR__ . '/../views/Aprendiz/pendientes_generales.php';
     }
 
     /* 🔗 Asignar un aprendiz pendiente a una ficha específica */
@@ -583,6 +757,19 @@ class AprendizController {
             die('Parámetros inválidos para asignar aprendiz.');
         }
 
+        // Validar estado de la ficha para asignación de pendientes
+        $fichaModel = new Ficha();
+        $ficha = $fichaModel->obtenerPorId($ficha_id);
+        if (!$ficha) {
+            die('Ficha no encontrada.');
+        }
+        
+        require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
+        $validacion = validarAccionesFicha($ficha, 'asignar_pendiente');
+        if (!$validacion['permitido']) {
+            die('⚠️ ' . $validacion['mensaje']);
+        }
+
         $aprendizModel = new Aprendiz();
         $ok = false;
         try {
@@ -592,12 +779,6 @@ class AprendizController {
         }
 
         if ($ok) {
-            // Intentar incrementar el cupo usado de la ficha
-            try {
-                $fichaModel = new Ficha();
-                $fichaModel->incrementarCupo($ficha_id);
-            } catch (\Throwable $e) { /* noop */ }
-
             header('Location: /?page=fichas&action=ver&id=' . urlencode($ficha_id) . '&asignado=1');
         } else {
             header('Location: /?page=aprendices&action=pendientes_ficha&ficha_id=' . urlencode($ficha_id) . '&error=No+se+pudo+asignar+el+aprendiz');
@@ -661,6 +842,16 @@ class AprendizController {
                 header('Location: /?page=aprendices&action=importar&ficha_id=' . urlencode((string)$ficha_id) . '&' . http_build_query(['error' => $msg]));
                 exit;
             }
+            
+            // Validar estado de la ficha para importación
+            require_once __DIR__ . '/../helpers/estado_ficha_helper.php';
+            $validacion = validarAccionesFicha($ficha, 'importar');
+            if (!$validacion['permitido']) {
+                $msg = $validacion['mensaje'];
+                header('Location: /?page=aprendices&action=importar&ficha_id=' . urlencode((string)$ficha_id) . '&' . http_build_query(['error' => $msg]));
+                exit;
+            }
+            
             $disponibles = max(0, (int)($ficha['cupo_total'] ?? 0) - (int)($ficha['cupo_usado'] ?? 0));
             if (!$isAdmin && $disponibles <= 0) {
                 $msg = 'El cupo de la ficha está completo. No es posible importar más estudiantes.';
@@ -1090,6 +1281,13 @@ class AprendizController {
                     $duplicados++; $errores[] = "Fila $i: Documento ya registrado (" . $datos['numero_documento'] . ")"; continue;
                 }
 
+                // ESTABLECER ESTADO Y FICHA PARA PENDIENTES
+                if (!$tieneFichaFija) {
+                    // Si es importación de pendientes, asegurar que no tenga ficha y esté como 'Pendiente'
+                    $datos['ficha_id'] = null;
+                    $datos['estado'] = 'Pendiente';
+                }
+
                 try {
                     // Si importamos a ficha fija y no es admin, respetar cupos disponibles
                     if ($tieneFichaFija && !$isAdmin && $restantes <= 0) {
@@ -1147,6 +1345,23 @@ class AprendizController {
                 'saltados' => $saltados,
                 'duplicados' => $duplicados,
             ]);
+
+            // Actualizar estado de la ficha si se crearon aprendices y se importó a una ficha específica
+            if ($tieneFichaFija && $creados > 0) {
+                try {
+                    $pdo = Database::conectar();
+                    // Intentar actualizar estado textual primero
+                    $stmt = $pdo->prepare("UPDATE fichas SET estado = 'Activa' WHERE id = ? AND estado = 'Pendiente'");
+                    $stmt->execute([$ficha_id]);
+                    
+                    // También intentar actualizar estado_id si existe
+                    $stmt2 = $pdo->prepare("UPDATE fichas SET estado_id = 1 WHERE id = ? AND estado_id = 0");
+                    $stmt2->execute([$ficha_id]);
+                } catch (Exception $e) {
+                    // Si falla, continuar sin error (no es crítico)
+                    error_log("Error actualizando estado de ficha en importación: " . $e->getMessage());
+                }
+            }
 
             if ($tieneFichaFija) {
                 // Si se importó a una ficha concreta, volver a la ficha
@@ -1303,11 +1518,11 @@ class AprendizController {
                     } catch (\PDOException $eN2) {
                         if ($eN2->getCode() !== '42S22') { throw $eN2; }
                         try {
-                            $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                            $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                             $stN->execute([$uid, $tituloNoti, $msgNoti]);
                         } catch (\PDOException $eN3) {
                             if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                            $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                            $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                             $stN->execute([$uid, $tituloNoti, $msgNoti]);
                         }
                     }

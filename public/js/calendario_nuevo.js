@@ -1459,19 +1459,13 @@ function exportarReporte() {
         const view = calendario.view;
         let fechaInicio, fechaFin;
         
-        if (view && view.currentStart && view.currentEnd) {
-            // Usar el rango de fechas actual del calendario
-            fechaInicio = view.currentStart.toISOString().split('T')[0];
-            fechaFin = view.currentEnd.toISOString().split('T')[0];
-        } else {
-            // Usar el mes actual si no hay vista disponible
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            
-            fechaInicio = firstDay.toISOString().split('T')[0];
-            fechaFin = lastDay.toISOString().split('T')[0];
-        }
+        const base = (view && (view.currentStart || view.activeStart)) ? (view.currentStart || view.activeStart) : new Date();
+        const ref = new Date(base.getTime());
+        ref.setDate(ref.getDate() + 15);
+        const firstDay = new Date(ref.getFullYear(), ref.getMonth(), 1);
+        const lastDay = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+        fechaInicio = firstDay.toISOString().split('T')[0];
+        fechaFin = lastDay.toISOString().split('T')[0];
         
         // Obtener filtros actuales
         const filtroEstado = document.getElementById('filtroEstado')?.value || '';

@@ -9,8 +9,8 @@ $usuario = $_SESSION['usuario'] ?? null;
 <meta charset="UTF-8">
 <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
 <title>Calendario Colaborativo</title>
-<!-- FullCalendar CSS: carga desde CDN sin CORS explícito, con fallbacks -->
-<link id="fc-css-colab" rel="stylesheet" type="text/css" href="https://unpkg.com/fullcalendar@6.1.10/main.min.css" />
+<!-- FullCalendar CSS: carga desde CDN confiable -->
+<link id="fc-css-colab" rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/main.min.css" />
 <link rel="stylesheet" href="/css/Calendario/colaborativo.css">
 <link rel="stylesheet" href="/css/Calendario/calendario.css">
 <script>
@@ -23,11 +23,10 @@ $usuario = $_SESSION['usuario'] ?? null;
       }catch(_){ return false; }
     }
     function add(href){ var l=document.createElement('link'); l.rel='stylesheet'; l.type='text/css'; l.href=href; document.head.appendChild(l); }
-    // Intentar en cascada: unpkg -> cdnjs -> jsdelivr -> local
+    // Usar CDN confiable como primaria
     setTimeout(function(){
-      if(!cssOk()) add('https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/main.min.css');
-      setTimeout(function(){ if(!cssOk()) add('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css'); }, 700);
-      setTimeout(function(){ if(!cssOk()) add('/css/vendor/fullcalendar/main.min.css'); }, 1500);
+      if(!cssOk()) add('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css');
+      setTimeout(function(){ if(!cssOk()) add('/css/vendor/fullcalendar/main.min.css'); }, 700);
     }, 300);
   })();
   </script>

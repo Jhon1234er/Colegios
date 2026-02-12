@@ -34,18 +34,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = `index.php?page=obtener_asistencias&ficha_id=${encodeURIComponent(fichaId)}&fecha_inicio=${formatYMD(fechaInicio)}&fecha_fin=${formatYMD(fechaFin)}`;
       console.log("📌 URL de fetch:", url, fichaId, fechaInicio, fechaFin);
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Error al cargar registros');
-
+      const response = await fetch(url, { credentials: 'include' });
       const text = await response.text();
 
       let registros;
       try {
         const parsed = JSON.parse(text);
         // Soportar respuesta como array o como objeto {success, data}
+        if (!response.ok || parsed?.success === false) {
+          registrosAsistencia = {};
+          registrosAsistenciaIds = {};
+          return;
+        }
+
         registros = Array.isArray(parsed) ? parsed : (parsed?.data || []);
       } catch (e) {
         registrosAsistencia = {};
+        registrosAsistenciaIds = {};
         return; // simplemente salimos sin mostrar error
       }
 
@@ -605,21 +610,7 @@ async function cargarProfesores() {
     
     const profesores = await response.json();
     
-    // Verificar estado de compartir para cada profesor
-    const responseEstado = await fetch('index.php?page=verificar_estado_compartir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ 
-        ficha_id: fichaActualCompartir,
-        profesores: profesores.map(p => p.id)
-      })
-    });
-    
-    const estadosCompartir = await responseEstado.json();
-    
     const container = document.getElementById('profesoresContainer');
-    
     container.innerHTML = '';
     profesoresSeleccionados = [];
     
@@ -631,33 +622,13 @@ async function cargarProfesores() {
       const tipoContrato = profesor.tip_contrato?.toLowerCase();
       const etiquetaProfesor = tipoContrato === 'instructor' ? 'Instructor' : 'Facilitador';
       
-      const estadoProfesor = estadosCompartir[profesor.id];
-      let etiquetaEstado = '';
-      let claseEstado = '';
-      let deshabilitado = false;
-      
-      if (estadoProfesor === 'aceptada') {
-        etiquetaEstado = '<div class="estado-ficha ya-tiene">Ya tiene la ficha</div>';
-        claseEstado = 'ya-tiene-ficha';
-        deshabilitado = true;
-      } else if (estadoProfesor === 'pendiente') {
-        etiquetaEstado = '<div class="estado-ficha pendiente">Solicitud pendiente</div>';
-        claseEstado = 'solicitud-pendiente';
-        deshabilitado = true;
-      }
-      
       card.innerHTML = `
         <div class="checkmark">✓</div>
         <h6>${profesor.nombres} ${profesor.apellidos}</h6>
         <p>${etiquetaProfesor}</p>
-        ${etiquetaEstado}
       `;
       
-      if (deshabilitado) {
-        card.classList.add('deshabilitado', claseEstado);
-      } else {
-        card.addEventListener('click', () => toggleProfesorSeleccion(profesor.id, card));
-      }
+      card.addEventListener('click', () => toggleProfesorSeleccion(profesor.id, card));
       container.appendChild(card);
     });
     

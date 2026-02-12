@@ -1,852 +1,1705 @@
 /* Forzar fondo blanco de la página en esta vista (encabezado.css pone gris en body) */
+
 body{
+
     background: #ffffff !important;
+
 }
+
+
 
 /* ===== Ajustes específicos: botones del encabezado de Facilitador/Instructor ===== */
+
 #professor-details-sidebar .actions-bar .btn{
+
   border: none !important;
+
   box-shadow: none !important;
+
   opacity: 1 !important;
+
   filter: none !important;
+
 }
+
 #professor-details-sidebar .actions-bar .btn:hover,
+
 #professor-details-sidebar .actions-bar .btn:focus,
+
 #professor-details-sidebar .actions-bar .btn:active{
+
   border: none !important;
+
   box-shadow: none !important;
+
   opacity: 1 !important;       /* sin efecto de transparencia */
+
   filter: brightness(1) !important; /* mantener color sólido */
+
 }
+
 #professor-details-sidebar #btnVerCalendarioProf{
+
   background: #39A900 !important; color: #fff !important;
+
 }
+
 #professor-details-sidebar #btnExportarExcelProf{
+
   background: #00304D !important; color: #fff !important;
+
 }
+
+
 
 .student-details-sidebar .student-profile-block{
+
     max-width: 420px;              /* reducir el ancho */
+
     margin: 12px auto 18px;        /* centrar dentro del sidebar */
+
     padding: 16px 18px;
+
     border-radius: 16px;
+
     box-shadow: 0 8px 24px rgba(0,0,0,.08);
+
     background: #ffffff;
+
 }
+
 .student-details-sidebar .student-profile-block .profile{
+
     justify-content: center;       /* centrar avatar + nombre */
+
 }
+
 .student-details-sidebar .student-profile-block .profile-avatar{
+
     width: 64px; height: 64px;     /* círculo más grande */
+
     aspect-ratio: 1 / 1;
+
     border-radius: 9999px;
+
     background: #00304D;           /* color solicitado */
+
     color: #ffffff;                 /* iniciales en blanco */
+
     font-weight: 800; font-size: 24px;
+
     display: grid; place-items: center;
+
     box-shadow: none;
+
 }
+
 .student-details-sidebar .student-profile-block .profile-name{
+
     font-size: 20px; font-weight: 700; color: #000; line-height: 1.1;
+
 }
+
+
 
 .search-results-container {
+
     border-radius: 12px;
+
     padding: 20px;
+
     overflow-y: auto;
+
     background: #ffffff; /* fondo blanco en el contenedor de resultados */
+
     margin: 0px auto;
+
     margin-top: 35px; /* separación solicitada para el contenedor de resultados */
+
 }
+
 /* Ajuste: evitar que sobresalga (volver a 100%) */
+
 .search-results-container{
+
     width: 100%;
+
     margin-left: auto;
+
     margin-right: auto;
+
 }
+
+
 
 /* ===== Backbar (barra del botón Volver) - estilos del componente de resultados ===== */
+
 .backbar{
+
     position: relative;
+
     display: flex;
+
     align-items: center;           /* centrado vertical */
+
     justify-content: flex-start;   /* alineado a la izquierda */
+
     gap: 10px;
+
     padding: 0;                    /* sin relleno para que se una al contenedor */
+
     min-height: 0;                 /* compacto */
+
     margin: 0 0 12px 0;            /* pegado arriba del contenedor de resultados */
+
     background: transparent;       /* sin panel verde grande */
+
     border-radius: 0;
+
     box-shadow: none;
+
     z-index: 901;                  /* por encima del overlay (899) y del panel (900) */
+
     pointer-events: auto;
+
 }
+
+
 
 /* La posición/ancho de la backbar se sincroniza vía JS según el panel de resultados */
+
 .backbar__btn{
+
     display: inline-flex;
+
     align-items: center; gap: .6rem;
+
     padding: 12px 18px;
+
     border: 0; border-radius: 999px;
+
     background: #39A900;           /* botón verde */
+
     color: #ffffff;                 /* texto blanco */
+
     font-weight: 800; font-size: 1rem; line-height: 1;
+
     cursor: pointer;
+
     box-shadow: 0 2px 0 rgba(0,0,0,.06) inset;
+
     transition: transform .06s ease, filter .15s ease;
+
 }
+
 .backbar__btn:hover{ filter: brightness(.95); }
+
 .backbar__btn:active{ transform: translateY(1px); }
+
 .backbar__icon{ display:inline-block; font-size:1.1rem; line-height:1; transform: translateY(-1px); }
 
+
+
 .search-header {
+
     text-align: center;
+
     margin-bottom: 30px;
+
     padding: 20px;
+
     background: #39A900; /* contenedor del texto en verde solicitado */
+
     border-radius: 15px;
+
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
 }
+
+
 
 .search-header h2 {
+
     font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+
     font-weight: 700; /* Peso 700 */
+
     font-style: normal; /* Bold */
+
     font-size: 40px;   /* Tamaño 40px */
+
     line-height: 100%; /* Altura de línea 100% */
+
     letter-spacing: 0; /* Espacio entre letras 0% */
+
     color: #ffffff;    /* Texto blanco */
+
     margin-bottom: 10px;
+
 }
+
+
 
 /* Subtítulo con filtro y query */
+
 .search-subtitle{
+
     margin: 4px 0 6px;
+
     color:#000000;        /* negro */
+
     font-weight: 700;
+
     text-align: center;   /* centrado */
+
 }
+
 .search-subtitle .tag{
+
     display:inline-block;
+
     background:#e6f4ea;
+
     color:#2f6b2f;
+
     border:1px solid #cfe7d4;
+
     padding:2px 10px;
+
     border-radius:999px;
+
     font-weight:800;
+
 }
+
+
 
 .search-header p {
+
     color: #666;
+
     margin: 5px 0;
+
 }
+
+
 
 .results-count {
+
     font-size: 14px;
+
     color: #000000;       /* negro */
+
     font-weight: 700;
+
     text-align: center;   /* centrado */
+
 }
+
+
 
 .no-results {
+
     text-align: center;
+
     padding: 60px 20px;
+
     color: #666;
+
 }
+
+
 
 .no-results-icon {
+
     font-size: 64px;
+
     margin-bottom: 20px;
+
 }
+
+
 
 .no-results h3 {
+
     color: #4c7840;
+
     margin-bottom: 10px;
+
 }
+
+
 
 .results-grid {
+
     display: grid;
+
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
     gap: 16px;
+
     margin-top: 20px;
+
 }
+
+
 
 .result-card {
+
     background: white;
+
     border-radius: 15px;
+
     padding: 20px;
+
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
     transition: all 0.3s ease;
+
     border: 1px solid #e0e0e0;
+
     display: flex;                 /* para empujar acciones al final */
+
     flex-direction: column;
+
 }
+
+
 
 .result-card:hover {
+
     transform: translateY(-2px);
+
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
 }
+
+
 
 .result-header {
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: flex-start;
+
     margin-bottom: 15px;
+
     padding-bottom: 10px;
+
     border-bottom: 1px solid #eee;
+
 }
+
+
 
 /* Perfil en encabezado: avatar con iniciales + nombre al lado */
+
 .result-header .profile{
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
+
 }
+
 .result-header .profile-avatar{
+
     width: 40px;
+
     height: 40px;
+
     aspect-ratio: 1 / 1;
+
     border-radius: 9999px;
+
     background: #e6f4ea;        /* fondo suave verde */
+
     color: #39A900;             /* verde institucional para las iniciales */
+
     font-weight: 800;
+
     display: grid;
+
     place-items: center;
+
     font-size: 16px;
+
     box-shadow: inset 0 0 0 2px #cfe7d4;
+
 }
+
 .result-header .profile-name{
+
     font-size: 1.1rem;
+
     font-weight: 600;
+
     color: #000;                /* nombre en negro */
+
     line-height: 1.1;
+
 }
+
+
 
 .result-header h4 {
+
     color: #000000; /* nombre en negro */
+
     margin: 0;
+
     font-size: 1.1rem;
+
     font-weight: 600;
+
     flex: 1;
+
 }
+
+
 
 .result-type {
+
     background: #39A900 !important; /* verde institucional */
+
     color: #ffffff !important;
+
     padding: 4px 12px;
+
     border-radius: 20px;
+
     font-size: 12px;
+
     font-weight: 700;              /* más marcada */
+
     white-space: nowrap;
+
 }
+
+
 
 /* Variante verde específica para Aprendiz */
+
 .result-type--aprendiz{
+
     background: #39A900 !important;
+
     color: #ffffff !important;
+
 }
+
+
 
 /* Variante para Facilitador/Instructor */
+
 .result-type--facilitador{
+
     background: #00304D !important;
+
     color: #ffffff !important;
+
 }
+
+
 
 .result-details {
+
     margin-bottom: 20px;
+
 }
+
+
 
 .result-details p {
+
     margin: 5px 0;
+
     color: #666;
+
     font-size: 0.9rem;
+
 }
+
+
 
 .result-details strong {
+
     color: #000000; /* etiquetas en negro */
+
     font-weight: 700;
+
 }
+
+
 
 .result-actions {
+
     display: flex;
+
     gap: 10px;
+
     flex-wrap: wrap;
+
     margin-top: auto;              /* siempre al fondo de la tarjeta */
+
 }
+
+
 
 .btn {
+
     padding: 8px 16px;
+
     border-radius: 20px;
+
     text-decoration: none;
+
     font-size: 13px;
+
     font-weight: 500;
+
     transition: all 0.3s ease;
+
     border: none;
+
     cursor: pointer;
+
     display: inline-flex;             /* centrar contenido */
+
     align-items: center;              /* icono y texto centrados verticalmente */
+
     justify-content: center;          /* centrado horizontal */
+
     gap: 6px;                         /* espacio entre icono y texto */
+
     line-height: 1;                   /* evitar desalineación vertical */
+
 }
 
+
+
 /* Botón "Ver Detalles" - verde con icono de ojo a la izquierda */
+
 .result-actions .btn-primary{
+
     background: #39A900;
+
     color: #ffffff;
+
     border: none;
+
 }
+
 .result-actions .btn-primary::before{
+
     content: '';
+
     display: inline-block;
+
     width: 16px; height: 16px;
+
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/><circle cx='12' cy='12' r='3'/></svg>");
+
     background-repeat: no-repeat; background-size: 16px 16px; background-position: center;
+
 }
+
+
 
 .result-actions .btn-primary:hover { transform: translateY(-1px); filter: brightness(.95); }
 
+
+
 /* Botón "Editar" - azul oscuro */
+
 .result-actions .btn-secondary{
+
     background: #00304D;
+
     color: #ffffff;
+
     border: none;
+
 }
+
+
 
 /* Etiquetas de estado en detalles */
+
 .status-badge{
+
     display: inline-block;
+
     background: #39A900;
+
     color: #ffffff;
+
     padding: 4px 10px;
+
     border-radius: 999px;
+
     font-size: 12px;
+
     font-weight: 700;
+
 }
 
+
+
 /* Siempre azul, incluso si está deshabilitado o con pointer-events:none */
+
 .result-actions .btn-secondary.btn-editar,
+
 .result-actions .btn-secondary[disabled],
+
 .result-actions .btn-secondary[aria-disabled="true"],
+
 .result-actions .btn-secondary[style*="pointer-events"]{
+
     background: #00304D !important;
+
     color: #ffffff !important;
+
     border: none !important;
+
     opacity: 1 !important; /* mantener aspecto activo */
+
 }
+
+
 
 .result-actions .btn-secondary:hover { filter: brightness(.95); transform: translateY(-1px); }
 
+
+
 /* Student Details Panel Styles */
+
 .student-details-empty {
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     color: #6c757d;
+
     font-size: 16px;
+
 }
 
+
+
 /* Panel de detalles a la derecha (se posiciona vía JS) */
+
 .student-details-sidebar{
     position: fixed;
     background: #ffffff;
     border: 1px solid #e6eaf0;
     border-radius: 16px;
     box-shadow: 0 12px 28px rgba(0,0,0,.08);
-    overflow: auto;
+    overflow-y: scroll !important; /* FORZAR scroll en el contenedor PADRE */
+    max-height: calc(100vh - 100px) !important; /* límite para el contenedor PADRE */
+    overflow-x: hidden !important; /* QUITAR scroll horizontal */
     z-index: 900; /* sobre el fondo, igual al panel de resultados */
 }
+
+
 .student-details-sidebar .details-header{
+
     position: relative; /* que no quede pegado al borde superior */
+
     background: #39A900; color: #fff;
+
     padding: 16px 20px;
+
     margin: 16px;                 /* separación interna como en .search-header */
+
     border-radius: 15px;          /* mismo radio que el header de resultados */
+
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
     display:flex; align-items:center; justify-content:space-between;
+
 }
+
 .student-details-sidebar .details-header h2{
+
     font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+
     font-weight: 700;     /* Peso 700 */
+
     font-style: normal;   /* Bold */
+
     font-size: 40px;      /* Tamaño 40px */
+
     line-height: 100%;    /* Altura de línea 100% */
+
     letter-spacing: 0;    /* Espacio entre letras 0% */
+
     margin: 0;
+
 }
+
 .student-details-sidebar .close-details-btn{
+
     width: 56px;                 /* aumento de tamaño */
+
     height: 56px;                /* aumento de tamaño */
+
     display: grid;
+
     place-items: center;
+
     background: rgba(255,255,255,0.18);
+
     border: 0;
+
     border-radius: 12px;
+
     color: #fff;
+
     font-size: 0;                /* ocultar el carácter textual, usaremos SVG */
+
     line-height: 1;
+
     cursor: pointer;
+
     flex: 0 0 auto;        /* mantener tamaño fijo al final */
+
     margin-left: auto;     /* empujar hacia el extremo derecho dentro del header */
+
     position: relative;
+
 }
+
 /* La X se queda dentro del header, alineada a la derecha mediante flex, sin coords fijas */
 
+
+
 /* Ícono X grueso centrado */
+
 .student-details-sidebar .close-details-btn::before{
+
     content: '';
+
     position: absolute;          /* centrado absoluto */
+
     top: 50%; left: 50%;
+
     transform: translate(-50%, -50%);
+
     width: 32px;                 /* tamaño del ícono */
+
     height: 32px;
+
     background-repeat: no-repeat;
+
     background-position: center;
+
     background-size: contain;
+
     /* SVG con trazos gruesos usando currentColor (blanco) */
+
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 28 28' fill='none' stroke='white' stroke-width='4' stroke-linecap='round'><line x1='6' y1='6' x2='22' y2='22'/><line x1='22' y1='6' x2='6' y2='22'/></svg>");
+
 }
+
+
 
 .student-details-content {
+
     display: grid;
+
     grid-template-columns: 1fr;
+
     gap: 12px;                    /* aún más compacto entre bloques */
+
     animation: fadeIn 0.3s ease-out;
+
 }
+
+
 
 /* Títulos del panel de detalles: negros y a la izquierda */
+
 .student-details-sidebar .section-title{
+
     color: #000000;
+
     text-align: left;
+
     font-weight: 700;
+
 }
+
+
 
 /* Centrar los grids y reducir el ancho útil */
+
 .student-details-sidebar .data-container .data-grid{
+
     max-width: 100%;   /* volver al ancho original del contenedor */
+
     margin: 0;         /* sin centrado del grid completo */
+
 }
+
+
 
 /* En detalles: hacer que cada "cuadrado" se centre y ocupe solo lo necesario */
+
 /* En el panel de detalles: usar flex para centrar correctamente cada fila */
+
 .student-details-sidebar .data-grid{
+
     display: flex;
+
     flex-wrap: wrap;
+
     gap: 8px;                    /* compactar tarjetas para evitar scroll */
+
     justify-content: center; /* centra las filas (incluida la 2da) */
+
 }
+
+
 
 /* Profesor: 4 x fila de manera estricta dentro del sidebar de detalles */
+
 .student-details-sidebar #professor-data-grid{
+
     display: grid !important;
+
     grid-template-columns: repeat(4, minmax(170px, 1fr));
+
     gap: 10px 12px;
+
     justify-items: center;
+
 }
-/* Profesor: 5 por fila en Fichas y Clases */
+
+/* Profesor: 4 por fila en Fichas y Clases */
+
 .student-details-sidebar #professor-fichas-grid,
+
 .student-details-sidebar #professor-clases-grid{
+
     display: grid; /* sin !important para permitir toggle via JS */
-    grid-template-columns: repeat(5, minmax(160px, 1fr));
-    gap: 10px 12px;
+
+    grid-template-columns: repeat(4, minmax(140px, 1fr)); /* Reducir de 5 a 4 por fila y ancho mínimo */
+
+    gap: 8px 10px;
+
+    width: 100%; /* Asegurar que no exceda el contenedor */
+
+    box-sizing: border-box; /* Incluir padding en el ancho */
+
 }
+
 @media (max-width: 1100px){
+
   .student-details-sidebar #professor-data-grid{ grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+
   .student-details-sidebar #professor-fichas-grid,
+
   .student-details-sidebar #professor-clases-grid{ grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+
 }
+
 @media (max-width: 640px){
+
   .student-details-sidebar #professor-data-grid{ grid-template-columns: 1fr; }
+
   .student-details-sidebar #professor-fichas-grid,
+
   .student-details-sidebar #professor-clases-grid{ grid-template-columns: 1fr; }
+
 }
+
 /* Los contenedores de nombre (perfil) más angostos y centrados */
+
 .student-details-content .profile-card{
+
     max-width: 520px;            /* ancho necesario, no más */
+
     margin: 0 auto;              /* centrado */
+
     padding: 10px 14px;          /* aún más compacto */
+
 }
+
 .profile-card .profile{ justify-content: center; align-items: center; }
+
 .profile-card .profile-name{ text-align: center; }
+
 /* Avatar circular para los bloques de detalles (no afecta al header) */
+
 .student-details-content .profile-avatar{
+
     width: 60px;
+
     height: 60px;
+
     aspect-ratio: 1 / 1;
+
     border-radius: 9999px;
+
     display: grid;
+
     place-items: center;
+
     font-weight: 700;
+
     font-size: 22px;
+
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+
     background-color: #00304D; /* azul institucional */
+
     color: #ffffff;             /* texto blanco */
+
 }
+
 .guardian-profile-block .profile{ justify-content: center; }
+
 .guardian-profile-block .profile-name{ text-align: center; }
+
 .guardian-profile-block .guardian-initials{
+
     background-color: #00304D; /* azul solicitado */
+
     color: #ffffff;             /* texto blanco */
+
 }
+
 /* Asegurar mismo centrado en el bloque del aprendiz */
+
 .student-profile-block .profile{ justify-content: center; }
+
 .student-profile-block .profile-name{ text-align: center; }
 
+
+
 /* Título de Detalles del Acudiente con el mismo estilo del encabezado */
+
 .student-details-sidebar .acudiente-title-container{
+
     padding: 0; background: transparent; border: none; box-shadow: none;
+
 }
+
 .student-details-sidebar .acudiente-title-container .details-header{
+
     position: relative;
+
     background: #39A900; color: #fff;
+
     padding: 16px 20px;           /* igual que Detalles del Aprendiz */
+
     margin: 16px;                 /* igual que Detalles del Aprendiz */
+
     border-radius: 15px;          /* igual que el de Aprendiz */
+
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
     display: flex; align-items: center; justify-content: flex-start; /* a la izquierda, sin botón X */
+
 }
+
 .student-details-sidebar .acudiente-title-container .details-header h2{
+
     font-family: 'Myriad Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+
     font-weight: 700; 
+
     font-size: 40px;      /* mismo grosor/tamaño */
+
     line-height: 100%;
+
     letter-spacing: 0;
+
     margin: 0;
+
 }
+
 .student-details-sidebar .data-item{
+
     width: 100%;               /* ocupar su columna */
+
     max-width: 220px;          /* un poco más ancho pero no gigante */
+
     flex: 0 1 220px;           /* permite encajar mejor por fila */
+
     text-align: center;        /* centrar texto dentro */
+
     border-radius: 18px;       /* esquinas suaves */
+
     padding: 8px 10px;         /* más aire interno */
+
     background: #ffffff;       /* tarjetas blancas */
+
     box-shadow: 0 4px 12px rgba(15,23,42,0.06); /* sombra más limpia y ligera */
+
 }
+
 .student-details-sidebar .data-item .data-label,
+
 .student-details-sidebar .data-item .data-value{
+
     text-align: center;
+
 }
+
+
 
 /* Responsivo: 2 columnas en tablets, 1 en móviles */
+
 @media (max-width: 1100px){
+
   .student-details-sidebar .data-item{ max-width: 300px; }
+
 }
+
 @media (max-width: 640px){
+
   .student-details-sidebar .data-item{ max-width: 100%; }
+
 }
+
+
 
 /* Contenedor de Datos */
+
 .data-container {
+
     background: white;
+
     border: 1px solid #e2e8f0;
+
     border-radius: 12px;
+
     padding: 16px;             /* compactar padding general */
+
     margin-bottom: 20px;
+
     width: 100%;
+
     max-width: 1200px;
+
     margin-left: auto;
+
     margin-right: auto;
+
     box-shadow: 0 8px 24px rgba(0,0,0,0.06); /* sombreado sutil para todos los contenedores */
+
 }
+
+
 
 /* En el panel de detalles: evitar overflow (100% centrado) */
+
 .student-details-sidebar .data-container{
-    width: 100%;
+
+    width: 90%;
+
     margin-left: auto;
+
     margin-right: auto;
+
     padding-left: 22px;           /* un poco más de aire lateral */
+
     padding-right: 22px;
+
     padding-top: 16px;            /* más separación del borde superior */
+
     padding-bottom: 16px;         /* y del borde inferior */
+
+    overflow-y: visible;          /* QUITAR scroll de los contenedores individuales */
+
 }
+
 /* Reducir el ancho efectivo del grid dentro del contenedor para dar respiración a los bordes */
+
 .student-details-sidebar .data-container .data-grid{
+
     max-width: 96%;               /* respiración a izquierda/derecha */
-    margin: 10px auto 10px;       /* separación interna arriba/abajo más generosa */
+
+    margin: 5px auto 5px;       /* reducir separación interna entre secciones */
+
 }
+
+
 
 @media (max-width: 900px){
+
   .student-details-sidebar .data-container{ width: 100%; margin-left: 0; margin-right: 0; }
+
 }
+
+
 
 .section-title {
+
     font-size: 1.1rem;
+
     font-weight: 700;
+
     color: #1e40af;
+
     margin-bottom: 20px;
+
     padding-bottom: 10px;
+
     text-transform: uppercase;
+
     letter-spacing: 0.5px;
+
 }
+
+
 
 .data-grid {
+
     display: grid;
+
     grid-template-columns: repeat(2, 1fr);
+
     gap: 15px;
+
 }
+
+
 
 .data-item {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 4px;
+
     padding: 15px;
+
     background: #f8fafc;
+
     border: 1px solid #e2e8f0;
+
     border-radius: 8px;
+
 }
+
+
 
 .data-item:hover {
+
     background: #f1f5f9;
+
     transform: translateY(-1px);
+
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
     transition: all 0.2s ease;
+
 }
+
+
 
 .data-label {
+
     font-weight: 600;
+
     color: #374151;
+
     font-size: 0.875rem;
+
     text-transform: uppercase;
+
     letter-spacing: 0.05em;
+
     min-width: 120px;
+
     flex-shrink: 0;
+
 }
+
+
 
 .data-value {
+
     color: #1f2937;
+
     font-size: 0.95rem;
+
     line-height: 1.4;
+
     flex: 1;
+
     /* Evitar desbordes en textos largos como emails */
+
     min-width: 0;
+
     overflow-wrap: anywhere;
+
     word-break: break-word;
+
     white-space: normal;
+
 }
+
+
 
 .status-badge {
+
     display: inline-flex;
+
     align-items: center;
+
     padding: 6px 12px;
+
     border-radius: 20px;
+
     font-size: 0.85rem;
+
     font-weight: 600;
+
     background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+
     color: #15803d;
+
     border: 1px solid #86efac;
+
 }
+
+
 
 /* Chips para Grados/Jornadas en Detalles del Colegio */
+
 .student-details-sidebar .school-chip-row{
+
     display: flex;
+
     flex-wrap: nowrap;           /* todo en una sola línea horizontal */
+
     gap: 6px;
+
     justify-content: flex-start;
+
     align-items: center;
+
     overflow-x: auto;            /* evitar desbordes si hay muchos chips */
+
 }
+
+
 
 .student-details-sidebar .school-chip{
+
     display: inline-flex;
+
     align-items: center;
+
     padding: 4px 10px;
+
     border-radius: 999px;
+
     background: #f1f5f9;
+
     border: 1px solid #e2e8f0;
+
     font-size: 0.8rem;
+
     font-weight: 500;
+
     color: #111827;
+
 }
+
+
 
 .student-details-sidebar .school-chip-empty{
+
     background: transparent;
+
     border: none;
+
     color: #6b7280;
+
 }
+
+
 
 /* Dar un poco más de aire a los grids del panel de colegios */
+
 .student-details-sidebar #school-data-grid,
+
 .student-details-sidebar #school-grados-grid,
+
 .student-details-sidebar #school-materias-grid{
+
     max-width: 94%;
+
     margin: 10px auto 16px;
+
 }
+
+
 
 /* Alinear texto de Grados/Jornadas a la izquierda */
+
 .student-details-sidebar #school-grados-grid .data-label,
+
 .student-details-sidebar #school-grados-grid .data-value{
+
     text-align: left;
+
 }
+
+
 
 /* En Grados/Jornadas, label y chips en la misma fila */
+
 .student-details-sidebar #school-grados-grid .data-item{
+
     flex-direction: row;
+
     align-items: center;
+
     justify-content: flex-start;
+
     gap: 10px;
+
     width: auto;            /* no limitar a 200px */
+
     max-width: none;
+
     flex: 1 1 0;            /* que cada uno se estire y use la mitad del ancho */
+
 }
+
+
 
 /* Añadir dos puntos después de la etiqueta (Grados: / Jornadas:) */
+
 .student-details-sidebar #school-grados-grid .data-label::after{
+
     content: ':';
+
     margin-left: 4px;
+
 }
+
+
 
 .status-badge::before {
+
     content: '●';
+
     margin-right: 6px;
+
 }
+
+
 
 .info-section {
+
     background: white;
+
     border: 2px solid #1e7432;
+
     border-radius: 8px;
+
     overflow: hidden;
+
 }
+
+
 
 .section-header {
+
     background: linear-gradient(to bottom right, #1e7432, #098b2b);
+
     color: white;
+
     padding: 12px 16px;
+
     font-weight: bold;
+
     font-size: 14px;
+
     text-align: center;
+
     letter-spacing: 0.5px;
+
 }
+
+
 
 .section-content {
+
     padding: 16px;
+
     min-height: 80px;
+
     background: white;
+
 }
+
+
 
 .section-content p {
+
     margin: 8px 0;
+
     font-size: 14px;
+
     color: #333;
+
 }
+
+
 
 .section-content p:first-child {
+
     margin-top: 0;
+
 }
+
+
 
 .section-content p:last-child {
+
     margin-bottom: 0;
+
 }
+
+
 
 /* Button states */
+
 .btn-editar:disabled,
+
 .btn-editar[style*="pointer-events: none"] {
+
     opacity: 0.5;
+
     cursor: not-allowed;
+
 }
+
+
 
 .btn-editar.enabled {
+
     opacity: 1;
+
     pointer-events: auto;
+
 }
+
+
 
 /* Animation for details panel */
+
 @keyframes fadeIn {
+
     from {
+
         opacity: 0;
+
         transform: translateY(10px);
+
     }
+
     to {
+
         opacity: 1;
+
         transform: translateY(0);
+
     }
+
 }
+
+
 
 /* Responsive adjustments */
+
 @media (max-width: 1366px) {
+
     .search-results-container {
+
         padding: 16px;
+
     }
+
+
 
     .result-card {
+
         padding: 16px;
+
     }
+
+
 
     .results-grid {
+
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
         gap: 14px;
+
     }
+
+
 
     .result-header {
+
         flex-direction: column;
+
         align-items: flex-start;
+
         gap: 8px;
+
     }
 
+
+
     .data-container {
+
         padding: 22px;
+
         max-width: 1100px;
+
     }
+
 }
+
 @media (max-width: 1200px) {
+
     .data-container {
+
         padding: 20px;
+
         max-width: 100%;
+
     }
+
     
+
     .data-grid {
+
         grid-template-columns: 1fr;
+
         gap: 12px;
+
     }
+
     
+
     .section-title {
+
         font-size: 1rem;
+
         margin-bottom: 15px;
+
     }
+
 }
+
+
 
 @media (max-width: 768px) {
+
     .main-layout {
+
         grid-template-columns: 1fr;
+
         gap: 20px;
+
     }
+
     
+
     .result-actions {
+
         justify-content: center;
+
     }
+
     
+
     .student-details-container {
+
         position: relative;
+
         top: auto;
+
         max-height: 60vh;
+
         overflow-y: auto;
+
         gap: 15px;
+
     }
+
     
+
     .data-container {
+
         padding: 15px;
+
         margin-bottom: 15px;
+
     }
+
     
+
     .data-item {
+
         padding: 12px;
+
     }
+
     
+
     .section-title {
+
         font-size: 0.95rem;
+
         margin-bottom: 12px;
+
     }
+
 }
 
+
+
 @media (max-width: 480px) {
+
   .data-container {
+
       padding: 12px;
+
       border-radius: 8px;
+
   }
+
   
+
   .result-actions .btn-editar:hover,
+
   .result-actions .btn-editar:focus {
+
     background-color: #1e7432;
+
     border-color: #1e7432;
+
   }
+
 }
+

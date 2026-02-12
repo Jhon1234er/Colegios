@@ -193,11 +193,11 @@ class FacilitadorController {
                             } catch (\PDOException $eN2) {
                                 if ($eN2->getCode() !== '42S22') { throw $eN2; }
                                 try {
-                                    $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                    $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                     $stN->execute([(int)$uid, $titulo, $msg]);
                                 } catch (\PDOException $eN3) {
                                     if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                                    $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                                    $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                                     $stN->execute([(int)$uid, $titulo, $msg]);
                                 }
                             }
@@ -406,11 +406,11 @@ class FacilitadorController {
                 } catch (\PDOException $eN2) {
                     if ($eN2->getCode() !== '42S22') { throw $eN2; }
                     try {
-                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                         $stN->execute([$usuario_id, $titulo, $msg]);
                     } catch (\PDOException $eN3) {
                         if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                         $stN->execute([$usuario_id, $titulo, $msg]);
                     }
                 }
@@ -506,11 +506,11 @@ class FacilitadorController {
                 } catch (\PDOException $eN2) {
                     if ($eN2->getCode() !== '42S22') { throw $eN2; }
                     try {
-                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario_id, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                         $stN->execute([$usuario_id, $titulo, $msg]);
                     } catch (\PDOException $eN3) {
                         if ($eN3->getCode() !== '42S22') { throw $eN3; }
-                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado, creado_en) VALUES (?, ?, ?, 'no_leida', NOW())");
+                        $stN = $pdo->prepare("INSERT INTO notificaciones (usuario, titulo, mensaje, estado_id, creado_en) VALUES (?, ?, ?, 1, NOW())");
                         $stN->execute([$usuario_id, $titulo, $msg]);
                     }
                 }

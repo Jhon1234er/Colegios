@@ -49,9 +49,11 @@ document.addEventListener('DOMContentLoaded', function () {
           try {
             cal.today();
             setTimeout(() => {
-              const root = document.getElementById('calendario');
+              const root = document.getElementById('calendar');
+              // ANIMACIÓN DESACTIVADA - estaba causando bugs constantes
+              /*
               const targets = [];
-              root?.querySelectorAll('.fc-daygrid .fc-day-today .fc-daygrid-day-frame')?.forEach(n=>targets.push(n));
+              root?.querySelectorAll('.fc-daygrid-day.fc-day-today .fc-daygrid-day-frame')?.forEach(n=>targets.push(n));
               root?.querySelectorAll('.fc-timegrid .fc-day-today .fc-timegrid-col-frame')?.forEach(n=>targets.push(n));
               if (!targets.length) return;
               let up = true; const start = Date.now(); const D = 1000; const STEP = 140;
@@ -65,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 up = !up;
               }, STEP);
+              */
             }, 60);
           } catch(_) {}
         }
@@ -363,7 +366,8 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       if (window._calNowBadgeTimer) { clearInterval(window._calNowBadgeTimer); window._calNowBadgeTimer = null; }
       if ((cal.view?.type || '') === 'dayGridMonth') {
-        window._calNowBadgeTimer = setInterval(() => { try { updateMonthNowBadge(); } catch(_){} }, 30000);
+        // Desactivado - estaba causando animaciones constantes
+// window._calNowBadgeTimer = setInterval(() => { try { updateMonthNowBadge(); } catch(_){} }, 30000);
       }
     } catch(_){}
   }
@@ -394,8 +398,11 @@ document.addEventListener('DOMContentLoaded', function () {
       btnExp.addEventListener('click', () => {
         try {
           const view = cal.view;
-          const d1 = view?.activeStart || view?.currentStart || new Date();
-          const d2 = view?.activeEnd   || view?.currentEnd   || new Date();
+          const base = view?.currentStart || view?.activeStart || new Date();
+          const ref = new Date(base.getTime());
+          ref.setDate(ref.getDate() + 15);
+          const d1 = new Date(ref.getFullYear(), ref.getMonth(), 1);
+          const d2 = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
           const toYMD = (d) => {
             const yy = d.getFullYear();
             const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -406,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
           url.searchParams.set('page', 'calendario_exportar');
           url.searchParams.set('action', 'exportarReporte');
           url.searchParams.set('fecha_inicio', toYMD(d1));
-          url.searchParams.set('fecha_fin', toYMD(new Date(d2.getTime() - 24*60*60*1000))); // fin inclusivo
+          url.searchParams.set('fecha_fin', toYMD(d2));
           if (window.estadoFiltro)     url.searchParams.set('estado', String(window.estadoFiltro));
           if (window.facilitadorFiltro) url.searchParams.set('facilitador_id', String(window.facilitadorFiltro));
           // Abrir en nueva pestaña para descargar .xls
@@ -626,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (n > 0) toast('Clases duplicadas: ' + n);
                 else toast('No se crearon clases nuevas al duplicar');
               }
-              try { cal.refetchEvents(); } catch(_){}
+              try { cal.refetchEvents(); } catch (_) {} // Necesario para filtros
               if (window.bootstrap && bootstrap.Modal) {
                 try { bootstrap.Modal.getOrCreateInstance(modalEl).hide(); } catch(_){}
               } else {
@@ -814,7 +821,8 @@ document.addEventListener('DOMContentLoaded', function () {
   try {
     updateDashedNowLine();
     if (window._calDashedTimer) clearInterval(window._calDashedTimer);
-    window._calDashedTimer = setInterval(updateDashedNowLine, 30000);
+    // Desactivado - estaba causando animaciones constantes
+// window._calDashedTimer = setInterval(updateDashedNowLine, 30000);
     window.addEventListener('resize', updateDashedNowLine);
   } catch(_) {}
 
@@ -931,7 +939,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Helpers de fechas
   const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const isPastDay = (d) => startOfDay(d) < startOfDay(new Date());
-  const toast = (msg) => {
+  // Hacer toast global para que esté disponible en todos los contextos
+  window.toast = (msg) => {
     try {
       let t = document.getElementById('cal-toast');
       if (!t) {
@@ -948,11 +957,15 @@ document.addEventListener('DOMContentLoaded', function () {
       t.textContent = String(msg || '');
       // Force reflow then show
       void t.offsetHeight; t.style.opacity = '1';
-      clearTimeout(toast._h);
-      toast._h = setTimeout(()=>{ t.style.opacity = '0'; }, 1800);
+      clearTimeout(window.toast._h);
+      window.toast._h = setTimeout(()=>{ t.style.opacity = '0'; }, 1800);
     } catch(_){ /* noop */ }
   };
+  
+  // También mantener la referencia local para compatibilidad
+  const toast = window.toast;
   cal.on('eventResize', async (info)=>{
+    console.log('eventResize disparado', info.event);
     const vt = cal.view?.type || '';
     if (vt === 'dayGridMonth') { info.revert(); toast('En Mes no se puede cambiar la duración'); return; } // no redimensionar en Mes
     if (!isMovable(info.event)) { info.revert(); toast('No se puede editar una clase en curso o finalizada'); return; }
@@ -966,11 +979,14 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!chek.ok) { info.revert(); toast(chek.reason || 'Horario no permitido'); return; }
     }
     const res = await persistEventUpdate(info.event);
+    console.log('Resultado de persistEventUpdate:', res);
     if (res.ok) {
-      toast('Duración actualizada'); try { cal.refetchEvents(); } catch(_){}
+      toast('Duración actualizada'); 
+      // No recargar todo - el evento ya se actualizó localmente
     } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
   });
   cal.on('eventDrop',   async (info)=>{
+    console.log('eventDrop disparado', info.event);
     const vt = cal.view?.type || '';
     const st = estadoOf(info.event);
     // No mover en_curso o finalizado en ninguna vista
@@ -987,10 +1003,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!chek.ok) { info.revert(); toast(chek.reason || 'Día/hora no permitido'); return; }
     }
     const res = await persistEventUpdate(info.event);
+    console.log('Resultado de persistEventUpdate en eventDrop:', res);
     if (res.ok) {
       const d = info.event.start; const pad=(n)=>String(n).padStart(2,'0');
       toast(`Clase movida a ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`);
-      try { cal.refetchEvents(); } catch(_){}
+      // No recargar todo - el evento ya se actualizó localmente
     } else { info.revert(); toast(res.error || 'No se pudo guardar el cambio'); }
   });
 
@@ -1143,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
   const textOr = (obj, ...keys) => { for (const k of keys){ const v = obj && obj[k]; if (v!=null && String(v).trim()!=='') return String(v).trim(); } return ''; };
   cal.on('eventClick', function(info){
+    console.log('eventClick disparado', info.event);
     try {
       info.jsEvent?.preventDefault?.();
       const modal = ensureDetailModal();
@@ -1157,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const fichaN   = textOr(ex, 'ficha_nombre');
       const profesor = textOr(ex, 'profesor_nombre','docente','profesor','creado_por','creador');
       const estado   = (textOr(ex, 'estado') || '').toLowerCase();
+      console.log('Datos del evento:', { titulo, inicio, fin, aula, fichaC, fichaN, profesor, estado });
       // Colores por estado
       const estadoBgMap = { 'finalizado':'#111827', 'en_curso':'#22c55e', 'suspendido':'#ef4444', 'programado':'#3b82f6' };
       const estadoBg = estadoBgMap[estado] || '#111827';
@@ -1863,7 +1882,8 @@ document.addEventListener('DOMContentLoaded', function () {
               const ok = r.ok; let j=null; try { j = await r.json(); } catch(_){ }
               if (!ok || (j && j.error)) { toast(j?.error || 'No se pudo crear la clase'); return; }
               toast('Clase creada');
-              try { cal.refetchEvents(); } catch(_){ }
+              // No recargar todo - el evento ya se agregó localmente
+              // try { cal.refetchEvents(); } catch(_){ }
               if (window.bootstrap && bootstrap.Modal) { try { bootstrap.Modal.getOrCreateInstance(modalEl).hide(); } catch(_){} }
               else { modalEl.setAttribute('aria-hidden','true'); modalEl.classList.remove('show'); modalEl.style.display='none'; }
             } catch(_) { toast('Error de red al crear clase'); }
